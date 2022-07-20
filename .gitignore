@@ -2,7 +2,6 @@
 __pycache__/
 *.py[cod]
 .idea
-.vscode
 .DS_Store
 /example/.project
 /example/.pydevproject
@@ -10,3 +9,7 @@ __pycache__/
 # kbc datafolder
 /data
 /venv
+
+# VSCode files
+.vscode
+.devcontainer
