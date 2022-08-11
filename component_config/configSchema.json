@@ -1,6 +1,6 @@
 {
   "type": "object",
-  "title": "extractor configuration",
+  "title": "Bing Ads Extractor Configuration",
   "required": [
     "print_hello"
   ],
