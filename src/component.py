@@ -84,6 +84,8 @@ class BingAdsExtractor(ComponentBase):
         )
         user = bing_ads_client.get_user()
         print(user)
+        campaign = bing_ads_client.get_campaigns()
+        print(campaign)
         # # Create output table (Tabledefinition - just metadata)
         # table = self.create_out_table_definition(
         #     "output.csv", incremental=True, primary_key=["timestamp"]
