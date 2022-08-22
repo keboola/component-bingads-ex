@@ -11,7 +11,7 @@ from typing import Literal, Optional
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 
-from client import BingAdsClient
+from client import BingAdsClient, DownloadRequestSpec
 
 # configuration variables
 KEY_CLIENT_ID = "client_id"
@@ -84,18 +84,32 @@ class BingAdsExtractor(ComponentBase):
         )
         user = bing_ads_client.get_user()
         print(user)
-        bulk_download_operation = bing_ads_client.submit_download()
-        print(bulk_download_operation)
-        download_status = bulk_download_operation.track()
+        # bulk_download_operation = bing_ads_client.submit_download()
+        # print(bulk_download_operation)
+        # download_status = bulk_download_operation.track()
         os.makedirs(self.tables_out_path, exist_ok=True)
-        result_file_path = bulk_download_operation.download_result_file(
-            result_file_directory=self.tables_out_path,
-            result_file_name="result.csv",
-            decompress=True,
-            overwrite=True,  # Set this value true if you want to overwrite the same file.
-            timeout_in_milliseconds=10000,  # You may optionally cancel the download after a specified time interval.
+        # result_file_path = bulk_download_operation.download_result_file(
+        #     result_file_directory=self.tables_out_path,
+        #     result_file_name="result.csv",
+        #     decompress=True,
+        #     overwrite=True,  # Set this value true if you want to overwrite the same file.
+        #     timeout_in_milliseconds=10000,  # You may optionally cancel the download after a specified time interval.
+        # )
+        # pass
+        bulk_download_request_specs = [
+            DownloadRequestSpec(
+                data_scope=["EntityData", "QualityScoreData"],
+                download_entities=["Campaigns"],
+            ),
+            DownloadRequestSpec(
+                data_scope=["EntityData", "QualityScoreData"], download_entities=["Ads"]
+            ),
+        ]
+        bing_ads_client.perform_all_download_operations(
+            bulk_download_operation_specs=bulk_download_request_specs,
+            download_directory=self.tables_out_path,
+            filename_prefix="result",
         )
-        pass
         # # Create output table (Tabledefinition - just metadata)
         # table = self.create_out_table_definition(
         #     "output.csv", incremental=True, primary_key=["timestamp"]
