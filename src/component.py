@@ -84,8 +84,18 @@ class BingAdsExtractor(ComponentBase):
         )
         user = bing_ads_client.get_user()
         print(user)
-        bdo = bing_ads_client.submit_download()
-        print(bdo)
+        bulk_download_operation = bing_ads_client.submit_download()
+        print(bulk_download_operation)
+        download_status = bulk_download_operation.track()
+        os.makedirs(self.tables_out_path, exist_ok=True)
+        result_file_path = bulk_download_operation.download_result_file(
+            result_file_directory=self.tables_out_path,
+            result_file_name="result.csv",
+            decompress=True,
+            overwrite=True,  # Set this value true if you want to overwrite the same file.
+            timeout_in_milliseconds=10000,  # You may optionally cancel the download after a specified time interval.
+        )
+        pass
         # # Create output table (Tabledefinition - just metadata)
         # table = self.create_out_table_definition(
         #     "output.csv", incremental=True, primary_key=["timestamp"]
@@ -94,8 +104,6 @@ class BingAdsExtractor(ComponentBase):
         # # get file path of the table (data/out/tables/Features.csv)
         # out_table_path = table.full_path
         # logging.info(out_table_path)
-
-        os.makedirs(self.tables_out_path, exist_ok=True)
         # # DO whatever and save into out_table_path
         # with open(table.full_path, mode="wt", encoding="utf-8", newline="") as out_file:
         #     writer = csv.DictWriter(out_file, fieldnames=["timestamp"])
