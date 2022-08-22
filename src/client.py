@@ -11,6 +11,11 @@ from bingads.authorization import (
     OAuthTokens,
     OAuthWithAuthorizationCode,
 )
+from bingads.v13.bulk import (
+    BulkServiceManager,
+    SubmitDownloadParameters,
+    BulkDownloadOperation,
+)
 
 
 def request_user_consent(authentication: OAuthWithAuthorizationCode):
@@ -150,16 +155,22 @@ class BingAdsClient:
 
         return get_user_response.User
 
-    def get_campaigns(self):
-        bulk_service = ServiceClient(
-            service="BulkService",
-            version=13,
-            authorization_data=self.authorization_data,
-            environment=self.environment,
+    def submit_download(self) -> BulkDownloadOperation:
+        bulk_service_manager = BulkServiceManager(
+            authorization_data=self.authorization_data, environment=self.environment
+        )
+        submit_download_parameters = SubmitDownloadParameters(
+            campaign_ids=None,
+            data_scope=["EntityData", "QualityScoreData"],
+            download_entities=["Campaigns", "AdGroups", "Ads"],
+            file_type="Csv",
+            last_sync_time_in_utc=None,
         )
         try:
-            get_campaigns_response = bulk_service.DownloadCampaignsByAccountIds()
+            bulk_download_operation = bulk_service_manager.submit_download(
+                submit_download_parameters
+            )
         except WebFault as ex:
             output_webfault_errors(ex)
 
-        return get_campaigns_response
+        return bulk_download_operation
