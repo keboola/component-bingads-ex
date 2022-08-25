@@ -16,6 +16,7 @@ from .authorization import Authorization
 from .error_handling import output_webfault_errors
 
 DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = 60 * 1000
+REPORT_FILE_FORMAT = "Csv"
 
 
 @dataclass(slots=True, frozen=True)
@@ -39,7 +40,7 @@ class BulkDownloadsClient:
             campaign_ids=None,
             data_scope=data_scope,
             download_entities=download_entities,
-            file_type="Csv",
+            file_type=REPORT_FILE_FORMAT,
             last_sync_time_in_utc=None,
         )
         try:

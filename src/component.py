@@ -19,6 +19,7 @@ from bingads_wrapper.bulk import (
     DownloadRequestSpec,
     BulkDownloadsClient,
 )
+from bingads_wrapper.reporting import ReportingDownloadClient
 
 # configuration variables
 KEY_CLIENT_ID = "client_id"
@@ -116,6 +117,22 @@ class BingAdsExtractor(ComponentBase):
             filename_prefix="result",
         )
 
+        reporting_download_client = ReportingDownloadClient(authorization=authorization)
+        report_request = (
+            reporting_download_client.create_campaign_performance_report_request()
+        )
+        reporting_download_op = reporting_download_client.submit_download(
+            report_request=report_request
+        )
+        reporting_download_op.track()
+        reporting_download_op.download_result_file(
+            result_file_directory=self.tables_out_path,
+            result_file_name="report.csv",
+            decompress=True,
+            overwrite=True,
+        )
+
+        # ###### EXAMPLE TO REMOVE START
         # # Create output table (Tabledefinition - just metadata)
         # table = self.create_out_table_definition(
         #     "output.csv", incremental=True, primary_key=["timestamp"]
@@ -137,16 +154,6 @@ class BingAdsExtractor(ComponentBase):
         # self.write_state_file({KEY_REFRESH_TOKEN: refresh_token, KEY_NONCE: nonce})
 
         # ####### EXAMPLE TO REMOVE END
-        # bing_ads_performance_report = BingAdsPerformanceReport(
-        #     authorization=authorization
-        # )
-        # report_request = (
-        #     bing_ads_performance_report.get_campaign_performance_report_request()
-        # )
-        # performance_report_filepath = bing_ads_performance_report.submit_and_download(
-        #     report_request, directory=self.tables_out_path, filename="perf_report.csv"
-        # )
-        # logging.info(performance_report_filepath)
 
     def save_state(self, refresh_token: str):
         """
