@@ -1,0 +1,33 @@
+from dataclasses import dataclass
+
+from suds import WebFault
+
+from bingads.service_client import ServiceClient
+
+from .authorization import Authorization
+from .error_handling import output_webfault_errors
+
+
+@dataclass(slots=True)
+class CustomerManagementServiceClient:
+    authorization: Authorization
+
+    def get_user(self):
+        """
+        Get the authenticated user.
+        """
+
+        customer_service = ServiceClient(
+            service="CustomerManagementService",
+            version=13,
+            authorization_data=self.authorization.authorization_data,
+            environment=self.authorization.environment,
+        )
+        try:
+            get_user_response = customer_service.GetUser(UserId=None)
+            user = get_user_response.User
+        except WebFault as ex:
+            output_webfault_errors(ex)
+            raise
+
+        return user

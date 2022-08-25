@@ -11,7 +11,14 @@ from typing import Literal, Optional
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 
-from client import BingAdsClient, DownloadRequestSpec
+from bingads_wrapper.customer_management import CustomerManagementServiceClient
+from bingads_wrapper.authorization import (
+    Authorization,
+)
+from bingads_wrapper.bulk import (
+    DownloadRequestSpec,
+    BulkDownloadsClient,
+)
 
 # configuration variables
 KEY_CLIENT_ID = "client_id"
@@ -72,7 +79,7 @@ class BingAdsExtractor(ComponentBase):
             ),
         )
 
-        bing_ads_client = BingAdsClient(
+        authorization = Authorization(
             client_id=client_id,
             developer_token=developer_token,
             environment=environment,
@@ -82,20 +89,15 @@ class BingAdsExtractor(ComponentBase):
             nonce=self.nonce,
             save_refresh_token_function=self.save_state,
         )
-        user = bing_ads_client.get_user()
-        print(user)
-        # bulk_download_operation = bing_ads_client.submit_download()
-        # print(bulk_download_operation)
-        # download_status = bulk_download_operation.track()
+
+        customer_management_service_client = CustomerManagementServiceClient(
+            authorization=authorization
+        )
+        user = customer_management_service_client.get_user()
+        logging.info(user)
+
         os.makedirs(self.tables_out_path, exist_ok=True)
-        # result_file_path = bulk_download_operation.download_result_file(
-        #     result_file_directory=self.tables_out_path,
-        #     result_file_name="result.csv",
-        #     decompress=True,
-        #     overwrite=True,  # Set this value true if you want to overwrite the same file.
-        #     timeout_in_milliseconds=10000,  # You may optionally cancel the download after a specified time interval.
-        # )
-        # pass
+
         bulk_download_request_specs = [
             DownloadRequestSpec(
                 data_scope=["EntityData", "QualityScoreData"],
@@ -105,11 +107,15 @@ class BingAdsExtractor(ComponentBase):
                 data_scope=["EntityData", "QualityScoreData"], download_entities=["Ads"]
             ),
         ]
-        bing_ads_client.perform_all_download_operations(
+        bing_ads_bulk_downloads_client = BulkDownloadsClient(
+            authorization=authorization
+        )
+        bing_ads_bulk_downloads_client.perform_all_download_operations(
             bulk_download_operation_specs=bulk_download_request_specs,
             download_directory=self.tables_out_path,
             filename_prefix="result",
         )
+
         # # Create output table (Tabledefinition - just metadata)
         # table = self.create_out_table_definition(
         #     "output.csv", incremental=True, primary_key=["timestamp"]
@@ -131,6 +137,16 @@ class BingAdsExtractor(ComponentBase):
         # self.write_state_file({KEY_REFRESH_TOKEN: refresh_token, KEY_NONCE: nonce})
 
         # ####### EXAMPLE TO REMOVE END
+        # bing_ads_performance_report = BingAdsPerformanceReport(
+        #     authorization=authorization
+        # )
+        # report_request = (
+        #     bing_ads_performance_report.get_campaign_performance_report_request()
+        # )
+        # performance_report_filepath = bing_ads_performance_report.submit_and_download(
+        #     report_request, directory=self.tables_out_path, filename="perf_report.csv"
+        # )
+        # logging.info(performance_report_filepath)
 
     def save_state(self, refresh_token: str):
         """
