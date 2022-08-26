@@ -6,20 +6,16 @@ import logging
 import os
 import secrets
 import string
-from typing import Literal, Optional
+from typing import Optional
 
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 
-from bingads_wrapper.customer_management import CustomerManagementServiceClient
 from bingads_wrapper.authorization import (
     Authorization,
 )
-from bingads_wrapper.bulk import (
-    BulkDownload,
-    BulkDownloadsClient,
-)
-from bingads_wrapper.reporting import ReportingDownloadClient
+
+from bingads_wrapper.request import DownloadRequest
 
 # configuration variables
 KEY_AUTHORIZATION = "authorization"
@@ -56,9 +52,6 @@ class BingAdsExtractor(ComponentBase):
     If `debug` parameter is present in the `config.json`, the default logger is set to verbose DEBUG mode.
     """
 
-    # def __init__(self):
-    #     super().__init__()
-
     def run(self):
         """
         Main execution code
@@ -71,6 +64,7 @@ class BingAdsExtractor(ComponentBase):
         authorization_dict = params[KEY_AUTHORIZATION]
         table_name: str = params[KEY_TABLE_NAME]
         incremental: bool = params[KEY_LOAD_MODE] == "Incremental"
+        download_request_dict: dict = params[KEY_DOWNLOAD_REQUEST]
 
         # get last state data/in/state.json from previous run
         previous_state = self.get_state_file()
@@ -83,7 +77,7 @@ class BingAdsExtractor(ComponentBase):
             ),
         )
 
-        self.__authorization = Authorization(
+        authorization = Authorization(
             config_dict=authorization_dict,
             refresh_token=refresh_token,
             nonce=self.nonce,
@@ -94,7 +88,13 @@ class BingAdsExtractor(ComponentBase):
             f"{table_name}.csv", incremental=incremental
         )
 
-        # self.process_bulk_download()
+        download_request = DownloadRequest(
+            authorization=authorization,
+            config_dict=download_request_dict,
+            result_file_directory=self.tables_out_path,
+            result_file_name=table_def.name,
+        )
+        download_request.process()
 
         self.write_manifest(table_def)
 
@@ -103,39 +103,6 @@ class BingAdsExtractor(ComponentBase):
         # )
         # user = customer_management_service_client.get_user()
         # logging.info(user)
-
-        # bulk_download_request_specs = [
-        #     DownloadRequestSpec(
-        #         data_scope=["EntityData", "QualityScoreData"],
-        #         download_entities=["Campaigns"],
-        #     ),
-        #     DownloadRequestSpec(
-        #         data_scope=["EntityData", "QualityScoreData"], download_entities=["Ads"]
-        #     ),
-        # ]
-        # bing_ads_bulk_downloads_client = BulkDownloadsClient(
-        #     authorization=authorization
-        # )
-        # bing_ads_bulk_downloads_client.perform_all_download_operations(
-        #     bulk_download_operation_specs=bulk_download_request_specs,
-        #     download_directory=self.tables_out_path,
-        #     filename_prefix="result",
-        # )
-
-        # reporting_download_client = ReportingDownloadClient(authorization=authorization)
-        # report_request = (
-        #     reporting_download_client.create_campaign_performance_report_request()
-        # )
-        # reporting_download_op = reporting_download_client.submit_download(
-        #     report_request=report_request
-        # )
-        # reporting_download_op.track()
-        # reporting_download_op.download_result_file(
-        #     result_file_directory=self.tables_out_path,
-        #     result_file_name="report.csv",
-        #     decompress=True,
-        #     overwrite=True,
-        # )
 
         # ###### EXAMPLE TO REMOVE START
         # # Create output table (Tabledefinition - just metadata)
