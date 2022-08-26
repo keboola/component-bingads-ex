@@ -10,6 +10,12 @@ from bingads.authorization import (
     OAuthWithAuthorizationCode,
 )
 
+KEY_CLIENT_ID = "client_id"
+KEY_DEVELOPER_TOKEN = "#developer_token"
+KEY_CUSTOMER_ID = "customer_id"
+KEY_ACCOUNT_ID = "account_id"
+KEY_ENVIRONMENT = "environment"
+
 
 def request_user_consent(authentication: OAuthWithAuthorizationCode):
     webbrowser.open(authentication.get_authorization_endpoint(), new=1)
@@ -29,17 +35,25 @@ class Authorization:
     Class to represent data needed to perform authorization with the API and performing it.
     """
 
-    client_id: str
-    developer_token: str
-    environment: Literal["sandbox", "production"]
+    config_dict: dict
     save_refresh_token_function: Callable[[str], None]
-    customer_id: Optional[str]
-    account_id: Optional[str]
     refresh_token: Optional[str] = None
     nonce: Optional[str] = None
+
     authorization_data: AuthorizationData = field(init=False)
+    client_id: str = field(init=False)
+    developer_token: str = field(init=False)
+    environment: Literal["sandbox", "production"] = field(init=False)
+    customer_id: int = field(init=False)
+    account_id: int = field(init=False)
 
     def __post_init__(self):
+        self.client_id = self.config_dict[KEY_CLIENT_ID]
+        self.developer_token = self.config_dict[KEY_DEVELOPER_TOKEN]
+        self.environment = self.config_dict[KEY_ENVIRONMENT]
+        self.customer_id = self.config_dict[KEY_CUSTOMER_ID]
+        self.account_id = self.config_dict[KEY_ACCOUNT_ID]
+
         authentication = OAuthDesktopMobileAuthCodeGrant(
             client_id=self.client_id, env=self.environment
         )

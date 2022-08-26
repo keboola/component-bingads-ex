@@ -16,21 +16,25 @@ from bingads_wrapper.authorization import (
     Authorization,
 )
 from bingads_wrapper.bulk import (
-    DownloadRequestSpec,
+    BulkDownload,
     BulkDownloadsClient,
 )
 from bingads_wrapper.reporting import ReportingDownloadClient
 
 # configuration variables
-KEY_CLIENT_ID = "client_id"
-KEY_DEVELOPER_TOKEN = "#developer_token"
-KEY_CUSTOMER_ID = "customer_id"
-KEY_ACCOUNT_ID = "account_id"
-KEY_ENVIRONMENT = "environment"
+KEY_AUTHORIZATION = "authorization"
+KEY_DOWNLOAD_REQUEST = "download_request"
+KEY_TABLE_NAME = "table_name"
+KEY_LOAD_MODE = "load_mode"
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
-REQUIRED_PARAMETERS = [KEY_CLIENT_ID, KEY_DEVELOPER_TOKEN, KEY_ENVIRONMENT]
+REQUIRED_PARAMETERS = [
+    KEY_AUTHORIZATION,
+    KEY_TABLE_NAME,
+    KEY_LOAD_MODE,
+    KEY_DOWNLOAD_REQUEST,
+]
 REQUIRED_IMAGE_PARS = []
 
 # State variables
@@ -61,13 +65,12 @@ class BingAdsExtractor(ComponentBase):
         """
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self.validate_image_parameters(REQUIRED_IMAGE_PARS)
+        os.makedirs(self.tables_out_path, exist_ok=True)
 
-        params = self.configuration.parameters
-        client_id: str = params[KEY_CLIENT_ID]
-        developer_token: str = params[KEY_DEVELOPER_TOKEN]
-        environment: Literal["sandbox", "production"] = params[KEY_ENVIRONMENT]
-        customer_id: int = params[KEY_CUSTOMER_ID]
-        account_id: int = params[KEY_ACCOUNT_ID]
+        params: dict = self.configuration.parameters
+        authorization_dict = params[KEY_AUTHORIZATION]
+        table_name: str = params[KEY_TABLE_NAME]
+        incremental: bool = params[KEY_LOAD_MODE] == "Incremental"
 
         # get last state data/in/state.json from previous run
         previous_state = self.get_state_file()
@@ -80,57 +83,59 @@ class BingAdsExtractor(ComponentBase):
             ),
         )
 
-        authorization = Authorization(
-            client_id=client_id,
-            developer_token=developer_token,
-            environment=environment,
-            customer_id=customer_id,
-            account_id=account_id,
+        self.__authorization = Authorization(
+            config_dict=authorization_dict,
             refresh_token=refresh_token,
             nonce=self.nonce,
             save_refresh_token_function=self.save_state,
         )
 
-        customer_management_service_client = CustomerManagementServiceClient(
-            authorization=authorization
-        )
-        user = customer_management_service_client.get_user()
-        logging.info(user)
-
-        os.makedirs(self.tables_out_path, exist_ok=True)
-
-        bulk_download_request_specs = [
-            DownloadRequestSpec(
-                data_scope=["EntityData", "QualityScoreData"],
-                download_entities=["Campaigns"],
-            ),
-            DownloadRequestSpec(
-                data_scope=["EntityData", "QualityScoreData"], download_entities=["Ads"]
-            ),
-        ]
-        bing_ads_bulk_downloads_client = BulkDownloadsClient(
-            authorization=authorization
-        )
-        bing_ads_bulk_downloads_client.perform_all_download_operations(
-            bulk_download_operation_specs=bulk_download_request_specs,
-            download_directory=self.tables_out_path,
-            filename_prefix="result",
+        table_def = self.create_out_table_definition(
+            f"{table_name}.csv", incremental=incremental
         )
 
-        reporting_download_client = ReportingDownloadClient(authorization=authorization)
-        report_request = (
-            reporting_download_client.create_campaign_performance_report_request()
-        )
-        reporting_download_op = reporting_download_client.submit_download(
-            report_request=report_request
-        )
-        reporting_download_op.track()
-        reporting_download_op.download_result_file(
-            result_file_directory=self.tables_out_path,
-            result_file_name="report.csv",
-            decompress=True,
-            overwrite=True,
-        )
+        # self.process_bulk_download()
+
+        self.write_manifest(table_def)
+
+        # customer_management_service_client = CustomerManagementServiceClient(
+        #     authorization=authorization
+        # )
+        # user = customer_management_service_client.get_user()
+        # logging.info(user)
+
+        # bulk_download_request_specs = [
+        #     DownloadRequestSpec(
+        #         data_scope=["EntityData", "QualityScoreData"],
+        #         download_entities=["Campaigns"],
+        #     ),
+        #     DownloadRequestSpec(
+        #         data_scope=["EntityData", "QualityScoreData"], download_entities=["Ads"]
+        #     ),
+        # ]
+        # bing_ads_bulk_downloads_client = BulkDownloadsClient(
+        #     authorization=authorization
+        # )
+        # bing_ads_bulk_downloads_client.perform_all_download_operations(
+        #     bulk_download_operation_specs=bulk_download_request_specs,
+        #     download_directory=self.tables_out_path,
+        #     filename_prefix="result",
+        # )
+
+        # reporting_download_client = ReportingDownloadClient(authorization=authorization)
+        # report_request = (
+        #     reporting_download_client.create_campaign_performance_report_request()
+        # )
+        # reporting_download_op = reporting_download_client.submit_download(
+        #     report_request=report_request
+        # )
+        # reporting_download_op.track()
+        # reporting_download_op.download_result_file(
+        #     result_file_directory=self.tables_out_path,
+        #     result_file_name="report.csv",
+        #     decompress=True,
+        #     overwrite=True,
+        # )
 
         # ###### EXAMPLE TO REMOVE START
         # # Create output table (Tabledefinition - just metadata)
