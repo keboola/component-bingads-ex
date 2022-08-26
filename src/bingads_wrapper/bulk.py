@@ -1,9 +1,11 @@
-from dataclasses import dataclass
-import time
+from dataclasses import dataclass, field
+
+from datetime import datetime
 from typing import List
 
 from suds import WebFault
 
+from bingads.service_client import ServiceClient
 from bingads.v13.bulk import (
     BulkServiceManager,
     SubmitDownloadParameters,
@@ -11,40 +13,36 @@ from bingads.v13.bulk import (
     BulkOperationStatus,
 )
 
+from keboola.component.exceptions import UserException
 
 from .authorization import Authorization
 from .error_handling import output_webfault_errors
+
+KEY_DATA_SCOPE = "data_scope"
+KEY_DOWNLOAD_ENTITIES = "download_entities"
 
 DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = 60 * 1000
 REPORT_FILE_FORMAT = "Csv"
 
 
-@dataclass(slots=True, frozen=True)
-class DownloadRequestSpec:
-    data_scope: List[str]
-    download_entities: List[str]
-
-
 @dataclass(slots=True)
 class BulkDownloadsClient:
     authorization: Authorization
+    _bulk_service: ServiceClient = field(init=False)
+    _bulk_service_manager: BulkServiceManager = field(init=False)
 
-    def submit_download(
-        self, data_scope: List[str], download_entities: List[str]
-    ) -> BulkDownloadOperation:
-        bulk_service_manager = BulkServiceManager(
+    def __post_init__(self):
+        self._bulk_service_manager = BulkServiceManager(
             authorization_data=self.authorization.authorization_data,
             environment=self.authorization.environment,
         )
-        submit_download_parameters = SubmitDownloadParameters(
-            campaign_ids=None,
-            data_scope=data_scope,
-            download_entities=download_entities,
-            file_type=REPORT_FILE_FORMAT,
-            last_sync_time_in_utc=None,
-        )
+        self._bulk_service = self._bulk_service_manager._service_client
+
+    def submit_download(
+        self, submit_download_parameters: SubmitDownloadParameters
+    ) -> BulkDownloadOperation:
         try:
-            bulk_download_operation = bulk_service_manager.submit_download(
+            bulk_download_operation = self._bulk_service_manager.submit_download(
                 submit_download_parameters
             )
         except WebFault as ex:
@@ -84,56 +82,60 @@ class BulkDownloadsClient:
 
         return filepath
 
-    def perform_all_download_operations(
-        self,
-        bulk_download_operation_specs: List[DownloadRequestSpec],
-        download_directory: str,
-        filename_prefix: str,
-    ):
-        """
-        Perform all download operations.
-        """
-        bulk_download_operations = [
-            self.submit_download(
-                data_scope=spec.data_scope, download_entities=spec.download_entities
+
+@dataclass(slots=True)
+class BulkDownload:
+    client: BulkDownloadsClient
+    config_dict: dict
+    result_file_directory_path: str
+    result_filename: str
+    last_sync_time_in_utc: datetime | None = None
+
+    _submit_parameters: SubmitDownloadParameters = field(init=False)
+    _operation: BulkDownloadOperation | None = field(init=False, default=None)
+    _status: BulkOperationStatus | None = field(init=False, default=None)
+    downloaded: bool = field(init=False, default=False)
+
+    def __post_init__(self):
+        data_scope: List[str] = self.config_dict[KEY_DATA_SCOPE]
+        download_entities: List[str] = self.config_dict[KEY_DOWNLOAD_ENTITIES]
+        self._submit_parameters = SubmitDownloadParameters(
+            campaign_ids=None,
+            data_scope=data_scope,
+            download_entities=download_entities,
+            file_type=REPORT_FILE_FORMAT,
+            last_sync_time_in_utc=self.last_sync_time_in_utc,
+        )
+
+    def submit(self) -> None:
+        self._operation = self.client.submit_download(self._submit_parameters)
+
+    def update_status(self) -> None:
+        self._status = self.client.get_download_status(self._operation)
+        if self._status.status == "Failed":
+            raise UserException(
+                "Download request failed."
+                " You may submit a new download with fewer entities, without quality score and bid suggestions data,"
+                " or try again to submit the same download later."
             )
-            for spec in bulk_download_operation_specs
-        ]
-        all_done = False
-        bulk_download_operations_to_be_completed = bulk_download_operations.copy()
-        bulk_download_operations_to_be_removed: List[BulkDownloadOperation] = []
-        completed_downloads = 0
-        while not all_done:
-            all_done = True
-            time.sleep(1)
-            for bulk_download_operation in bulk_download_operations_to_be_removed:
-                bulk_download_operations_to_be_completed.remove(bulk_download_operation)
-            bulk_download_operations_to_be_removed.clear()
-            for bulk_download_operation in bulk_download_operations_to_be_completed:
-                bulk_operation_status = self.get_download_status(
-                    bulk_download_operation
-                )
-                if bulk_operation_status.status == "InProgress":
-                    all_done = False
-                elif bulk_operation_status.status == "Failed":
-                    raise Exception(
-                        "Download operation failed with status: {0}".format(
-                            bulk_operation_status.status
-                        )
-                    )
-                elif bulk_operation_status.status == "Completed":
-                    self.download_file(
-                        bulk_download_operation=bulk_download_operation,
-                        directory=download_directory,
-                        filename=filename_prefix + str(completed_downloads) + ".csv",
-                    )
-                    completed_downloads += 1
-                    bulk_download_operations_to_be_removed.append(
-                        bulk_download_operation
-                    )
-                else:
-                    raise Exception(
-                        "Download operation failed with status: {0}".format(
-                            bulk_operation_status.status
-                        )
-                    )
+        elif self._status.status == "FailedFullSyncRequired":
+            raise UserException("Download request failed. Full sync required.")
+
+    def download_file(self) -> None:
+        self.client.download_file(
+            self._operation, self.result_file_directory_path, self.result_filename
+        )
+        self.downloaded = True
+
+    def process(self):
+        if self._operation is None:
+            self.submit()
+            return
+        if self._status is None or self._status.status == "InProgress":
+            self.update_status()
+        if self._status._status == "Completed" and not self.downloaded:
+            self.download_file()
+            return
+        if self._status.status == "InProgress" or self.downloaded:
+            return
+        raise Exception("Unexpected state encountered.")
