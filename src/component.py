@@ -2,6 +2,7 @@
 Template Component main class.
 
 """
+from datetime import datetime, timezone
 import logging
 import os
 import secrets
@@ -36,6 +37,7 @@ REQUIRED_IMAGE_PARS = []
 # State variables
 KEY_REFRESH_TOKEN = "#refresh_token"
 KEY_NONCE = "#nonce"
+KEY_LAST_SYNC_TIME_IN_UTC = "last_sync_time_in_utc"
 
 # Other constants
 NONCE_LENGTH = 32
@@ -76,6 +78,17 @@ class BingAdsExtractor(ComponentBase):
                 for _ in range(NONCE_LENGTH)
             ),
         )
+        last_sync_time_in_utc_str: str | None = previous_state.get(
+            KEY_LAST_SYNC_TIME_IN_UTC
+        )
+        last_sync_time_in_utc = (
+            datetime.fromisoformat(last_sync_time_in_utc_str)
+            if last_sync_time_in_utc_str
+            else None
+        )
+        self.sync_time_in_utc_str = datetime.now(tz=timezone.utc).isoformat(
+            timespec="seconds"
+        )
 
         authorization = Authorization(
             config_dict=authorization_dict,
@@ -93,11 +106,13 @@ class BingAdsExtractor(ComponentBase):
             config_dict=download_request_dict,
             result_file_directory=self.tables_out_path,
             result_file_name=table_def.name,
+            last_sync_time_in_utc=last_sync_time_in_utc,
         )
         download_request.process()
 
         self.write_manifest(table_def)
 
+        self.save_state(authorization.refresh_token)
         # customer_management_service_client = CustomerManagementServiceClient(
         #     authorization=authorization
         # )
@@ -131,7 +146,13 @@ class BingAdsExtractor(ComponentBase):
         """
         Save refresh token and nonce to state file.
         """
-        self.write_state_file({KEY_REFRESH_TOKEN: refresh_token, KEY_NONCE: self.nonce})
+        self.write_state_file(
+            {
+                KEY_REFRESH_TOKEN: refresh_token,
+                KEY_NONCE: self.nonce,
+                KEY_LAST_SYNC_TIME_IN_UTC: self.sync_time_in_utc_str,
+            }
+        )
 
 
 """
