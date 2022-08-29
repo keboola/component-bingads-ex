@@ -1,1 +1,263 @@
-{}
+{
+    "type": "object",
+    "title": "BingAds extractor row configuration",
+    "required": [
+        "table_name",
+        "load_mode",
+        "download_request"
+    ],
+    "properties": {
+        "table_name": {
+            "type": "string",
+            "title": "Table name",
+            "description": "Table name for the table to be generated/updated in Keboola Storage",
+            "propertyOrder": 1000
+        },
+        "load_mode": {
+            "type": "string",
+            "title": "Load mode",
+            "description": "Keboola Storage load mode",
+            "enum": [
+                "Full",
+                "Incremental"
+            ],
+            "propertyOrder": 2000
+        },
+        "download_request": {
+            "type": "object",
+            "title": "Download request",
+            "description": "May be either a bulk or a reporting download request.",
+            "oneOf": [
+                {
+                    "$ref": "#/definitions/bulk_download_request"
+                },
+                {
+                    "$ref": "#/definitions/reporting_download_request"
+                }
+            ],
+            "propertyOrder": 3000
+        }
+    },
+    "definitions": {
+        "bulk_download_request": {
+            "type": "object",
+            "title": "Bulk download request",
+            "description": "Specification to request data via the Bulk API",
+            "required": [
+                "type",
+                "data_scope",
+                "download_entities",
+                "since_last_sync_time"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Bulk"
+                    ],
+                    "propertyOrder": 1000
+                },
+                "data_scope": {
+                    "title": "Data scope",
+                    "description": "Defines the scope or types of data to download.",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "EntityData",
+                            "QualityScoreData",
+                            "BidSuggestionsData"
+                        ]
+                    },
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "propertyOrder": 2000,
+                    "format": "select"
+                },
+                "download_entities": {
+                    "title": "Download entities",
+                    "description": "The entities to include in the download.",
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "AccountActionAdExtensions",
+                            "AccountAppAdExtensions",
+                            "AccountCalloutAdExtensions",
+                            "AccountFilterLinkAdExtensions",
+                            "AccountFlyerAdExtensions",
+                            "AccountImageAdExtensions",
+                            "AccountLocationAdExtensions",
+                            "AccountPriceAdExtensions",
+                            "AccountPromotionAdExtensions",
+                            "AccountReviewAdExtensions",
+                            "AccountSitelinkAdExtensions",
+                            "AccountStructuredSnippetAdExtensions",
+                            "AccountVideoAdExtensions",
+                            "ActionAdExtensions",
+                            "AdcustomizerAttribute",
+                            "AdGroupActionAdExtensions",
+                            "AdGroupAdcustomizerAttribute",
+                            "AdGroupAppAdExtensions",
+                            "AdGroupAudienceAssociations",
+                            "AdGroupCalloutAdExtensions",
+                            "AdGroupCombinedListAssociations",
+                            "AdGroupCustomAudienceAssociations",
+                            "AdGroupCustomerListAssociations",
+                            "AdGroupDynamicSearchAdTargets",
+                            "AdGroupFilterLinkAdExtensions",
+                            "AdGroupFlyerAdExtensions",
+                            "AdGroupImageAdExtensions",
+                            "AdGroupInMarketAudienceAssociations",
+                            "AdGroupLabels",
+                            "AdGroupNegativeAudienceAssociations",
+                            "AdGroupNegativeCombinedListAssociations",
+                            "AdGroupNegativeCustomAudienceAssociations",
+                            "AdGroupNegativeCustomerListAssociations",
+                            "AdGroupNegativeDynamicSearchAdTargets",
+                            "AdGroupNegativeInMarketAudienceAssociations",
+                            "AdGroupNegativeKeywords",
+                            "AdGroupNegativeProductAudienceAssociations",
+                            "AdGroupNegativeRemarketingListAssociations",
+                            "AdGroupNegativeSimilarRemarketingListAssociations",
+                            "AdGroupNegativeSites",
+                            "AdGroupPriceAdExtensions",
+                            "AdGroupProductAudienceAssociations",
+                            "AdGroupProductPartitions",
+                            "AdGroupPromotionAdExtensions",
+                            "AdGroupRemarketingListAssociations",
+                            "AdGroupReviewAdExtensions",
+                            "AdGroups",
+                            "AdGroupSimilarRemarketingListAssociations",
+                            "AdGroupSitelinkAdExtensions",
+                            "AdGroupStructuredSnippetAdExtensions",
+                            "AdGroupTargetCriterions",
+                            "AdGroupVideoAdExtensions",
+                            "Ads",
+                            "AppAdExtensions",
+                            "AppInstallAdLabels",
+                            "AppInstallAds",
+                            "Audiences",
+                            "BidStrategies",
+                            "Budgets",
+                            "CallAdExtensions",
+                            "CalloutAdExtensions",
+                            "CampaignActionAdExtensions",
+                            "CampaignAdcustomizerAttribute",
+                            "CampaignAppAdExtensions",
+                            "CampaignAudienceAssociations",
+                            "CampaignCallAdExtensions",
+                            "CampaignCalloutAdExtensions",
+                            "CampaignCombinedListAssociations",
+                            "CampaignConversionGoal",
+                            "CampaignCustomAudienceAssociations",
+                            "CampaignCustomerListAssociations",
+                            "CampaignDisclaimerAdExtensions",
+                            "CampaignFilterLinkAdExtensions",
+                            "CampaignFlyerAdExtensions",
+                            "CampaignImageAdExtensions",
+                            "CampaignInMarketAudienceAssociations",
+                            "CampaignLabels",
+                            "CampaignLocationAdExtensions",
+                            "CampaignNegativeAudienceAssociations",
+                            "CampaignNegativeCombinedListAssociations",
+                            "CampaignNegativeCustomAudienceAssociations",
+                            "CampaignNegativeCustomerListAssociations",
+                            "CampaignNegativeDynamicSearchAdTargets",
+                            "CampaignNegativeInMarketAudienceAssociations",
+                            "CampaignNegativeKeywordListAssociations",
+                            "CampaignNegativeKeywords",
+                            "CampaignNegativeProductAudienceAssociations",
+                            "CampaignNegativeRemarketingListAssociations",
+                            "CampaignNegativeSimilarRemarketingListAssociations",
+                            "CampaignNegativeSites",
+                            "CampaignNegativeStoreCriterions",
+                            "CampaignPriceAdExtensions",
+                            "CampaignProductAudienceAssociations",
+                            "CampaignProductScopes",
+                            "CampaignPromotionAdExtensions",
+                            "CampaignRemarketingListAssociations",
+                            "CampaignReviewAdExtensions",
+                            "Campaigns",
+                            "CampaignSimilarRemarketingListAssociations",
+                            "CampaignSitelinkAdExtensions",
+                            "CampaignStructuredSnippetAdExtensions",
+                            "CampaignTargetCriterions",
+                            "CampaignVideoAdExtensions",
+                            "CombinedLists",
+                            "CustomAudiences",
+                            "CustomerLists",
+                            "DisclaimerAdExtensions",
+                            "DynamicSearchAdLabels",
+                            "DynamicSearchAds",
+                            "ExpandedTextAdLabels",
+                            "ExpandedTextAds",
+                            "Experiments",
+                            "FeedItems",
+                            "Feeds",
+                            "FilterLinkAdExtensions",
+                            "FlyerAdExtensions",
+                            "ImageAdExtensions",
+                            "Images",
+                            "InMarketAudiences",
+                            "KeywordAdcustomizerAttribute",
+                            "KeywordLabels",
+                            "Keywords",
+                            "Labels",
+                            "LocationAdExtensions",
+                            "NegativeKeywordLists",
+                            "PriceAdExtensions",
+                            "ProductAdLabels",
+                            "ProductAds",
+                            "ProductAudiences",
+                            "PromotionAdExtensions",
+                            "RemarketingLists",
+                            "ResponsiveAdLabels",
+                            "ResponsiveAds",
+                            "ResponsiveSearchAdLabels",
+                            "ResponsiveSearchAds",
+                            "ReviewAdExtensions",
+                            "SharedNegativeKeywords",
+                            "SimilarRemarketingLists",
+                            "SitelinkAdExtensions",
+                            "StructuredSnippetAdExtensions",
+                            "TextAdLabels",
+                            "TextAds",
+                            "VideoAdExtensions",
+                            "Videos"
+                        ]
+                    },
+                    "uniqueItems": true,
+                    "minItems": 1,
+                    "propertyOrder": 3000,
+                    "format": "select"
+                },
+                "since_last_sync_time": {
+                    "type": "boolean",
+                    "title": "Only download changes since the last run",
+                    "format": "checkbox",
+                    "default": true
+                }
+            },
+            "additionalProperties": false
+        },
+        "reporting_download_request": {
+            "type": "object",
+            "title": "Reporting download request",
+            "description": "Specification to request data via the Reporting API",
+            "required": [
+                "type"
+            ],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "Reporting"
+                    ],
+                    "propertyOrder": 1000
+                }
+            },
+            "additionalProperties": false
+        }
+    }
+}
