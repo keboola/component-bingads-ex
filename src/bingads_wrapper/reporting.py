@@ -1,96 +1,107 @@
 from dataclasses import dataclass, field
+from typing import List
+from datetime import date
 
-from suds import WebFault
+from suds.sudsobject import Object
 
-from bingads.service_client import ServiceClient
-from bingads.v13.reporting import (
-    ReportingServiceManager,
-    ReportingDownloadOperation,
-)
+from bingads.service_client import ServiceClient, AuthorizationData
+from bingads.v13.reporting import ReportingDownloadParameters
 
+KEY_AGGREGATION = "aggregation"
+KEY_REPORT_TYPE = "report_type"
+KEY_RETURN_ONLY_COMPLETE_DATA = "return_only_complete_data"
+KEY_TIME = "time"
+KEY_TIME_ZONE = "time_zone"
+KEY_PREDEFINED_TIME = "predefined_time"
+KEY_DATE_RANGE_START = "date_range_start"
+KEY_DATE_RANGE_END = "date_range_end"
+KEY_COLUMNS = "columns"
 
-from .authorization import Authorization
-from .error_handling import output_webfault_errors
+DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = 60 * 1000
+OVERWRITE_RESULT_FILE = True
 
-REPORT_FILE_FORMAT = "Csv"
+EXCLUDE_COLUMNS_HEADERS = False
+EXCLUDE_REPORT_FOOTER = True
+EXCLUDE_REPORT_HEADER = True
 
 
 @dataclass(slots=True)
-class ReportingDownloadClient:
-    authorization: Authorization
-    _reporting_service: ServiceClient = field(init=False)
-    _reporting_service_manager: ReportingServiceManager = field(init=False)
+class ReportingDownloadParametersFactory:
+    reporting_service: ServiceClient
+    config_dict: dict
+    result_file_directory: str
+    result_file_name: str
+    report_file_format: str
+
+    _authorization_data: AuthorizationData = field(init=False)
+    _report_type: str = field(init=False)
+    _report_request: Object = field(init=False)
 
     def __post_init__(self):
-        self._reporting_service_manager = ReportingServiceManager(
-            authorization_data=self.authorization.authorization_data,
-            environment=self.authorization.environment,
+        self._authorization_data = self.reporting_service.authorization_data
+        self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
+        self._report_request = self.reporting_service.factory.create(
+            self._report_type + "ReportRequest"
         )
-        self._reporting_service = self._reporting_service_manager._service_client
+        self._create_report_request()
 
-    def create_campaign_performance_report_request(self):
-        aggregation = "Daily"
-        exclude_column_headers = False
-        exclude_report_footer = True
-        exclude_report_header = True
-        time = self._reporting_service.factory.create("ReportTime")
-        # You can either use a custom date range or predefined time.
-        time.PredefinedTime = None  # "Yesterday"
-        time.ReportTimeZone = None  # "PacificTimeUSCanadaTijuana"
-        time.CustomDateRangeStart = self._reporting_service.factory.create("Date")
-        time.CustomDateRangeStart.Year = 2022
-        time.CustomDateRangeStart.Month = 8
-        time.CustomDateRangeStart.Day = 1
-        time.CustomDateRangeEnd = self._reporting_service.factory.create("Date")
-        time.CustomDateRangeEnd.Year = 2022
-        time.CustomDateRangeEnd.Month = 8
-        time.CustomDateRangeEnd.Day = 25
-        return_only_complete_data = False
-
-        report_request = self._reporting_service.factory.create(
-            "CampaignPerformanceReportRequest"
+    def create(self) -> ReportingDownloadParameters:
+        return ReportingDownloadParameters(
+            report_request=self._report_request,
+            result_file_directory=self.result_file_directory,
+            result_file_name=self.result_file_name,
+            overwrite_result_file=OVERWRITE_RESULT_FILE,
+            timeout_in_milliseconds=DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS,
         )
-        report_request.Aggregation = aggregation
-        report_request.ExcludeColumnHeaders = exclude_column_headers
-        report_request.ExcludeReportFooter = exclude_report_footer
-        report_request.ExcludeReportHeader = exclude_report_header
-        report_request.Format = REPORT_FILE_FORMAT
-        report_request.ReturnOnlyCompleteData = return_only_complete_data
-        report_request.Time = time
-        report_request.ReportName = "My Campaign Performance Report"
-        scope = self._reporting_service.factory.create(
-            "AccountThroughCampaignReportScope"
+
+    def _create_report_request(self):
+        self._set_report_request_base_parameters()
+        if hasattr(self._report_request, "Time"):
+            self._set_report_request_time_parameter()
+        if hasattr(self._report_request, "Columns"):
+            self._set_report_request_columns_parameter()
+        if hasattr(self._report_request, "Aggregation"):
+            self._set_report_request_aggregation_parameter()
+        if hasattr(self._report_request, "Scope"):
+            self._set_report_request_scope_parameter()
+
+    def _set_report_request_base_parameters(self):
+        self._report_request.ExcludeColumnHeaders = EXCLUDE_COLUMNS_HEADERS
+        self._report_request.ExcludeReportFooter = EXCLUDE_REPORT_FOOTER
+        self._report_request.ExcludeReportHeader = EXCLUDE_REPORT_HEADER
+        self._report_request.Format = self.report_file_format
+        self._report_request.ReturnOnlyCompleteData: bool = self.config_dict[
+            KEY_RETURN_ONLY_COMPLETE_DATA
+        ]
+
+    def _set_report_request_aggregation_parameter(self):
+        self._report_request.Aggregation.set(self.config_dict[KEY_AGGREGATION])
+
+    def _set_report_request_time_parameter(self):  # TODO: finish
+        time = self._report_request.Time
+        time_dict: dict = self.config_dict[KEY_TIME]
+
+        time.ReportTimeZone.set(time_dict[KEY_TIME_ZONE])
+        if time_dict.get(KEY_PREDEFINED_TIME):
+            time.PredefinedTime.set(time_dict[KEY_PREDEFINED_TIME])
+        else:
+            start_date = date.fromisoformat(time_dict[KEY_DATE_RANGE_START])
+            end_date = date.fromisoformat(time_dict[KEY_DATE_RANGE_END])
+            time.CustomDateRangeStart.Year = start_date.year
+            time.CustomDateRangeStart.Month = start_date.month
+            time.CustomDateRangeStart.Day = start_date.day
+            time.CustomDateRangeEnd.Year = end_date.year
+            time.CustomDateRangeEnd.Month = end_date.month
+            time.CustomDateRangeEnd.Day = end_date.day
+
+    def _set_report_request_columns_parameter(self):  # TODO: finish
+        report_columns = self._report_request.Columns
+        column_array: List[str] = getattr(
+            report_columns, self._report_type + "ReportColumn"
         )
-        scope.AccountIds = {"long": [self.authorization.account_id]}
-        scope.Campaigns = None
-        report_request.Scope = scope
+        column_array.extend(self.config_dict[KEY_COLUMNS])
 
-        report_columns = self._reporting_service.factory.create(
-            "ArrayOfCampaignPerformanceReportColumn"
-        )
-        report_columns.CampaignPerformanceReportColumn.append(
-            [
-                "TimePeriod",
-                "CampaignId",
-                "CampaignName",
-                "DeviceType",
-                "Network",
-                "Impressions",
-                "Clicks",
-                "Spend",
-            ]
-        )
-        report_request.Columns = report_columns
-
-        return report_request
-
-    def submit_download(self, report_request) -> ReportingDownloadOperation:
-        try:
-            reporting_download_operation = (
-                self._reporting_service_manager.submit_download(report_request)
-            )
-        except WebFault as ex:
-            output_webfault_errors(ex)
-            raise
-
-        return reporting_download_operation
+    def _set_report_request_scope_parameter(self):
+        self._report_request.Scope.AccountIds = {
+            "long": [self._authorization_data.account_id]
+        }

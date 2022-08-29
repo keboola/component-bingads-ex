@@ -9,12 +9,13 @@ from bingads.v13.bulk import DownloadParameters as BulkDownloadParameters
 from bingads.v13.reporting import ReportingServiceManager, ReportingDownloadParameters
 
 from .authorization import Authorization
-from .bulk import create_download_parameters as create_bulk_download_parameters
 from .error_handling import output_webfault_errors
 
-# from .reporting import ReportingDownloadClient
+from .bulk import create_download_parameters as create_bulk_download_parameters
+from .reporting import ReportingDownloadParametersFactory
 
 KEY_TYPE = "type"
+
 REPORT_FILE_FORMAT = "Csv"
 
 
@@ -43,9 +44,21 @@ class DownloadRequest:
                 last_sync_time_in_utc=self.last_sync_time_in_utc,
                 result_file_directory=self.result_file_directory,
                 result_file_name=self.result_file_name,
+                report_file_format=REPORT_FILE_FORMAT,
             )
         elif _type == "Reporting":
-            raise NotImplementedError("Reporting is not implemented yet.")
+            self._service_manager = ReportingServiceManager(
+                authorization_data=self.authorization.authorization_data,
+                environment=self.authorization.environment,
+            )
+            reporting_download_parameters_factory = ReportingDownloadParametersFactory(
+                config_dict=self.config_dict,
+                result_file_directory=self.result_file_directory,
+                result_file_name=self.result_file_name,
+                report_file_format=REPORT_FILE_FORMAT,
+                reporting_service=self._service_manager._service_client,
+            )
+            self._download_parameters = reporting_download_parameters_factory.create()
         else:
             raise ValueError(f"Unsupported type: {_type}")
 
