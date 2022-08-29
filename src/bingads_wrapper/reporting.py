@@ -85,7 +85,9 @@ class ReportingDownloadParametersFactory:
 
         time.ReportTimeZone.set(time_dict[KEY_TIME_ZONE])
         if time_dict.get(KEY_PREDEFINED_TIME):
-            time.PredefinedTime.set(time_dict[KEY_PREDEFINED_TIME])
+            time.PredefinedTime = time_dict[KEY_PREDEFINED_TIME]
+            time.CustomDateRangeStart = None
+            time.CustomDateRangeEnd = None
         else:
             start_date = date.fromisoformat(time_dict[KEY_DATE_RANGE_START])
             end_date = date.fromisoformat(time_dict[KEY_DATE_RANGE_END])

@@ -110,6 +110,8 @@ class BingAdsExtractor(ComponentBase):
         )
         download_request.process()
 
+        table_def.primary_key = []  # TODO: set the primary key somehow
+
         self.write_manifest(table_def)
 
         self.save_state(authorization.refresh_token)
