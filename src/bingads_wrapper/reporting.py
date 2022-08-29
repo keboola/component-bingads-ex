@@ -9,6 +9,7 @@ from bingads.v13.reporting import ReportingDownloadParameters
 
 KEY_AGGREGATION = "aggregation"
 KEY_REPORT_TYPE = "report_type"
+KEY_FORMAT_VERSION = "format_version"
 KEY_RETURN_ONLY_COMPLETE_DATA = "return_only_complete_data"
 KEY_TIME = "time"
 KEY_TIME_ZONE = "time_zone"
@@ -69,7 +70,8 @@ class ReportingDownloadParametersFactory:
         self._report_request.ExcludeColumnHeaders = EXCLUDE_COLUMNS_HEADERS
         self._report_request.ExcludeReportFooter = EXCLUDE_REPORT_FOOTER
         self._report_request.ExcludeReportHeader = EXCLUDE_REPORT_HEADER
-        self._report_request.Format = self.report_file_format
+        self._report_request.Format.set(self.report_file_format)
+        self._report_request.FormatVersion = self.config_dict[KEY_FORMAT_VERSION]
         self._report_request.ReturnOnlyCompleteData: bool = self.config_dict[
             KEY_RETURN_ONLY_COMPLETE_DATA
         ]
