@@ -103,7 +103,8 @@ class ReportingDownloadParametersFactory:
         column_array: List[str] = getattr(
             report_columns, self._report_type + "ReportColumn"
         )
-        column_array.extend(self.config_dict[KEY_COLUMNS])
+        column_names: List[str] = self.config_dict[KEY_COLUMNS]
+        column_array.extend(column_names)
 
     def _set_report_request_scope_parameter(self):
         self._report_request.Scope.AccountIds = {
