@@ -11,6 +11,7 @@
             "type": "string",
             "title": "Table name",
             "description": "Table name for the table to be generated/updated in Keboola Storage",
+            "minLength": 1,
             "propertyOrder": 1000
         },
         "load_mode": {
@@ -21,6 +22,7 @@
                 "Full",
                 "Incremental"
             ],
+            "default": "Incremental",
             "propertyOrder": 2000
         },
         "download_request": {
@@ -32,7 +34,7 @@
                     "$ref": "#/definitions/bulk_download_request"
                 },
                 {
-                    "$ref": "#/definitions/reporting_download_request"
+                    "$ref": "#/definitions/report_download_request"
                 }
             ],
             "propertyOrder": 3000
@@ -49,6 +51,7 @@
                 "download_entities",
                 "since_last_sync_time"
             ],
+            "additionalProperties": false,
             "properties": {
                 "type": {
                     "type": "string",
@@ -238,26 +241,289 @@
                     "format": "checkbox",
                     "default": true
                 }
-            },
-            "additionalProperties": false
+            }
         },
-        "reporting_download_request": {
-            "type": "object",
-            "title": "Reporting download request",
-            "description": "Specification to request data via the Reporting API",
-            "required": [
-                "type"
+        "reporting_request_type": {
+            "title": "Type",
+            "description": "Type of the download request",
+            "type": "string",
+            "enum": [
+                "Reporting"
             ],
-            "properties": {
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "Reporting"
-                    ],
-                    "propertyOrder": 1000
+            "propertyOrder": 1000
+        },
+        "report_time_zone": {
+            "type": "string",
+            "title": "Report time zone",
+            "description": "Determines the time zone that is used to establish today's date.",
+            "enum": [
+                "AbuDhabiMuscat",
+                "Adelaide",
+                "Alaska",
+                "AlmatyNovosibirsk",
+                "AmsterdamBerlinBernRomeStockholmVienna",
+                "Arizona",
+                "AstanaDhaka",
+                "AthensIslandanbulMinsk",
+                "AtlanticTimeCanada",
+                "AucklandWellington",
+                "Azores",
+                "Baghdad",
+                "BakuTbilisiYerevan",
+                "BangkokHanoiJakarta",
+                "BeijingChongqingHongKongUrumqi",
+                "BelgradeBratislavaBudapestLjubljanaPrague",
+                "BogotaLimaQuito",
+                "Brasilia",
+                "Brisbane",
+                "BrusselsCopenhagenMadridParis",
+                "Bucharest",
+                "BuenosAiresGeorgetown",
+                "Cairo",
+                "CanberraMelbourneSydney",
+                "CapeVerdeIsland",
+                "CaracasLaPaz",
+                "CasablancaMonrovia",
+                "CentralAmerica",
+                "CentralTimeUSCanada",
+                "ChennaiKolkataMumbaiNewDelhi",
+                "ChihuahuaLaPazMazatlan",
+                "Darwin",
+                "EasternTimeUSCanada",
+                "Ekaterinburg",
+                "FijiKamchatkaMarshallIsland",
+                "Greenland",
+                "GreenwichMeanTimeDublinEdinburghLisbonLondon",
+                "GuadalajaraMexicoCityMonterrey",
+                "GuamPortMoresby",
+                "HararePretoria",
+                "Hawaii",
+                "HelsinkiKyivRigaSofiaTallinnVilnius",
+                "Hobart",
+                "IndianaEast",
+                "InternationalDateLineWest",
+                "IrkutskUlaanBataar",
+                "IslandamabadKarachiTashkent",
+                "Jerusalem",
+                "Kabul",
+                "Kathmandu",
+                "Krasnoyarsk",
+                "KualaLumpurSingapore",
+                "KuwaitRiyadh",
+                "MagadanSolomonIslandNewCaledonia",
+                "MidAtlantic",
+                "MidwayIslandandSamoa",
+                "MoscowStPetersburgVolgograd",
+                "MountainTimeUSCanada",
+                "Nairobi",
+                "Newfoundland",
+                "Nukualofa",
+                "OsakaSapporoTokyo",
+                "PacificTimeUSCanadaTijuana",
+                "Perth",
+                "Rangoon",
+                "Santiago",
+                "SarajevoSkopjeWarsawZagreb",
+                "Saskatchewan",
+                "Seoul",
+                "SriJayawardenepura",
+                "Taipei",
+                "Tehran",
+                "Vladivostok",
+                "WestCentralAfrica",
+                "Yakutsk"
+            ],
+            "default": "BelgradeBratislavaBudapestLjubljanaPrague"
+        },
+        "report_format_version": {
+            "title": "Format version",
+            "description": "Determines the format for certain fields in the downloaded report file.",
+            "type": "string",
+            "enum": [
+                "1.0",
+                "2.0"
+            ],
+            "default": "2.0",
+            "propertyOrder": 3000
+        },
+        "report_return_only_complete_data": {
+            "title": "Return only complete data",
+            "description": "Determines whether or not the service must ensure that all the data has been processed and is available.",
+            "type": "boolean",
+            "format": "checkbox",
+            "default": true,
+            "propertyOrder": 4000
+        },
+        "report_time": {
+            "type": "object",
+            "title": "Time",
+            "description": "The time period to use for the report. You can specify a custom date range or select one of the predefined date ranges.",
+            "oneOf": [
+                {
+                    "title": "Predefined time",
+                    "properties": {
+                        "time_zone": {
+                            "$ref": "#/definitions/report_time_zone"
+                        },
+                        "predefined_time": {
+                            "type": "string",
+                            "title": "A predefined date range value. Each report request type specifies the predefined time periods that you can specify for each aggregation type.",
+                            "enum": [
+                                "Last14Days",
+                                "Last30Days",
+                                "LastFourWeeks",
+                                "LastFourWeeksStartingMonday",
+                                "LastMonth",
+                                "LastSevenDays",
+                                "LastSixMonths",
+                                "LastThreeMonths",
+                                "LastWeek",
+                                "LastWeekStartingMonday",
+                                "LastYear",
+                                "ThisMonth",
+                                "ThisWeek",
+                                "ThisWeekStartingMonday",
+                                "ThisYear",
+                                "Today",
+                                "Yesterday"
+                            ]
+                        }
+                    }
+                },
+                {
+                    "title": "Custom time",
+                    "description": "Custom date range",
+                    "properties": {
+                        "time_zone": {
+                            "$ref": "#/definitions/report_time_zone"
+                        },
+                        "start": {
+                            "title": "Start date",
+                            "description": "Start date of the date range.",
+                            "type": "string",
+                            "format": "date"
+                        },
+                        "end": {
+                            "title": "End date",
+                            "description": "End date of the date range.",
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
                 }
-            },
-            "additionalProperties": false
+            ],
+            "additionalProperties": false,
+            "propertyOrder": 5000
+        },
+        "report_aggregation": {
+            "title": "Report aggregation",
+            "description": "The type of aggregation to use to aggregate the report data.",
+            "type": "string",
+            "enum": [
+                "Daily",
+                "DayOfWeek",
+                "Hourly",
+                "HourOfDay",
+                "Monthly",
+                "Summary",
+                "Weekly",
+                "WeeklyStartingMonday",
+                "Yearly"
+            ],
+            "default": "Summary",
+            "propertyOrder": 6000
+        },
+        "report_download_request": {
+            "type": "object",
+            "title": "Report download request",
+            "description": "Specification to request data via the Reporting API",
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "title": "FirstReportType download request",
+                    "description": "Specification to request report of type FirstReportType",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "FirstReportType"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        }
+                    }
+                },
+                {
+                    "title": "SecondReportType download request",
+                    "description": "Specification to request report of type SecondReportType",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "SecondReportType"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "SecondReportTypeColumnOne",
+                                    "SecondReportTypeColumnTwo"
+                                ]
+                            }
+                        }
+                    }
+                }
+            ]
         }
     }
 }
