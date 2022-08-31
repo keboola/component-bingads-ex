@@ -51,7 +51,6 @@
                 "download_entities",
                 "since_last_sync_time"
             ],
-            "additionalProperties": false,
             "properties": {
                 "type": {
                     "type": "string",
@@ -241,7 +240,8 @@
                     "format": "checkbox",
                     "default": true
                 }
-            }
+            },
+            "additionalProperties": false
         },
         "reporting_request_type": {
             "title": "Type",
@@ -358,9 +358,14 @@
             "type": "object",
             "title": "Time",
             "description": "The time period to use for the report. You can specify a custom date range or select one of the predefined date ranges.",
+            "propertyOrder": 5000,
             "oneOf": [
                 {
                     "title": "Predefined time",
+                    "required": [
+                        "time_zone",
+                        "predefined_time"
+                    ],
                     "properties": {
                         "time_zone": {
                             "$ref": "#/definitions/report_time_zone"
@@ -393,27 +398,30 @@
                 {
                     "title": "Custom time",
                     "description": "Custom date range",
+                    "required": [
+                        "time_zone",
+                        "date_range_start",
+                        "date_range_end"
+                    ],
                     "properties": {
                         "time_zone": {
                             "$ref": "#/definitions/report_time_zone"
                         },
-                        "start": {
-                            "title": "Start date",
+                        "date_range_start": {
+                            "title": "Date range start",
                             "description": "Start date of the date range.",
                             "type": "string",
                             "format": "date"
                         },
-                        "end": {
-                            "title": "End date",
+                        "date_range_end": {
+                            "title": "Date range end",
                             "description": "End date of the date range.",
                             "type": "string",
                             "format": "date"
                         }
                     }
                 }
-            ],
-            "additionalProperties": false,
-            "propertyOrder": 5000
+            ]
         },
         "report_aggregation": {
             "title": "Report aggregation",
@@ -437,17 +445,18 @@
             "type": "object",
             "title": "Report download request",
             "description": "Specification to request data via the Reporting API",
-            "additionalProperties": false,
             "oneOf": [
                 {
-                    "title": "FirstReportType download request",
-                    "description": "Specification to request report of type FirstReportType",
+                    "title": "AccountPerformance report download request",
+                    "description": "Specification to request report of type AccountPerformance",
                     "required": [
                         "type",
                         "report_type",
                         "format_version",
                         "return_only_complete_data",
-                        "aggregation"
+                        "aggregation",
+                        "time",
+                        "columns"
                     ],
                     "properties": {
                         "type": {
@@ -458,7 +467,909 @@
                             "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
                             "type": "string",
                             "enum": [
-                                "FirstReportType"
+                                "AccountPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "LowQualityClicks",
+                                    "LowQualityClicksPercent",
+                                    "LowQualityImpressions",
+                                    "LowQualityImpressionsPercent",
+                                    "LowQualityConversions",
+                                    "LowQualityConversionRate",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "ImpressionSharePercent",
+                                    "ImpressionLostToBudgetPercent",
+                                    "ImpressionLostToRankAggPercent",
+                                    "PhoneImpressions",
+                                    "PhoneCalls",
+                                    "Ptr",
+                                    "Network",
+                                    "TopVsOther",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AccountStatus",
+                                    "LowQualityGeneralClicks",
+                                    "LowQualitySophisticatedClicks",
+                                    "ExactMatchImpressionSharePercent",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "ClickSharePercent",
+                                    "AbsoluteTopImpressionSharePercent",
+                                    "TopImpressionShareLostToRankPercent",
+                                    "TopImpressionShareLostToBudgetPercent",
+                                    "AbsoluteTopImpressionShareLostToRankPercent",
+                                    "AbsoluteTopImpressionShareLostToBudgetPercent",
+                                    "TopImpressionSharePercent",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AudienceImpressionSharePercent",
+                                    "AudienceImpressionLostToRankPercent",
+                                    "AudienceImpressionLostToBudgetPercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "LowQualityConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "CampaignPerformance report download request",
+                    "description": "Specification to request report of type CampaignPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "CampaignPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignStatus",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "LowQualityClicks",
+                                    "LowQualityClicksPercent",
+                                    "LowQualityImpressions",
+                                    "LowQualityImpressionsPercent",
+                                    "LowQualityConversions",
+                                    "LowQualityConversionRate",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "ImpressionSharePercent",
+                                    "ImpressionLostToBudgetPercent",
+                                    "ImpressionLostToRankAggPercent",
+                                    "QualityScore",
+                                    "ExpectedCtr",
+                                    "AdRelevance",
+                                    "LandingPageExperience",
+                                    "HistoricalQualityScore",
+                                    "HistoricalExpectedCtr",
+                                    "HistoricalAdRelevance",
+                                    "HistoricalLandingPageExperience",
+                                    "PhoneImpressions",
+                                    "PhoneCalls",
+                                    "Ptr",
+                                    "Network",
+                                    "TopVsOther",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "AccountStatus",
+                                    "BudgetName",
+                                    "BudgetStatus",
+                                    "BudgetAssociationStatus",
+                                    "LowQualityGeneralClicks",
+                                    "LowQualitySophisticatedClicks",
+                                    "CampaignLabels",
+                                    "ExactMatchImpressionSharePercent",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "ClickSharePercent",
+                                    "AbsoluteTopImpressionSharePercent",
+                                    "FinalUrlSuffix",
+                                    "CampaignType",
+                                    "TopImpressionShareLostToRankPercent",
+                                    "TopImpressionShareLostToBudgetPercent",
+                                    "AbsoluteTopImpressionShareLostToRankPercent",
+                                    "AbsoluteTopImpressionShareLostToBudgetPercent",
+                                    "TopImpressionSharePercent",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AudienceImpressionSharePercent",
+                                    "AudienceImpressionLostToRankPercent",
+                                    "AudienceImpressionLostToBudgetPercent",
+                                    "RelativeCtr",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "LowQualityConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "AdDynamicTextPerformance report download request",
+                    "description": "Specification to request report of type AdDynamicTextPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AdDynamicTextPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountId",
+                                    "AccountNumber",
+                                    "TimePeriod",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Keyword",
+                                    "AdId",
+                                    "AdTitle",
+                                    "AdType",
+                                    "DestinationUrl",
+                                    "Param1",
+                                    "Param2",
+                                    "Param3",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "DeviceType",
+                                    "Language",
+                                    "AccountStatus",
+                                    "AdGroupStatus",
+                                    "AdStatus",
+                                    "KeywordStatus",
+                                    "TitlePart1",
+                                    "TitlePart2",
+                                    "TitlePart3",
+                                    "Path1",
+                                    "Path2",
+                                    "FinalUrl",
+                                    "FinalMobileUrl",
+                                    "FinalAppUrl",
+                                    "AdDescription",
+                                    "AdDescription2",
+                                    "AdLabels",
+                                    "AllConversions",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "AdGroupPerformance report download request",
+                    "description": "Specification to request report of type AdGroupPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AdGroupPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "Status",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "DeviceType",
+                                    "Language",
+                                    "DeviceOS",
+                                    "ImpressionSharePercent",
+                                    "ImpressionLostToBudgetPercent",
+                                    "ImpressionLostToRankAggPercent",
+                                    "QualityScore",
+                                    "ExpectedCtr",
+                                    "AdRelevance",
+                                    "LandingPageExperience",
+                                    "HistoricalQualityScore",
+                                    "HistoricalExpectedCtr",
+                                    "HistoricalAdRelevance",
+                                    "HistoricalLandingPageExperience",
+                                    "PhoneImpressions",
+                                    "PhoneCalls",
+                                    "Ptr",
+                                    "Network",
+                                    "TopVsOther",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupLabels",
+                                    "ExactMatchImpressionSharePercent",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "ClickSharePercent",
+                                    "AbsoluteTopImpressionSharePercent",
+                                    "FinalUrlSuffix",
+                                    "CampaignType",
+                                    "TopImpressionShareLostToRankPercent",
+                                    "TopImpressionShareLostToBudgetPercent",
+                                    "AbsoluteTopImpressionShareLostToRankPercent",
+                                    "AbsoluteTopImpressionShareLostToBudgetPercent",
+                                    "TopImpressionSharePercent",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AudienceImpressionSharePercent",
+                                    "AudienceImpressionLostToRankPercent",
+                                    "AudienceImpressionLostToBudgetPercent",
+                                    "RelativeCtr",
+                                    "AdGroupType",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "AdPerformance report download request",
+                    "description": "Specification to request report of type AdPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AdPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdId",
+                                    "AdGroupId",
+                                    "AdTitle",
+                                    "AdDescription",
+                                    "AdDescription2",
+                                    "AdType",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "DestinationUrl",
+                                    "DeviceType",
+                                    "Language",
+                                    "DisplayUrl",
+                                    "AdStatus",
+                                    "Network",
+                                    "TopVsOther",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "DeviceOS",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "FinalUrl",
+                                    "FinalMobileUrl",
+                                    "FinalAppUrl",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "TitlePart1",
+                                    "TitlePart2",
+                                    "TitlePart3",
+                                    "Headline",
+                                    "LongHeadline",
+                                    "BusinessName",
+                                    "Path1",
+                                    "Path2",
+                                    "AdLabels",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "CampaignType",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "FinalUrlSuffix",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "KeywordPerformance report download request",
+                    "description": "Specification to request report of type KeywordPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "KeywordPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Keyword",
+                                    "KeywordId",
+                                    "AdId",
+                                    "AdType",
+                                    "DestinationUrl",
+                                    "CurrentMaxCpc",
+                                    "CurrencyCode",
+                                    "DeliveredMatchType",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "BidMatchType",
+                                    "DeviceType",
+                                    "QualityScore",
+                                    "ExpectedCtr",
+                                    "AdRelevance",
+                                    "LandingPageExperience",
+                                    "Language",
+                                    "HistoricalQualityScore",
+                                    "HistoricalExpectedCtr",
+                                    "HistoricalAdRelevance",
+                                    "HistoricalLandingPageExperience",
+                                    "QualityImpact",
+                                    "CampaignStatus",
+                                    "AccountStatus",
+                                    "AdGroupStatus",
+                                    "KeywordStatus",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceOS",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "FinalUrl",
+                                    "FinalMobileUrl",
+                                    "FinalAppUrl",
+                                    "BidStrategyType",
+                                    "KeywordLabels",
+                                    "Mainline1Bid",
+                                    "MainlineBid",
+                                    "FirstPageBid",
+                                    "FinalUrlSuffix",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "DestinationUrlPerformance report download request",
+                    "description": "Specification to request report of type DestinationUrlPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "DestinationUrlPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AdId",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "DestinationUrl",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "DeviceType",
+                                    "Language",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceOS",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "FinalUrl",
+                                    "FinalMobileUrl",
+                                    "FinalAppUrl",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "AdStatus",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "FinalUrlSuffix",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "BudgetSummary report download request",
+                    "description": "Specification to request report of type BudgetSummary",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "BudgetSummary"
                             ],
                             "propertyOrder": 2000
                         },
@@ -471,14 +1382,725 @@
                         "time": {
                             "$ref": "#/definitions/report_time"
                         },
-                        "aggregation": {
-                            "$ref": "#/definitions/report_aggregation"
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "Date",
+                                    "CurrencyCode",
+                                    "MonthlyBudget",
+                                    "DailySpend",
+                                    "MonthToDateSpend"
+                                ]
+                            }
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 {
-                    "title": "SecondReportType download request",
-                    "description": "Specification to request report of type SecondReportType",
+                    "title": "AgeGenderAudience report download request",
+                    "description": "Specification to request report of type AgeGenderAudience",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AgeGenderAudience"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AdDistribution",
+                                    "AgeGroup",
+                                    "Gender",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Conversions",
+                                    "Spend",
+                                    "Revenue",
+                                    "ExtendedCost",
+                                    "Assists",
+                                    "Language",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ProfessionalDemographicsAudience report download request",
+                    "description": "Specification to request report of type ProfessionalDemographicsAudience",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ProfessionalDemographicsAudience"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "CompanyName",
+                                    "IndustryName",
+                                    "JobFunctionName",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Spend",
+                                    "Conversions",
+                                    "Language",
+                                    "Assists",
+                                    "Revenue",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "AveragePosition",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "UserLocationPerformance report download request",
+                    "description": "Specification to request report of type UserLocationPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "UserLocationPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Country",
+                                    "State",
+                                    "MetroArea",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "ProximityTargetLocation",
+                                    "Radius",
+                                    "Language",
+                                    "City",
+                                    "QueryIntentCountry",
+                                    "QueryIntentState",
+                                    "QueryIntentCity",
+                                    "QueryIntentDMA",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Assists",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerConversion",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "County",
+                                    "PostalCode",
+                                    "QueryIntentCounty",
+                                    "QueryIntentPostalCode",
+                                    "LocationId",
+                                    "QueryIntentLocationId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "Neighborhood",
+                                    "QueryIntentNeighborhood",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "PublisherUsagePerformance report download request",
+                    "description": "Specification to request report of type PublisherUsagePerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "PublisherUsagePerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "PublisherUrl",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "Language",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "SearchQueryPerformance report download request",
+                    "description": "Specification to request report of type SearchQueryPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "SearchQueryPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AdId",
+                                    "AdType",
+                                    "DestinationUrl",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "CampaignStatus",
+                                    "AdStatus",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "SearchQuery",
+                                    "Keyword",
+                                    "AdGroupCriterionId",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "Language",
+                                    "KeywordId",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AccountStatus",
+                                    "AdGroupStatus",
+                                    "KeywordStatus",
+                                    "CampaignType",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ConversionPerformance report download request",
+                    "description": "Specification to request report of type ConversionPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ConversionPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Keyword",
+                                    "KeywordId",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "Assists",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "Spend",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerConversion",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "DeviceType",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "KeywordStatus",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "GoalsAndFunnels report download request",
+                    "description": "Specification to request report of type GoalsAndFunnels",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "GoalsAndFunnels"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Keyword",
+                                    "KeywordId",
+                                    "Goal",
+                                    "AllConversions",
+                                    "Assists",
+                                    "AllRevenue",
+                                    "GoalId",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "KeywordStatus",
+                                    "GoalType",
+                                    "ViewThroughConversions",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "NegativeKeywordConflict report download request",
+                    "description": "Specification to request report of type NegativeKeywordConflict",
                     "required": [
                         "type",
                         "report_type",
@@ -495,7 +2117,7 @@
                             "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
                             "type": "string",
                             "enum": [
-                                "SecondReportType"
+                                "NegativeKeywordConflict"
                             ],
                             "propertyOrder": 2000
                         },
@@ -516,12 +2138,1778 @@
                             "items": {
                                 "type": "string",
                                 "enum": [
-                                    "SecondReportTypeColumnOne",
-                                    "SecondReportTypeColumnTwo"
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Keyword",
+                                    "KeywordId",
+                                    "NegativeKeyword",
+                                    "ConflictLevel",
+                                    "BidMatchType",
+                                    "NegativeKeywordListId",
+                                    "NegativeKeywordList",
+                                    "NegativeKeywordId",
+                                    "NegativeKeywordMatchType",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "KeywordStatus",
+                                    "ConflictType"
                                 ]
                             }
                         }
-                    }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "SearchCampaignChangeHistory report download request",
+                    "description": "Specification to request report of type SearchCampaignChangeHistory",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "SearchCampaignChangeHistory"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "DateTime",
+                                    "AccountId",
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "ChangedBy",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AdTitle",
+                                    "AdDescription",
+                                    "DisplayUrl",
+                                    "Keyword",
+                                    "ItemChanged",
+                                    "AttributeChanged",
+                                    "HowChanged",
+                                    "OldValue",
+                                    "NewValue",
+                                    "EntityName",
+                                    "EntityId",
+                                    "Tool"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "AdExtensionByAd report download request",
+                    "description": "Specification to request report of type AdExtensionByAd",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AdExtensionByAd"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AdTitle",
+                                    "AdId",
+                                    "AdExtensionType",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "ClickType",
+                                    "Impressions",
+                                    "Clicks",
+                                    "TotalClicks",
+                                    "Conversions",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "ConversionRate",
+                                    "Spend",
+                                    "AdExtensionId",
+                                    "AdExtensionVersion",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Network",
+                                    "TopVsOther",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerConversion",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "AdStatus",
+                                    "TitlePart1",
+                                    "TitlePart2",
+                                    "TitlePart3",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "Goal",
+                                    "GoalType",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "AdExtensionByKeyword report download request",
+                    "description": "Specification to request report of type AdExtensionByKeyword",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AdExtensionByKeyword"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Keyword",
+                                    "KeywordId",
+                                    "AdExtensionType",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "ClickType",
+                                    "Impressions",
+                                    "Clicks",
+                                    "TotalClicks",
+                                    "Conversions",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "ConversionRate",
+                                    "Spend",
+                                    "AdExtensionId",
+                                    "AdExtensionVersion",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Network",
+                                    "TopVsOther",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerConversion",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "KeywordStatus",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "Goal",
+                                    "GoalType",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "AudiencePerformance report download request",
+                    "description": "Specification to request report of type AudiencePerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AudiencePerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AudienceId",
+                                    "AudienceName",
+                                    "AssociationStatus",
+                                    "BidAdjustment",
+                                    "TargetingSetting",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "RevenuePerConversion",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "AudienceType",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "AssociationId",
+                                    "AssociationLevel",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "AdExtensionDetail report download request",
+                    "description": "Specification to request report of type AdExtensionDetail",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "AdExtensionDetail"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AdTitle",
+                                    "AdId",
+                                    "AdExtensionType",
+                                    "AdExtensionTypeId",
+                                    "AdExtensionId",
+                                    "AdExtensionVersion",
+                                    "AdExtensionPropertyValue",
+                                    "Impressions",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Clicks",
+                                    "Ctr",
+                                    "Conversions",
+                                    "CostPerConversion",
+                                    "ConversionRate",
+                                    "Spend",
+                                    "AverageCpc",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Network",
+                                    "TopVsOther",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "AdStatus",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "Goal",
+                                    "GoalType",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ShareOfVoice report download request",
+                    "description": "Specification to request report of type ShareOfVoice",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ShareOfVoice"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "AdGroupName",
+                                    "Keyword",
+                                    "DeliveredMatchType",
+                                    "BidMatchType",
+                                    "Language",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "KeywordId",
+                                    "AdGroupId",
+                                    "CampaignId",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "ImpressionSharePercent",
+                                    "ImpressionLostToBudgetPercent",
+                                    "ImpressionLostToRankAggPercent",
+                                    "CurrentMaxCpc",
+                                    "QualityScore",
+                                    "ExpectedCtr",
+                                    "AdRelevance",
+                                    "LandingPageExperience",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "AdDistribution",
+                                    "ClickSharePercent",
+                                    "DeviceType",
+                                    "Network",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "KeywordStatus",
+                                    "BidStrategyType",
+                                    "KeywordLabels",
+                                    "ExactMatchImpressionSharePercent",
+                                    "TopImpressionShareLostToRankPercent",
+                                    "TopImpressionShareLostToBudgetPercent",
+                                    "AbsoluteTopImpressionShareLostToRankPercent",
+                                    "AbsoluteTopImpressionShareLostToBudgetPercent",
+                                    "AbsoluteTopImpressionSharePercent",
+                                    "TopImpressionSharePercent",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ProductDimensionPerformance report download request",
+                    "description": "Specification to request report of type ProductDimensionPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ProductDimensionPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "TimePeriod",
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "CampaignStatus",
+                                    "AccountStatus",
+                                    "AdGroupStatus",
+                                    "Network",
+                                    "AdId",
+                                    "CampaignId",
+                                    "CampaignName",
+                                    "CurrencyCode",
+                                    "DeviceType",
+                                    "Language",
+                                    "MerchantProductId",
+                                    "Title",
+                                    "Condition",
+                                    "Brand",
+                                    "Price",
+                                    "CustomLabel0",
+                                    "CustomLabel1",
+                                    "CustomLabel2",
+                                    "CustomLabel3",
+                                    "CustomLabel4",
+                                    "ProductType1",
+                                    "ProductType2",
+                                    "ProductType3",
+                                    "ProductType4",
+                                    "ProductType5",
+                                    "ProductCategory1",
+                                    "ProductCategory2",
+                                    "ProductCategory3",
+                                    "ProductCategory4",
+                                    "ProductCategory5",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "Revenue",
+                                    "RevenuePerConversion",
+                                    "SellerName",
+                                    "OfferLanguage",
+                                    "CountryOfSale",
+                                    "AdStatus",
+                                    "ImpressionSharePercent",
+                                    "ImpressionLostToBudgetPercent",
+                                    "ImpressionLostToRankPercent",
+                                    "BenchmarkBid",
+                                    "BenchmarkCtr",
+                                    "TopVsOther",
+                                    "AdDistribution",
+                                    "ClickTypeId",
+                                    "TotalClicksOnAdElements",
+                                    "ClickType",
+                                    "ReturnOnAdSpend",
+                                    "BidStrategyType",
+                                    "LocalStoreCode",
+                                    "StoreId",
+                                    "AssistedImpressions",
+                                    "AssistedClicks",
+                                    "ClickSharePercent",
+                                    "AbsoluteTopImpressionSharePercent",
+                                    "AssistedConversions",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "CostPerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "ProductBought",
+                                    "QuantityBought",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AssistedConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ProductBoughtTitle",
+                                    "GTIN",
+                                    "MPN",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ProductPartitionPerformance report download request",
+                    "description": "Specification to request report of type ProductPartitionPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ProductPartitionPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "ProductGroup",
+                                    "AdGroupCriterionId",
+                                    "PartitionType",
+                                    "AdId",
+                                    "CurrentMaxCpc",
+                                    "CurrencyCode",
+                                    "DeliveredMatchType",
+                                    "BidMatchType",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "DeviceType",
+                                    "Language",
+                                    "CampaignStatus",
+                                    "AccountStatus",
+                                    "AdGroupStatus",
+                                    "DestinationUrl",
+                                    "Network",
+                                    "TopVsOther",
+                                    "Assists",
+                                    "Revenue",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "OfferLanguage",
+                                    "CountryOfSale",
+                                    "AdStatus",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "ImpressionSharePercent",
+                                    "ImpressionLostToBudgetPercent",
+                                    "ImpressionLostToRankPercent",
+                                    "BenchmarkBid",
+                                    "BenchmarkCtr",
+                                    "AdDistribution",
+                                    "ClickTypeId",
+                                    "TotalClicksOnAdElements",
+                                    "ClickType",
+                                    "ReturnOnAdSpend",
+                                    "BidStrategyType",
+                                    "LocalStoreCode",
+                                    "AssistedImpressions",
+                                    "AssistedClicks",
+                                    "ClickSharePercent",
+                                    "AbsoluteTopImpressionSharePercent",
+                                    "AssistedConversions",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AssistedConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ProductPartitionUnitPerformance report download request",
+                    "description": "Specification to request report of type ProductPartitionUnitPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ProductPartitionUnitPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "ProductGroup",
+                                    "AdGroupCriterionId",
+                                    "AdId",
+                                    "CurrentMaxCpc",
+                                    "CurrencyCode",
+                                    "DeliveredMatchType",
+                                    "BidMatchType",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "DeviceType",
+                                    "Language",
+                                    "CampaignStatus",
+                                    "AccountStatus",
+                                    "AdGroupStatus",
+                                    "DestinationUrl",
+                                    "Network",
+                                    "TopVsOther",
+                                    "Assists",
+                                    "Revenue",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AdStatus",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "ReturnOnAdSpend",
+                                    "BidStrategyType",
+                                    "LocalStoreCode",
+                                    "AssistedImpressions",
+                                    "AssistedClicks",
+                                    "AssistedConversions",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AssistedConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ProductSearchQueryPerformance report download request",
+                    "description": "Specification to request report of type ProductSearchQueryPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ProductSearchQueryPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "TimePeriod",
+                                    "AccountId",
+                                    "AccountNumber",
+                                    "AccountName",
+                                    "AdId",
+                                    "AdGroupId",
+                                    "AdGroupName",
+                                    "CampaignId",
+                                    "CampaignName",
+                                    "DestinationUrl",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Language",
+                                    "SearchQuery",
+                                    "Network",
+                                    "MerchantProductId",
+                                    "Title",
+                                    "ClickTypeId",
+                                    "TotalClicksOnAdElements",
+                                    "ClickType",
+                                    "AdGroupCriterionId",
+                                    "ProductGroup",
+                                    "PartitionType",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "Assists",
+                                    "CostPerAssist",
+                                    "Revenue",
+                                    "CostPerConversion",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "AssistedImpressions",
+                                    "AssistedClicks",
+                                    "AssistedConversions",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllRevenuePerConversion",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AssistedConversionsQualified",
+                                    "AllConversionsQualified"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ProductMatchCount report download request",
+                    "description": "Specification to request report of type ProductMatchCount",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ProductMatchCount"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "AccountId",
+                                    "AccountNumber",
+                                    "AccountName",
+                                    "CampaignId",
+                                    "CampaignName",
+                                    "AdGroupId",
+                                    "AdGroupName",
+                                    "ProductGroup",
+                                    "PartitionType",
+                                    "AdGroupCriterionId",
+                                    "MatchedProductsAtCampaign",
+                                    "MatchedProductsAtAdGroup",
+                                    "MatchedProductsAtProductGroup"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "ProductNegativeKeywordConflict report download request",
+                    "description": "Specification to request report of type ProductNegativeKeywordConflict",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "ProductNegativeKeywordConflict"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "AccountStatus",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "CampaignStatus",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "AdGroupStatus",
+                                    "MerchantProductId",
+                                    "Title",
+                                    "AdGroupCriterionId",
+                                    "ProductGroup",
+                                    "NegativeKeywordId",
+                                    "NegativeKeyword",
+                                    "NegativeKeywordListId",
+                                    "ConflictLevel",
+                                    "NegativeKeywordMatchType"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "CallDetail report download request",
+                    "description": "Specification to request report of type CallDetail",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "CallDetail"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "CampaignName",
+                                    "AdGroupName",
+                                    "StartTime",
+                                    "EndTime",
+                                    "Duration",
+                                    "AreaCode",
+                                    "City",
+                                    "State",
+                                    "AccountId",
+                                    "CampaignId",
+                                    "AdGroupId",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "GeographicPerformance report download request",
+                    "description": "Specification to request report of type GeographicPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "GeographicPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountId",
+                                    "TimePeriod",
+                                    "CampaignName",
+                                    "CampaignId",
+                                    "AdGroupName",
+                                    "AdGroupId",
+                                    "Country",
+                                    "State",
+                                    "MetroArea",
+                                    "City",
+                                    "CurrencyCode",
+                                    "AdDistribution",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "ProximityTargetLocation",
+                                    "Radius",
+                                    "Language",
+                                    "BidMatchType",
+                                    "DeliveredMatchType",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Assists",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerConversion",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "LocationType",
+                                    "MostSpecificLocation",
+                                    "AccountStatus",
+                                    "CampaignStatus",
+                                    "AdGroupStatus",
+                                    "County",
+                                    "PostalCode",
+                                    "LocationId",
+                                    "BaseCampaignId",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "Neighborhood",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "DSASearchQueryPerformance report download request",
+                    "description": "Specification to request report of type DSASearchQueryPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "DSASearchQueryPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "TimePeriod",
+                                    "AccountId",
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountStatus",
+                                    "CampaignId",
+                                    "CampaignName",
+                                    "CampaignStatus",
+                                    "AdGroupId",
+                                    "AdGroupName",
+                                    "AdGroupStatus",
+                                    "AdId",
+                                    "AdStatus",
+                                    "SearchQuery",
+                                    "Headline",
+                                    "CategoryList",
+                                    "LandingPageTitle",
+                                    "FinalUrl",
+                                    "DynamicAdTarget",
+                                    "DynamicAdTargetId",
+                                    "AdDistribution",
+                                    "Language",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "CustomerId",
+                                    "CustomerName",
+                                    "FeedUrl",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "Description"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "DSAAutoTargetPerformance report download request",
+                    "description": "Specification to request report of type DSAAutoTargetPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "DSAAutoTargetPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "TimePeriod",
+                                    "AccountId",
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountStatus",
+                                    "CampaignId",
+                                    "CampaignName",
+                                    "CampaignStatus",
+                                    "AdGroupId",
+                                    "AdGroupName",
+                                    "AdGroupStatus",
+                                    "AdDistribution",
+                                    "Language",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "BidStrategyType",
+                                    "TrackingTemplate",
+                                    "CustomParameters",
+                                    "DynamicAdTargetId",
+                                    "DynamicAdTarget",
+                                    "DynamicAdTargetStatus",
+                                    "WebsiteCoverage",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "AdId",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                {
+                    "title": "DSACategoryPerformance report download request",
+                    "description": "Specification to request report of type DSACategoryPerformance",
+                    "required": [
+                        "type",
+                        "report_type",
+                        "format_version",
+                        "return_only_complete_data",
+                        "aggregation",
+                        "time",
+                        "columns"
+                    ],
+                    "properties": {
+                        "type": {
+                            "$ref": "#/definitions/reporting_request_type"
+                        },
+                        "report_type": {
+                            "title": "Report type",
+                            "description": "The reporting service provides reports that you can use to track finances, measure ad performance, and adjust settings to optimize your budget or campaign. The service supports the majority of popular reports available in the Microsoft Advertising web application.",
+                            "type": "string",
+                            "enum": [
+                                "DSACategoryPerformance"
+                            ],
+                            "propertyOrder": 2000
+                        },
+                        "format_version": {
+                            "$ref": "#/definitions/report_format_version"
+                        },
+                        "return_only_complete_data": {
+                            "$ref": "#/definitions/report_return_only_complete_data"
+                        },
+                        "aggregation": {
+                            "$ref": "#/definitions/report_aggregation"
+                        },
+                        "time": {
+                            "$ref": "#/definitions/report_time"
+                        },
+                        "columns": {
+                            "title": "Columns",
+                            "description": "The columns to include in the report",
+                            "type": "array",
+                            "uniqueItems": true,
+                            "minItems": 1,
+                            "propertyOrder": 3000,
+                            "format": "select",
+                            "items": {
+                                "type": "string",
+                                "enum": [
+                                    "TimePeriod",
+                                    "AccountId",
+                                    "AccountName",
+                                    "AccountNumber",
+                                    "AccountStatus",
+                                    "CampaignId",
+                                    "CampaignName",
+                                    "CampaignStatus",
+                                    "AdGroupId",
+                                    "AdGroupName",
+                                    "AdGroupStatus",
+                                    "AdId",
+                                    "AdStatus",
+                                    "Category0",
+                                    "Category1",
+                                    "Category2",
+                                    "AdDistribution",
+                                    "Language",
+                                    "Network",
+                                    "TopVsOther",
+                                    "DeviceType",
+                                    "DeviceOS",
+                                    "Impressions",
+                                    "Clicks",
+                                    "Ctr",
+                                    "AverageCpc",
+                                    "Spend",
+                                    "AveragePosition",
+                                    "Conversions",
+                                    "ConversionRate",
+                                    "CostPerConversion",
+                                    "Assists",
+                                    "Revenue",
+                                    "ReturnOnAdSpend",
+                                    "CostPerAssist",
+                                    "RevenuePerConversion",
+                                    "RevenuePerAssist",
+                                    "AllConversions",
+                                    "AllRevenue",
+                                    "AllConversionRate",
+                                    "AllCostPerConversion",
+                                    "AllReturnOnAdSpend",
+                                    "AllRevenuePerConversion",
+                                    "ViewThroughConversions",
+                                    "Goal",
+                                    "GoalType",
+                                    "AbsoluteTopImpressionRatePercent",
+                                    "TopImpressionRatePercent",
+                                    "AverageCpm",
+                                    "ConversionsQualified",
+                                    "AllConversionsQualified",
+                                    "ViewThroughConversionsQualified",
+                                    "ViewThroughRevenue"
+                                ]
+                            }
+                        }
+                    },
+                    "additionalProperties": false
                 }
             ]
         }

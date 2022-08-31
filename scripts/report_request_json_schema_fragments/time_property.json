@@ -1,0 +1,5 @@
+{
+    "time": {
+        "$ref": "#/definitions/report_time"
+    }
+}

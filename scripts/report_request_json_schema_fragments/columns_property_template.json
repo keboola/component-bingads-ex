@@ -1,0 +1,15 @@
+{
+    "columns": {
+        "title": "Columns",
+        "description": "The columns to include in the report",
+        "type": "array",
+        "uniqueItems": true,
+        "minItems": 1,
+        "propertyOrder": 3000,
+        "format": "select",
+        "items": {
+            "type": "string",
+            "enum": []
+        }
+    }
+}
