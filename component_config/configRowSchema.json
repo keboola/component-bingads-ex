@@ -393,7 +393,8 @@
                                 "Yesterday"
                             ]
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 },
                 {
                     "title": "Custom time",
@@ -419,7 +420,8 @@
                             "type": "string",
                             "format": "date"
                         }
-                    }
+                    },
+                    "additionalProperties": false
                 }
             ]
         },
