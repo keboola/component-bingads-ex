@@ -3,4 +3,5 @@ keboola.utils
 keboola.http-client
 mock
 freezegun
+jsonschema
 bingads

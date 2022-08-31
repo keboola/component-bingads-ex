@@ -33,3 +33,7 @@ def create_download_parameters(
         overwrite_result_file=OVERWRITE_RESULT_FILE,
         timeout_in_milliseconds=DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS,
     )
+
+
+def create_primary_key() -> List[str]:
+    return ["Type", "Id"]

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Literal
+from typing import List, Literal
 
 from suds import WebFault
 
@@ -12,6 +12,7 @@ from .authorization import Authorization
 from .error_handling import output_webfault_errors
 
 from .bulk import create_download_parameters as create_bulk_download_parameters
+from .bulk import create_primary_key as create_bulk_primary_key
 from .reporting import ReportingDownloadParametersFactory
 
 KEY_TYPE = "type"
@@ -26,6 +27,8 @@ class DownloadRequest:
     result_file_directory: str
     result_file_name: str
     last_sync_time_in_utc: datetime | None = None
+
+    primary_key: List[str] = field(init=False)
 
     _download_parameters: BulkDownloadParameters | ReportingDownloadParameters = field(
         init=False
@@ -46,6 +49,7 @@ class DownloadRequest:
                 result_file_name=self.result_file_name,
                 report_file_format=REPORT_FILE_FORMAT,
             )
+            self.primary_key = create_bulk_primary_key()
         elif _type == "Reporting":
             self._service_manager = ReportingServiceManager(
                 authorization_data=self.authorization.authorization_data,
@@ -59,6 +63,7 @@ class DownloadRequest:
                 reporting_service=self._service_manager._service_client,
             )
             self._download_parameters = reporting_download_parameters_factory.create()
+            self.primary_key = reporting_download_parameters_factory.primary_key
         else:
             raise ValueError(f"Unsupported type: {_type}")
 

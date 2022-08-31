@@ -1,11 +1,11 @@
 {
-    "columns": {
-        "title": "Columns",
-        "description": "The columns to include in the report",
+    "primary_key": {
+        "title": "Primary Key",
+        "description": "The columns to use as primary key in Keboola Storage",
         "type": "array",
         "uniqueItems": true,
         "minItems": 1,
-        "propertyOrder": 7000,
+        "propertyOrder": 8000,
         "format": "select",
         "items": {
             "type": "string",

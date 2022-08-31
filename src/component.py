@@ -8,6 +8,9 @@ import os
 import secrets
 import string
 from typing import Optional
+from pathlib import Path
+import json
+import jsonschema
 
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
@@ -43,6 +46,22 @@ KEY_LAST_SYNC_TIME_IN_UTC = "last_sync_time_in_utc"
 NONCE_LENGTH = 32
 
 
+def get_schema():
+    """
+    Returns JSON schema for the component configuration.
+    """
+    component_config_dir = Path(__file__).parent.parent / "component_config"
+    schema_path = component_config_dir / "configSchema.json"
+    row_schema_path = component_config_dir / "configRowSchema.json"
+    with open(schema_path, "r") as schema_file:
+        schema = json.load(schema_file)
+    with open(row_schema_path, "r") as row_schema_file:
+        row_schema = json.load(row_schema_file)
+    row_schema["required"] = schema["required"] + row_schema["required"]
+    row_schema["properties"] = schema["properties"] | row_schema["properties"]
+    return row_schema
+
+
 class BingAdsExtractor(ComponentBase):
     """
     Extends base class for general Python components. Initializes the CommonInterface
@@ -63,6 +82,15 @@ class BingAdsExtractor(ComponentBase):
         os.makedirs(self.tables_out_path, exist_ok=True)
 
         params: dict = self.configuration.parameters
+        if params.get("debug"):
+            try:
+                jsonschema.validate(params, get_schema())
+            except jsonschema.ValidationError as e:
+                raise UserException(
+                    f"Configuration validation error: {e.message}."
+                    f" Please make sure provided configuration is valid."
+                ) from e
+
         authorization_dict = params[KEY_AUTHORIZATION]
         table_name: str = params[KEY_TABLE_NAME]
         incremental: bool = params[KEY_LOAD_MODE] == "Incremental"
@@ -110,39 +138,11 @@ class BingAdsExtractor(ComponentBase):
         )
         download_request.process()
 
-        table_def.primary_key = []  # TODO: set the primary key somehow
+        table_def.primary_key = download_request.primary_key
 
         self.write_manifest(table_def)
 
         self.save_state(authorization.refresh_token)
-        # customer_management_service_client = CustomerManagementServiceClient(
-        #     authorization=authorization
-        # )
-        # user = customer_management_service_client.get_user()
-        # logging.info(user)
-
-        # ###### EXAMPLE TO REMOVE START
-        # # Create output table (Tabledefinition - just metadata)
-        # table = self.create_out_table_definition(
-        #     "output.csv", incremental=True, primary_key=["timestamp"]
-        # )
-
-        # # get file path of the table (data/out/tables/Features.csv)
-        # out_table_path = table.full_path
-        # logging.info(out_table_path)
-        # # DO whatever and save into out_table_path
-        # with open(table.full_path, mode="wt", encoding="utf-8", newline="") as out_file:
-        #     writer = csv.DictWriter(out_file, fieldnames=["timestamp"])
-        #     writer.writeheader()
-        #     writer.writerow({"timestamp": datetime.now().isoformat()})
-
-        # # Save table manifest (output.csv.manifest) from the tabledefinition
-        # self.write_manifest(table)
-
-        # # Write new state - will be available next run TODO: extract into method
-        # self.write_state_file({KEY_REFRESH_TOKEN: refresh_token, KEY_NONCE: nonce})
-
-        # ####### EXAMPLE TO REMOVE END
 
     def save_state(self, refresh_token: str):
         """

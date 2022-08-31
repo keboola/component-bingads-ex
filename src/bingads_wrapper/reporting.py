@@ -17,6 +17,7 @@ KEY_PREDEFINED_TIME = "predefined_time"
 KEY_DATE_RANGE_START = "date_range_start"
 KEY_DATE_RANGE_END = "date_range_end"
 KEY_COLUMNS = "columns"
+KEY_PRIMARY_KEY = "primary_key"
 
 DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = 60 * 1000
 OVERWRITE_RESULT_FILE = True
@@ -34,6 +35,8 @@ class ReportingDownloadParametersFactory:
     result_file_name: str
     report_file_format: str
 
+    primary_key: List[str] = field(init=False)
+
     _authorization_data: AuthorizationData = field(init=False)
     _report_type: str = field(init=False)
     _report_request: Object = field(init=False)
@@ -45,6 +48,7 @@ class ReportingDownloadParametersFactory:
             self._report_type + "ReportRequest"
         )
         self._create_report_request()
+        self.primary_key = self.config_dict[KEY_PRIMARY_KEY]
 
     def create(self) -> ReportingDownloadParameters:
         return ReportingDownloadParameters(

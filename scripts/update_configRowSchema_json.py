@@ -15,6 +15,8 @@ with open(fragments_dir / "aggregation_property.json", "r") as f:
     aggregation_property: dict = json.load(f)
 with open(fragments_dir / "columns_property_template.json", "r") as f:
     columns_property_template: dict = json.load(f)
+with open(fragments_dir / "primary_key_property_template.json", "r") as f:
+    primary_key_property_template: dict = json.load(f)
 with open(fragments_dir / "report_request_template.json", "r") as f:
     report_request_template: dict = json.load(f)
 
@@ -101,6 +103,13 @@ def generate_report_request_json_schema_dict(
         output_schema_dict["properties"] | columns_property
     )
     required_properties.append(next(iter(columns_property)))
+
+    primary_key_property = deepcopy(primary_key_property_template)
+    primary_key_property["primary_key"]["items"]["enum"] = column_names
+    output_schema_dict["properties"] = (
+        output_schema_dict["properties"] | primary_key_property
+    )
+    required_properties.append(next(iter(primary_key_property)))
 
     return output_schema_dict
 
