@@ -30,9 +30,7 @@ class DownloadRequest:
 
     primary_key: List[str] = field(init=False)
 
-    _download_parameters: BulkDownloadParameters | ReportingDownloadParameters = field(
-        init=False
-    )
+    _download_parameters: BulkDownloadParameters | ReportingDownloadParameters = field(init=False)
     _service_manager: BulkServiceManager | ReportingServiceManager = field(init=False)
 
     def __post_init__(self):

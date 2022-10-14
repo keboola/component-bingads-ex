@@ -44,9 +44,7 @@ class ReportingDownloadParametersFactory:
     def __post_init__(self):
         self._authorization_data = self.reporting_service.authorization_data
         self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
-        self._report_request = self.reporting_service.factory.create(
-            self._report_type + "ReportRequest"
-        )
+        self._report_request = self.reporting_service.factory.create(self._report_type + "ReportRequest")
         self._create_report_request()
         self.primary_key = self.config_dict[KEY_PRIMARY_KEY]
 
@@ -76,14 +74,12 @@ class ReportingDownloadParametersFactory:
         self._report_request.ExcludeReportHeader = EXCLUDE_REPORT_HEADER
         self._report_request.Format.set(self.report_file_format)
         self._report_request.FormatVersion = self.config_dict[KEY_FORMAT_VERSION]
-        self._report_request.ReturnOnlyCompleteData: bool = self.config_dict[
-            KEY_RETURN_ONLY_COMPLETE_DATA
-        ]
+        self._report_request.ReturnOnlyCompleteData: bool = self.config_dict[KEY_RETURN_ONLY_COMPLETE_DATA]
 
     def _set_report_request_aggregation_parameter(self):
         self._report_request.Aggregation.set(self.config_dict[KEY_AGGREGATION])
 
-    def _set_report_request_time_parameter(self):  # TODO: finish
+    def _set_report_request_time_parameter(self):    # TODO: finish
         time = self._report_request.Time
         time_dict: dict = self.config_dict[KEY_TIME]
 
@@ -102,15 +98,11 @@ class ReportingDownloadParametersFactory:
             time.CustomDateRangeEnd.Month = end_date.month
             time.CustomDateRangeEnd.Day = end_date.day
 
-    def _set_report_request_columns_parameter(self):  # TODO: finish
+    def _set_report_request_columns_parameter(self):    # TODO: finish
         report_columns = self._report_request.Columns
-        column_array: List[str] = getattr(
-            report_columns, self._report_type + "ReportColumn"
-        )
+        column_array: List[str] = getattr(report_columns, self._report_type + "ReportColumn")
         column_names: List[str] = self.config_dict[KEY_COLUMNS]
         column_array.extend(column_names)
 
     def _set_report_request_scope_parameter(self):
-        self._report_request.Scope.AccountIds = {
-            "long": [self._authorization_data.account_id]
-        }
+        self._report_request.Scope.AccountIds = {"long": [self._authorization_data.account_id]}

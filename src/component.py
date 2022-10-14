@@ -15,9 +15,7 @@ import jsonschema
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 
-from bingads_wrapper.authorization import (
-    Authorization,
-)
+from bingads_wrapper.authorization import Authorization
 
 from bingads_wrapper.request import DownloadRequest
 
@@ -72,7 +70,6 @@ class BingAdsExtractor(ComponentBase):
 
     If `debug` parameter is present in the `config.json`, the default logger is set to verbose DEBUG mode.
     """
-
     def run(self):
         """
         Main execution code
@@ -86,10 +83,8 @@ class BingAdsExtractor(ComponentBase):
             try:
                 jsonschema.validate(params, get_schema())
             except jsonschema.ValidationError as e:
-                raise UserException(
-                    f"Configuration validation error: {e.message}."
-                    f" Please make sure provided configuration is valid."
-                ) from e
+                raise UserException(f"Configuration validation error: {e.message}."
+                                    f" Please make sure provided configuration is valid.") from e
 
         authorization_dict = params[KEY_AUTHORIZATION]
         table_name: str = params[KEY_TABLE_NAME]
@@ -101,22 +96,12 @@ class BingAdsExtractor(ComponentBase):
         refresh_token: Optional[str] = previous_state.get(KEY_REFRESH_TOKEN)
         self.nonce: str = previous_state.get(
             KEY_NONCE,
-            "".join(
-                secrets.choice(string.ascii_letters + string.digits)
-                for _ in range(NONCE_LENGTH)
-            ),
+            "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(NONCE_LENGTH)),
         )
-        last_sync_time_in_utc_str: str | None = previous_state.get(
-            KEY_LAST_SYNC_TIME_IN_UTC
-        )
-        last_sync_time_in_utc = (
-            datetime.fromisoformat(last_sync_time_in_utc_str)
-            if last_sync_time_in_utc_str
-            else None
-        )
-        self.sync_time_in_utc_str = datetime.now(tz=timezone.utc).isoformat(
-            timespec="seconds"
-        )
+        last_sync_time_in_utc_str: str | None = previous_state.get(KEY_LAST_SYNC_TIME_IN_UTC)
+        last_sync_time_in_utc = (datetime.fromisoformat(last_sync_time_in_utc_str)
+                                 if last_sync_time_in_utc_str else None)
+        self.sync_time_in_utc_str = datetime.now(tz=timezone.utc).isoformat(timespec="seconds")
 
         authorization = Authorization(
             config_dict=authorization_dict,
@@ -125,9 +110,7 @@ class BingAdsExtractor(ComponentBase):
             save_refresh_token_function=self.save_state,
         )
 
-        table_def = self.create_out_table_definition(
-            f"{table_name}.csv", incremental=incremental
-        )
+        table_def = self.create_out_table_definition(f"{table_name}.csv", incremental=incremental)
 
         download_request = DownloadRequest(
             authorization=authorization,
@@ -148,13 +131,11 @@ class BingAdsExtractor(ComponentBase):
         """
         Save refresh token and nonce to state file.
         """
-        self.write_state_file(
-            {
-                KEY_REFRESH_TOKEN: refresh_token,
-                KEY_NONCE: self.nonce,
-                KEY_LAST_SYNC_TIME_IN_UTC: self.sync_time_in_utc_str,
-            }
-        )
+        self.write_state_file({
+            KEY_REFRESH_TOKEN: refresh_token,
+            KEY_NONCE: self.nonce,
+            KEY_LAST_SYNC_TIME_IN_UTC: self.sync_time_in_utc_str,
+        })
 
 
 """
