@@ -41,7 +41,7 @@
           "type": "string",
           "title": "Entities",
           "format": "textarea",
-          "default": "campaigns, ads",
+          "default": "Campaigns,Ads",
           "options": {
             "input_height": "100px"
           },
@@ -76,14 +76,14 @@
         "report_type": {
           "$ref": "#/definitions/report_type"
         },
-        "report_aggregation": {
-          "$ref": "#/definitions/report_aggregation"
+        "aggregation": {
+          "$ref": "#/definitions/aggregation"
         },
         "time_range": {
           "$ref": "#/definitions/time_range"
         },
-        "report_return_only_complete_data": {
-          "$ref": "#/definitions/report_return_only_complete_data"
+        "return_only_complete_data": {
+          "$ref": "#/definitions/return_only_complete_data"
         },
         "columns": {
           "type": "string",
@@ -125,14 +125,14 @@
         "report_type": {
           "$ref": "#/definitions/report_type"
         },
-        "report_aggregation": {
-          "$ref": "#/definitions/report_aggregation"
+        "aggregation": {
+          "$ref": "#/definitions/aggregation"
         },
         "time_range": {
           "$ref": "#/definitions/time_range"
         },
-        "report_return_only_complete_data": {
-          "$ref": "#/definitions/report_return_only_complete_data"
+        "return_only_complete_data": {
+          "$ref": "#/definitions/return_only_complete_data"
         }
       }
     },
@@ -184,7 +184,7 @@
       "description": "Select one of the available report types described in the <a href='https://google.com'>documentation</a>",
       "propertyOrder": 10
     },
-    "report_aggregation": {
+    "aggregation": {
       "title": "Report aggregation",
       "description": "The type of aggregation to use to aggregate the report data.",
       "type": "string",
@@ -207,11 +207,11 @@
       "title": "Time Range",
       "propertyOrder": 20,
       "required": [
-        "report_time_zone",
-        "report_period"
+        "time_zone",
+        "period"
       ],
       "properties": {
-        "report_time_zone": {
+        "time_zone": {
           "type": "string",
           "title": "Report time zone",
           "propertyOrder": 10,
@@ -295,7 +295,7 @@
           ],
           "default": "BelgradeBratislavaBudapestLjubljanaPrague"
         },
-        "report_period": {
+        "period": {
           "title": "Report Period",
           "type": "string",
           "default": "Last14Days",
@@ -328,7 +328,7 @@
           "description": "Start date of the report. Either date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc.",
           "options": {
             "dependencies": {
-              "report_period": "CustomTimeRange"
+              "period": "CustomTimeRange"
             }
           },
           "propertyOrder": 40
@@ -340,14 +340,14 @@
           "description": "End date of the report. Either date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc.",
           "options": {
             "dependencies": {
-              "report_period": "CustomTimeRange"
+              "period": "CustomTimeRange"
             }
           },
           "propertyOrder": 50
         }
       }
     },
-    "report_return_only_complete_data": {
+    "return_only_complete_data": {
       "title": "Return only complete data",
       "description": "Determines whether or not the service must ensure that all the data has been processed and is available.",
       "type": "boolean",

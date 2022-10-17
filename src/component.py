@@ -1,8 +1,5 @@
-"""
-Template Component main class.
-
-"""
 from datetime import datetime, timezone
+from enum import Enum, unique
 import logging
 import os
 import secrets
@@ -17,23 +14,24 @@ from keboola.component.exceptions import UserException
 
 from bingads_wrapper.authorization import Authorization
 
-from bingads_wrapper.request import DownloadRequest
+from bingads_wrapper.request import DownloadRequest, CustomReportDownloadRequest
 
-# configuration variables
+# Global configuration variables
 KEY_AUTHORIZATION = "authorization"
-KEY_DOWNLOAD_REQUEST = "download_request"
-KEY_TABLE_NAME = "table_name"
-KEY_LOAD_MODE = "load_mode"
+
+# Row configuration variables
+KEY_OBJECT_TYPE = "object_type"
+KEY_DESTINATION = "destination"
+KEY_REPORT_SETTINGS_CUSTOM = "report_settings_custom"
+
+# Destination variables
+KEY_OUTPUT_TABLE_NAME = "output_table_name"
+KEY_LOAD_TYPE = "load_type"
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
-REQUIRED_PARAMETERS = [
-    KEY_AUTHORIZATION,
-    KEY_TABLE_NAME,
-    KEY_LOAD_MODE,
-    KEY_DOWNLOAD_REQUEST,
-]
-REQUIRED_IMAGE_PARS = []
+REQUIRED_PARAMETERS = (KEY_AUTHORIZATION, KEY_OBJECT_TYPE, KEY_DESTINATION)
+REQUIRED_IMAGE_PARS = ()
 
 # State variables
 KEY_REFRESH_TOKEN = "#refresh_token"
@@ -42,6 +40,23 @@ KEY_LAST_SYNC_TIME_IN_UTC = "last_sync_time_in_utc"
 
 # Other constants
 NONCE_LENGTH = 32
+
+
+# Row config enums:
+@unique
+class ObjectType(Enum):
+    """
+    object_type row config parameter enum
+    """
+    ENTITY = "entity"
+    REPORT_PREBUILT = "report_prebuilt"
+    REPORT_CUSTOM = "report_custom"
+
+
+@unique
+class LoadType(Enum):
+    FULL = "full_load"
+    INCREMENTAL = "incremental_load"
 
 
 def get_schema():
@@ -87,9 +102,10 @@ class BingAdsExtractor(ComponentBase):
                                     f" Please make sure provided configuration is valid.") from e
 
         authorization_dict = params[KEY_AUTHORIZATION]
-        table_name: str = params[KEY_TABLE_NAME]
-        incremental: bool = params[KEY_LOAD_MODE] == "Incremental"
-        download_request_dict: dict = params[KEY_DOWNLOAD_REQUEST]
+        object_type = ObjectType(params[KEY_OBJECT_TYPE])
+        destination: dict = params[KEY_DESTINATION]
+        incremental: bool = LoadType(destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL
+        table_name: str = destination[KEY_OUTPUT_TABLE_NAME]
 
         # get last state data/in/state.json from previous run
         previous_state = self.get_state_file()
@@ -101,7 +117,7 @@ class BingAdsExtractor(ComponentBase):
         last_sync_time_in_utc_str: str | None = previous_state.get(KEY_LAST_SYNC_TIME_IN_UTC)
         last_sync_time_in_utc = (datetime.fromisoformat(last_sync_time_in_utc_str)
                                  if last_sync_time_in_utc_str else None)
-        self.sync_time_in_utc_str = datetime.now(tz=timezone.utc).isoformat(timespec="seconds")
+        self.sync_time_in_utc_str = last_sync_time_in_utc_str    # Saving the old timestamp until new sync is done
 
         authorization = Authorization(
             config_dict=authorization_dict,
@@ -110,21 +126,27 @@ class BingAdsExtractor(ComponentBase):
             save_refresh_token_function=self.save_state,
         )
 
-        table_def = self.create_out_table_definition(f"{table_name}.csv", incremental=incremental)
-
-        download_request = DownloadRequest(
+        if object_type is ObjectType.REPORT_CUSTOM:
+            download_request_dict: dict = params[KEY_REPORT_SETTINGS_CUSTOM]
+            download_request_class = CustomReportDownloadRequest
+        else:
+            raise NotImplementedError("Only custom report settings are supported")
+        download_request: DownloadRequest = download_request_class(
             authorization=authorization,
             config_dict=download_request_dict,
             result_file_directory=self.tables_out_path,
-            result_file_name=table_def.name,
+            table_name=table_name,
             last_sync_time_in_utc=last_sync_time_in_utc,
         )
+        new_sync_time_in_utc_str = datetime.now(tz=timezone.utc).isoformat(timespec="seconds")
         download_request.process()
 
+        table_def = self.create_out_table_definition(download_request.result_file_name, incremental=incremental)
         table_def.primary_key = download_request.primary_key
 
         self.write_manifest(table_def)
 
+        self.sync_time_in_utc_str = new_sync_time_in_utc_str    # Extraction done, updating sync timestamp in state
         self.save_state(authorization.refresh_token)
 
     def save_state(self, refresh_token: str):
