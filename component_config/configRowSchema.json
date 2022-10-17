@@ -74,16 +74,20 @@
       "propertyOrder": 20,
       "properties": {
         "report_type": {
-          "$ref": "#/definitions/report_type"
+          "$ref": "#/definitions/report_type",
+          "propertyOrder": 10
         },
         "aggregation": {
-          "$ref": "#/definitions/aggregation"
+          "$ref": "#/definitions/aggregation",
+          "propertyOrder": 20
         },
         "time_range": {
-          "$ref": "#/definitions/time_range"
+          "$ref": "#/definitions/time_range",
+          "propertyOrder": 30
         },
         "return_only_complete_data": {
-          "$ref": "#/definitions/return_only_complete_data"
+          "$ref": "#/definitions/return_only_complete_data",
+          "propertyOrder": 40
         },
         "columns": {
           "type": "string",
@@ -93,7 +97,7 @@
             "input_height": "100px"
           },
           "description": "Comma separated list of columns to use for the report, find supported columns for specific report types in the <a href='https://google.com'>documentation</a>",
-          "propertyOrder": 40
+          "propertyOrder": 50
         },
         "primary_key": {
           "type": "string",
@@ -103,7 +107,7 @@
             "input_height": "100px"
           },
           "description": "Comma separated list of columns to be used as primary key, find supported columns for specific report types in the <a href='https://google.com'>documentation</a>",
-          "propertyOrder": 50
+          "propertyOrder": 60
         }
       }
     },
@@ -123,16 +127,20 @@
       "propertyOrder": 20,
       "properties": {
         "report_type": {
-          "$ref": "#/definitions/report_type"
+          "$ref": "#/definitions/report_type",
+          "propertyOrder": 10
         },
         "aggregation": {
-          "$ref": "#/definitions/aggregation"
+          "$ref": "#/definitions/aggregation",
+          "propertyOrder": 20
         },
         "time_range": {
-          "$ref": "#/definitions/time_range"
+          "$ref": "#/definitions/time_range",
+          "propertyOrder": 30
         },
         "return_only_complete_data": {
-          "$ref": "#/definitions/return_only_complete_data"
+          "$ref": "#/definitions/return_only_complete_data",
+          "propertyOrder": 40
         }
       }
     },

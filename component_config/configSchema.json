@@ -19,7 +19,7 @@
       "properties": {
         "client_id": {
           "type": "string",
-          "title": "Developer Token",
+          "title": "Client ID",
           "description": "The client ID",
           "propertyOrder": 1000
         },
@@ -27,6 +27,7 @@
           "type": "string",
           "title": "Developer Token",
           "description": "Your developer token",
+          "format": "password",
           "propertyOrder": 2000
         },
         "environment": {
