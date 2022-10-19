@@ -24,12 +24,14 @@
       "default": "report",
       "propertyOrder": 1
     },
-    "bulk_download_request": {
+    "bulk_settings": {
       "type": "object",
       "title": "Entity Settings",
       "options": {
         "dependencies": {
-          "object_type": "entity"
+          "object_type": [
+            "entity"
+          ]
         }
       },
       "required": [

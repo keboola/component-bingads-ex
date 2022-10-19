@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
+from datetime import datetime
 import logging
-from typing import List
+from typing import List, Optional
 
 from suds.sudsobject import Object
 
@@ -43,6 +44,8 @@ class ReportingDownloadParametersFactory:
     result_file_directory: str
     result_file_name: str
     report_file_format: str
+
+    last_sync_time_in_utc: Optional[datetime] = None
 
     primary_key: List[str] = field(init=False)
 
@@ -95,7 +98,16 @@ class ReportingDownloadParametersFactory:
 
         time.ReportTimeZone.set(time_zone)
         if period == "CustomTimeRange":
-            start_date = parse(time_dict[KEY_DATE_RANGE_START])
+            if time_dict[KEY_DATE_RANGE_START] == "last run":
+                if not self.last_sync_time_in_utc:
+                    raise UserException(
+                        'Date To specified as "last run", but no previous run sync time is available'
+                        ' (probably because this is the first run of this configuration row).'
+                        ' Please specify the Date To Time Range parameter as an absolute date (e.g. "2022-09-10"),'
+                        ' or a relative date (e.g. "1 year ago").')
+                start_date = self.last_sync_time_in_utc
+            else:
+                start_date = parse(time_dict[KEY_DATE_RANGE_START])
             end_date = parse(time_dict[KEY_DATE_RANGE_END])
             logging.info(f"Custom dates parsed to these absolute values:\n"
                          f" Date From: {start_date.isoformat(timespec='seconds')},"

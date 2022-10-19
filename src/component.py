@@ -14,7 +14,7 @@ from keboola.component.exceptions import UserException
 
 from bingads_wrapper.authorization import Authorization
 
-from bingads_wrapper.request import DownloadRequest, CustomReportDownloadRequest
+from bingads_wrapper.request import DownloadRequest, ReportDownloadRequest, BulkDownloadRequest
 
 # Global configuration variables
 KEY_AUTHORIZATION = "authorization"
@@ -22,6 +22,7 @@ KEY_AUTHORIZATION = "authorization"
 # Row configuration variables
 KEY_OBJECT_TYPE = "object_type"
 KEY_DESTINATION = "destination"
+KEY_BULK_SETTINGS = "bulk_settings"
 KEY_REPORT_SETTINGS_CUSTOM = "report_settings_custom"
 
 # Destination variables
@@ -31,7 +32,7 @@ KEY_LOAD_TYPE = "load_type"
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
 REQUIRED_PARAMETERS = (KEY_AUTHORIZATION, KEY_OBJECT_TYPE, KEY_DESTINATION)
-REQUIRED_IMAGE_PARS = ()
+REQUIRED_IMAGE_PARAMETERS = ()
 
 # State variables
 KEY_REFRESH_TOKEN = "#refresh_token"
@@ -85,14 +86,32 @@ class BingAdsExtractor(ComponentBase):
 
     If `debug` parameter is present in the `config.json`, the default logger is set to verbose DEBUG mode.
     """
+    def __init__(self, data_path_override: Optional[str] = None):
+        super().__init__(data_path_override)
+        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        self.validate_image_parameters(REQUIRED_IMAGE_PARAMETERS)
+        os.makedirs(self.tables_out_path, exist_ok=True)
+        params: dict = self.configuration.parameters
+        if params.get("debug"):
+            try:
+                jsonschema.validate(params, get_schema())
+            except jsonschema.ValidationError as e:
+                raise UserException(f"Configuration validation error: {e.message}."
+                                    f" Please make sure provided configuration is valid.") from e
+        self.previous_state = self.get_state_file()
+        self.nonce: str = self.previous_state.get(
+            KEY_NONCE,
+            "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(NONCE_LENGTH)),
+        )
+        last_sync_time_in_utc_str: Optional[str] = self.previous_state.get(KEY_LAST_SYNC_TIME_IN_UTC)
+        self.last_sync_time_in_utc = (datetime.fromisoformat(last_sync_time_in_utc_str)
+                                      if last_sync_time_in_utc_str else None)
+        self.sync_time_in_utc_str = last_sync_time_in_utc_str    # Saving the old timestamp until new sync is done
+
     def run(self):
         """
         Main execution code
         """
-        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
-        self.validate_image_parameters(REQUIRED_IMAGE_PARS)
-        os.makedirs(self.tables_out_path, exist_ok=True)
-
         params: dict = self.configuration.parameters
         if params.get("debug"):
             try:
@@ -107,18 +126,7 @@ class BingAdsExtractor(ComponentBase):
         incremental: bool = LoadType(destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL
         table_name: str = destination[KEY_OUTPUT_TABLE_NAME]
 
-        # get last state data/in/state.json from previous run
-        previous_state = self.get_state_file()
-        refresh_token: Optional[str] = previous_state.get(KEY_REFRESH_TOKEN)
-        self.nonce: str = previous_state.get(
-            KEY_NONCE,
-            "".join(secrets.choice(string.ascii_letters + string.digits) for _ in range(NONCE_LENGTH)),
-        )
-        last_sync_time_in_utc_str: str | None = previous_state.get(KEY_LAST_SYNC_TIME_IN_UTC)
-        last_sync_time_in_utc = (datetime.fromisoformat(last_sync_time_in_utc_str)
-                                 if last_sync_time_in_utc_str else None)
-        self.sync_time_in_utc_str = last_sync_time_in_utc_str    # Saving the old timestamp until new sync is done
-
+        refresh_token: Optional[str] = self.previous_state.get(KEY_REFRESH_TOKEN)
         authorization = Authorization(
             config_dict=authorization_dict,
             refresh_token=refresh_token,
@@ -126,17 +134,20 @@ class BingAdsExtractor(ComponentBase):
             save_refresh_token_function=self.save_state,
         )
 
-        if object_type is ObjectType.REPORT_CUSTOM:
-            download_request_dict: dict = params[KEY_REPORT_SETTINGS_CUSTOM]
-            download_request_class = CustomReportDownloadRequest
+        if object_type is ObjectType.ENTITY:
+            download_request_config_dict: dict = params[KEY_BULK_SETTINGS]
+            download_request_class = BulkDownloadRequest
+        elif object_type in (ObjectType.REPORT_CUSTOM, ObjectType.REPORT_PREBUILT):
+            download_request_config_dict: dict = params[KEY_REPORT_SETTINGS_CUSTOM]
+            download_request_class = ReportDownloadRequest
         else:
-            raise NotImplementedError("Only custom report settings are supported")
+            raise RuntimeError("Unexpected execution branch.")
         download_request: DownloadRequest = download_request_class(
             authorization=authorization,
-            config_dict=download_request_dict,
+            config_dict=download_request_config_dict,
             result_file_directory=self.tables_out_path,
             table_name=table_name,
-            last_sync_time_in_utc=last_sync_time_in_utc,
+            last_sync_time_in_utc=self.last_sync_time_in_utc,
         )
         new_sync_time_in_utc_str = datetime.now(tz=timezone.utc).isoformat(timespec="seconds")
         download_request.process()
@@ -144,7 +155,8 @@ class BingAdsExtractor(ComponentBase):
         table_def = self.create_out_table_definition(download_request.result_file_name, incremental=incremental)
         table_def.primary_key = download_request.primary_key
 
-        self.write_manifest(table_def)
+        if os.path.exists(table_def.full_path):    # Checking whether a CSV file was created
+            self.write_manifest(table_def)
 
         self.sync_time_in_utc_str = new_sync_time_in_utc_str    # Extraction done, updating sync timestamp in state
         self.save_state(authorization.refresh_token)

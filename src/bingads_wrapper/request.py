@@ -12,8 +12,8 @@ from bingads.v13.reporting import ReportingServiceManager, ReportingDownloadPara
 from .authorization import Authorization
 from .error_handling import output_webfault_errors
 
-# from .bulk import create_download_parameters as create_bulk_download_parameters
-# from .bulk import create_primary_key as create_bulk_primary_key
+from .bulk import create_download_parameters as create_bulk_download_parameters
+from .bulk import create_primary_key as create_bulk_primary_key
 from .reporting import ReportingDownloadParametersFactory, KEY_REPORT_TYPE
 
 REPORT_FILE_FORMAT = "Csv"
@@ -25,7 +25,7 @@ class DownloadRequest(ABC):
     config_dict: dict
     result_file_directory: str
     table_name: Optional[str] = None
-    last_sync_time_in_utc: datetime | None = None
+    last_sync_time_in_utc: Optional[datetime] = None
 
     primary_key: list[str] = field(init=False)
     result_file_name: str = field(init=False)
@@ -35,20 +35,7 @@ class DownloadRequest(ABC):
 
     @abstractmethod
     def __post_init__(self):
-        # if self.type_ is DownloadRequestType.ENTITY:
-        #     self._service_manager = BulkServiceManager(
-        #         authorization_data=self.authorization.authorization_data,
-        #         environment=self.authorization.environment,
-        #     )
-        #     self._download_parameters = create_bulk_download_parameters(
-        #         config_dict=self.config_dict,
-        #         last_sync_time_in_utc=self.last_sync_time_in_utc,
-        #         result_file_directory=self.result_file_directory,
-        #         result_file_name=self.result_file_name,
-        #         report_file_format=REPORT_FILE_FORMAT,
-        #     )
-        #     self.primary_key = create_bulk_primary_key()
-        pass    # Initialization of uninitialized fields must be done in derived classes
+        pass    # Initialization of uninitialized/optional fields must be done in derived classes
 
     def process(self):
         try:
@@ -58,7 +45,26 @@ class DownloadRequest(ABC):
             raise
 
 
-class CustomReportDownloadRequest(DownloadRequest):
+class BulkDownloadRequest(DownloadRequest):
+    def __post_init__(self):
+        if not self.table_name:
+            self.table_name = "entities"
+        self.result_file_name = f"{self.table_name}.csv"
+        self._service_manager = BulkServiceManager(
+            authorization_data=self.authorization.authorization_data,
+            environment=self.authorization.environment,
+        )
+        self._download_parameters = create_bulk_download_parameters(
+            config_dict=self.config_dict,
+            last_sync_time_in_utc=self.last_sync_time_in_utc,
+            result_file_directory=self.result_file_directory,
+            result_file_name=self.result_file_name,
+            report_file_format=REPORT_FILE_FORMAT,
+        )
+        self.primary_key = create_bulk_primary_key()
+
+
+class ReportDownloadRequest(DownloadRequest):
     def __post_init__(self):
         if not self.table_name:
             self.table_name = f"{self.config_dict[KEY_REPORT_TYPE]}Report"
@@ -73,6 +79,6 @@ class CustomReportDownloadRequest(DownloadRequest):
             result_file_name=self.result_file_name,
             report_file_format=REPORT_FILE_FORMAT,
             reporting_service=self._service_manager._service_client,
-        )
+            last_sync_time_in_utc=self.last_sync_time_in_utc)
         self._download_parameters = reporting_download_parameters_factory.create()
         self.primary_key = reporting_download_parameters_factory.primary_key

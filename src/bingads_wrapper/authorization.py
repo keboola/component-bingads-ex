@@ -62,7 +62,8 @@ class Authorization:
             logging.info("Refresh token authentication successful")
         else:
             # This branch should only be reached when the program is run in a development environment,
-            #  otherwise refresh_token must be set. TODO: implement a check for this and raise user error.
+            #  otherwise refresh_token must be set.
+            # TODO: implement a check for this and raise user error.
             request_user_consent(authentication)
             logging.info("User consent acquired successfully")
 
