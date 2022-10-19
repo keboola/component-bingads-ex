@@ -1,11 +1,13 @@
 from dataclasses import dataclass, field
+import logging
 from typing import List
-from datetime import date
 
 from suds.sudsobject import Object
 
 from bingads.service_client import ServiceClient, AuthorizationData
 from bingads.v13.reporting import ReportingDownloadParameters
+
+from dateparser import parse
 
 from keboola.component.exceptions import UserException
 
@@ -22,8 +24,8 @@ KEY_PRIMARY_KEY = "primary_key"
 # Time range keys:
 KEY_TIME_ZONE = "time_zone"
 KEY_PERIOD = "period"
-KEY_DATE_RANGE_START = "date_range_start"
-KEY_DATE_RANGE_END = "date_range_end"
+KEY_DATE_RANGE_START = "date_from"
+KEY_DATE_RANGE_END = "date_to"
 
 DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = 60 * 1000
 OVERWRITE_RESULT_FILE = True
@@ -85,28 +87,31 @@ class ReportingDownloadParametersFactory:
     def _set_report_request_aggregation_parameter(self):
         self._report_request.Aggregation.set(self.config_dict[KEY_AGGREGATION])
 
-    def _set_report_request_time_parameter(self):    # TODO: finish
+    def _set_report_request_time_parameter(self):
         time = self._report_request.Time
         time_dict: dict = self.config_dict[KEY_TIME_RANGE]
         time_zone = time_dict[KEY_TIME_ZONE]
         period = time_dict[KEY_PERIOD]
 
         time.ReportTimeZone.set(time_zone)
-        if period != "CustomTimeRange":
-            time.PredefinedTime = period
-            time.CustomDateRangeStart = None
-            time.CustomDateRangeEnd = None
-        else:
-            start_date = date.fromisoformat(time_dict[KEY_DATE_RANGE_START])
-            end_date = date.fromisoformat(time_dict[KEY_DATE_RANGE_END])
+        if period == "CustomTimeRange":
+            start_date = parse(time_dict[KEY_DATE_RANGE_START])
+            end_date = parse(time_dict[KEY_DATE_RANGE_END])
+            logging.info(f"Custom dates parsed to these absolute values:\n"
+                         f" Date From: {start_date.isoformat(timespec='seconds')},"
+                         f" Date To: {end_date.isoformat(timespec='seconds')}")
             time.CustomDateRangeStart.Year = start_date.year
             time.CustomDateRangeStart.Month = start_date.month
             time.CustomDateRangeStart.Day = start_date.day
             time.CustomDateRangeEnd.Year = end_date.year
             time.CustomDateRangeEnd.Month = end_date.month
             time.CustomDateRangeEnd.Day = end_date.day
+        else:
+            time.PredefinedTime = period
+            time.CustomDateRangeStart = None
+            time.CustomDateRangeEnd = None
 
-    def _set_report_request_columns_parameter_and_primary_key(self):    # TODO: finish
+    def _set_report_request_columns_parameter_and_primary_key(self):
         report_columns = self._report_request.Columns
         column_array: List[str] = getattr(report_columns, self._report_type + "ReportColumn")
         column_names: List[str] = comma_separated_str_to_list(self.config_dict[KEY_COLUMNS])
