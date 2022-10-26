@@ -124,6 +124,7 @@ class ReportingDownloadParametersFactory:
             time.CustomDateRangeEnd = None
 
     def _set_report_request_columns_parameter_and_primary_key(self):
+        # TODO: support prebuilt configs - i.e. missing columns and primary key
         report_columns = self._report_request.Columns
         column_array: List[str] = getattr(report_columns, self._report_type + "ReportColumn")
         column_names: List[str] = comma_separated_str_to_list(self.config_dict[KEY_COLUMNS])

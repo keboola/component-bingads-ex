@@ -24,6 +24,7 @@ KEY_OBJECT_TYPE = "object_type"
 KEY_DESTINATION = "destination"
 KEY_BULK_SETTINGS = "bulk_settings"
 KEY_REPORT_SETTINGS_CUSTOM = "report_settings_custom"
+KEY_REPORT_SETTINGS_PREBUILT = "report_settings_prebuilt"
 
 # Destination variables
 KEY_OUTPUT_TABLE_NAME = "output_table_name"
@@ -138,7 +139,9 @@ class BingAdsExtractor(ComponentBase):
             download_request_config_dict: dict = params[KEY_BULK_SETTINGS]
             download_request_class = BulkDownloadRequest
         elif object_type in (ObjectType.REPORT_CUSTOM, ObjectType.REPORT_PREBUILT):
-            download_request_config_dict: dict = params[KEY_REPORT_SETTINGS_CUSTOM]
+            download_request_config_dict: dict = (params[KEY_REPORT_SETTINGS_CUSTOM]
+                                                  if object_type is ObjectType.REPORT_CUSTOM else
+                                                  params[KEY_REPORT_SETTINGS_PREBUILT])
             download_request_class = ReportDownloadRequest
         else:
             raise RuntimeError("Unexpected execution branch.")
