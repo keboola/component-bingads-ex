@@ -11,18 +11,12 @@
       "description": "Parameters used for authorization",
       "format": "table",
       "required": [
-        "client_id",
         "#developer_token",
+        "environment",
         "customer_id",
         "account_id"
       ],
       "properties": {
-        "client_id": {
-          "type": "string",
-          "title": "Client ID",
-          "description": "The client ID",
-          "propertyOrder": 1000
-        },
         "#developer_token": {
           "type": "string",
           "title": "Developer Token",
