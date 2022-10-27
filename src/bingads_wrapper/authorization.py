@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
 import logging
 from typing import Callable, Literal, Optional
-# import webbrowser
 
 from bingads.authorization import (AuthorizationData, OAuthTokens, OAuthWithAuthorizationCode)
+from bingads.exceptions import OAuthTokenRequestException
 
 from keboola.component.dao import OauthCredentials
 
@@ -23,6 +23,7 @@ class Authorization:
     config_dict: dict
     oauth_credentials: OauthCredentials
     save_refresh_token_function: Callable[[str], None]
+    refresh_token_from_state: Optional[str]
 
     authorization_data: AuthorizationData = field(init=False)
     developer_token: str = field(init=False)
@@ -48,7 +49,11 @@ class Authorization:
                                                     redirection_uri="",
                                                     token_refreshed_callback=self.save_refresh_token)
 
-        authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
+        try:
+            authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
+        except OAuthTokenRequestException:
+            self.refresh_token = self.refresh_token_from_state
+            authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
         logging.info("Refresh token authentication successful")
 
         self.authorization_data = AuthorizationData(

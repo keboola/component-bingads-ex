@@ -121,9 +121,12 @@ class BingAdsExtractor(ComponentBase):
         incremental: bool = LoadType(destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL
         table_name: str = destination[KEY_OUTPUT_TABLE_NAME]
 
+        refresh_token_from_state: str = self.previous_state.get(KEY_REFRESH_TOKEN)
+
         authorization = Authorization(config_dict=authorization_dict,
                                       oauth_credentials=self.get_oauth_credentials(),
-                                      save_refresh_token_function=self.save_state)
+                                      save_refresh_token_function=self.save_state,
+                                      refresh_token_from_state=refresh_token_from_state)
 
         if object_type is ObjectType.ENTITY:
             download_request_config_dict: dict = params[KEY_BULK_SETTINGS]
