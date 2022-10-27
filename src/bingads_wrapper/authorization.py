@@ -1,31 +1,16 @@
 from dataclasses import dataclass, field
 import logging
 from typing import Callable, Literal, Optional
-import webbrowser
+# import webbrowser
 
-from bingads.authorization import (
-    AuthorizationData,
-    OAuthDesktopMobileAuthCodeGrant,
-    OAuthTokens,
-    OAuthWithAuthorizationCode,
-)
+from bingads.authorization import (AuthorizationData, OAuthTokens, OAuthWithAuthorizationCode)
 
-KEY_CLIENT_ID = "client_id"
-KEY_DEVELOPER_TOKEN = "#developer_token"
+from keboola.component.dao import OauthCredentials
+
+# User config params:
 KEY_CUSTOMER_ID = "customer_id"
 KEY_ACCOUNT_ID = "account_id"
 KEY_ENVIRONMENT = "environment"
-
-
-def request_user_consent(authentication: OAuthWithAuthorizationCode):
-    webbrowser.open(authentication.get_authorization_endpoint(), new=1)
-    response_uri = input(
-        "You need to provide consent for the application to access your Microsoft Advertising accounts."
-        " After you have granted consent in the web browser for the application"
-        " to access your Microsoft Advertising accounts,"
-        " please enter the response URI that includes the authorization 'code' parameter: \n")
-    # Request access and refresh tokens using the URI that you provided manually during program execution.
-    authentication.request_oauth_tokens_by_response_uri(response_uri=response_uri)
 
 
 @dataclass(slots=True)
@@ -35,37 +20,36 @@ class Authorization:
     """
 
     config_dict: dict
+    oauth_credentials: OauthCredentials
     save_refresh_token_function: Callable[[str], None]
-    refresh_token: Optional[str] = None
-    nonce: Optional[str] = None
+    developer_token_dict: str
 
     authorization_data: AuthorizationData = field(init=False)
-    client_id: str = field(init=False)
     developer_token: str = field(init=False)
+    client_id: str = field(init=False)
+    client_secret: Optional[str] = field(init=False)
     environment: Literal["sandbox", "production"] = field(init=False)
+    refresh_token: str = field(init=False)
     customer_id: int = field(init=False)
     account_id: int = field(init=False)
 
     def __post_init__(self):
-        self.client_id = self.config_dict[KEY_CLIENT_ID]
-        self.developer_token = self.config_dict[KEY_DEVELOPER_TOKEN]
+        self.client_id = self.oauth_credentials.appKey
+        self.client_secret = self.oauth_credentials.appSecret
+        self.refresh_token = self.oauth_credentials.data["refresh_token"]
         self.environment = self.config_dict[KEY_ENVIRONMENT]
         self.customer_id = self.config_dict[KEY_CUSTOMER_ID]
         self.account_id = self.config_dict[KEY_ACCOUNT_ID]
+        self.developer_token = self.developer_token_dict[self.environment]
 
-        authentication = OAuthDesktopMobileAuthCodeGrant(client_id=self.client_id, env=self.environment)
-        authentication.state = self.nonce
-        authentication.token_refreshed_callback = self.save_refresh_token
+        authentication = OAuthWithAuthorizationCode(client_id=self.client_id,
+                                                    client_secret=self.client_secret,
+                                                    env=self.environment,
+                                                    redirection_uri="",
+                                                    token_refreshed_callback=self.save_refresh_token)
 
-        if self.refresh_token:
-            authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
-            logging.info("Refresh token authentication successful")
-        else:
-            # This branch should only be reached when the program is run in a development environment,
-            #  otherwise refresh_token must be set.
-            # TODO: implement a check for this and raise user error.
-            request_user_consent(authentication)
-            logging.info("User consent acquired successfully")
+        authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
+        logging.info("Refresh token authentication successful")
 
         self.authorization_data = AuthorizationData(
             account_id=self.account_id,
