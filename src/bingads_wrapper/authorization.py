@@ -8,6 +8,7 @@ from bingads.authorization import (AuthorizationData, OAuthTokens, OAuthWithAuth
 from keboola.component.dao import OauthCredentials
 
 # User config params:
+KEY_DEVELOPER_TOKEN = "#developer_token"
 KEY_CUSTOMER_ID = "customer_id"
 KEY_ACCOUNT_ID = "account_id"
 KEY_ENVIRONMENT = "environment"
@@ -22,7 +23,6 @@ class Authorization:
     config_dict: dict
     oauth_credentials: OauthCredentials
     save_refresh_token_function: Callable[[str], None]
-    developer_token_dict: str
 
     authorization_data: AuthorizationData = field(init=False)
     developer_token: str = field(init=False)
@@ -40,7 +40,7 @@ class Authorization:
         self.environment = self.config_dict[KEY_ENVIRONMENT]
         self.customer_id = self.config_dict[KEY_CUSTOMER_ID]
         self.account_id = self.config_dict[KEY_ACCOUNT_ID]
-        self.developer_token = self.developer_token_dict[self.environment]
+        self.developer_token = self.config_dict[KEY_DEVELOPER_TOKEN]
 
         authentication = OAuthWithAuthorizationCode(client_id=self.client_id,
                                                     client_secret=self.client_secret,

@@ -28,13 +28,10 @@ KEY_REPORT_SETTINGS_PREBUILT = "report_settings_prebuilt"
 KEY_OUTPUT_TABLE_NAME = "output_table_name"
 KEY_LOAD_TYPE = "load_type"
 
-# Image parameters
-KEY_DEVELOPER_TOKEN = "developer_token"
-
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
 REQUIRED_PARAMETERS = (KEY_AUTHORIZATION, KEY_OBJECT_TYPE, KEY_DESTINATION)
-REQUIRED_IMAGE_PARAMETERS = (KEY_DEVELOPER_TOKEN,)
+REQUIRED_IMAGE_PARAMETERS = ()
 
 # State variables
 KEY_REFRESH_TOKEN = "#refresh_token"
@@ -124,12 +121,9 @@ class BingAdsExtractor(ComponentBase):
         incremental: bool = LoadType(destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL
         table_name: str = destination[KEY_OUTPUT_TABLE_NAME]
 
-        developer_token_dict: dict = self.configuration.image_parameters[KEY_DEVELOPER_TOKEN]
-
         authorization = Authorization(config_dict=authorization_dict,
                                       oauth_credentials=self.get_oauth_credentials(),
-                                      save_refresh_token_function=self.save_state,
-                                      developer_token_dict=developer_token_dict)
+                                      save_refresh_token_function=self.save_state)
 
         if object_type is ObjectType.ENTITY:
             download_request_config_dict: dict = params[KEY_BULK_SETTINGS]
