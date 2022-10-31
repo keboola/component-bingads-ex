@@ -1,6 +1,8 @@
 from dataclasses import dataclass, field
 from datetime import datetime
+import json
 import logging
+from pathlib import Path
 from typing import List, Optional
 
 from suds.sudsobject import Object
@@ -53,10 +55,13 @@ class ReportingDownloadParametersFactory:
     _report_type: str = field(init=False)
     _report_request: Object = field(init=False)
 
+    _prebuilt_config_cache: Optional[dict] = field(init=False)
+
     def __post_init__(self):
         self._authorization_data = self.reporting_service.authorization_data
         self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
         self._report_request = self.reporting_service.factory.create(self._report_type + "ReportRequest")
+        self._prebuilt_config_cache = None
         self._create_report_request()
 
     def create(self) -> ReportingDownloadParameters:
@@ -124,12 +129,17 @@ class ReportingDownloadParametersFactory:
             time.CustomDateRangeEnd = None
 
     def _set_report_request_columns_parameter_and_primary_key(self):
-        # TODO: support prebuilt configs - i.e. missing columns and primary key
         report_columns = self._report_request.Columns
         column_array: List[str] = getattr(report_columns, self._report_type + "ReportColumn")
-        column_names: List[str] = comma_separated_str_to_list(self.config_dict[KEY_COLUMNS])
+        if KEY_COLUMNS in self.config_dict:
+            column_names: List[str] = comma_separated_str_to_list(self.config_dict[KEY_COLUMNS])
+        else:
+            column_names: List[str] = self.prebuilt_report_config[KEY_COLUMNS]
         column_array.extend(column_names)
-        self.primary_key = comma_separated_str_to_list(self.config_dict[KEY_PRIMARY_KEY])
+        if KEY_PRIMARY_KEY in self.config_dict:
+            self.primary_key = comma_separated_str_to_list(self.config_dict[KEY_PRIMARY_KEY])
+        else:
+            self.primary_key: List[str] = self.prebuilt_report_config[KEY_PRIMARY_KEY]
         primary_key_columns_not_in_columns = set(self.primary_key) - set(column_names)
         if primary_key_columns_not_in_columns:
             raise UserException(
@@ -138,3 +148,10 @@ class ReportingDownloadParametersFactory:
 
     def _set_report_request_scope_parameter(self):
         self._report_request.Scope.AccountIds = {"long": [self._authorization_data.account_id]}
+
+    @property
+    def prebuilt_report_config(self) -> dict:
+        if not self._prebuilt_config_cache:
+            path = Path(__file__).parent / 'prebuilt_configs' / f'{self._report_type}.json'
+            self._prebuilt_config_cache = json.loads(path.read_text())
+        return self._prebuilt_config_cache
