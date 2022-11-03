@@ -1,9 +1,7 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-import json
 import logging
-from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 from suds.sudsobject import Object
 
@@ -15,7 +13,9 @@ from dateparser import parse
 from keboola.component.exceptions import UserException
 
 from .utils import comma_separated_str_to_list
+from .prebuilt_configs import get_prebuilt_report_config
 
+KEY_PRESET_NAME = "preset_name"
 KEY_AGGREGATION = "aggregation"
 KEY_REPORT_TYPE = "report_type"
 KEY_FORMAT_VERSION = "format_version"
@@ -42,26 +42,26 @@ DEFAULT_FORMAT_VERSION = "2.0"
 @dataclass(slots=True)
 class ReportingDownloadParametersFactory:
     reporting_service: ServiceClient
-    config_dict: dict
+    config_dict: dict[str, str | list[str]]
     result_file_directory: str
     result_file_name: str
     report_file_format: str
 
     last_sync_time_in_utc: Optional[datetime] = None
 
-    primary_key: List[str] = field(init=False)
+    primary_key: list[str] = field(init=False)
 
     _authorization_data: AuthorizationData = field(init=False)
     _report_type: str = field(init=False)
     _report_request: Object = field(init=False)
 
-    _prebuilt_config_cache: Optional[dict] = field(init=False)
-
     def __post_init__(self):
         self._authorization_data = self.reporting_service.authorization_data
+        if KEY_REPORT_TYPE not in self.config_dict:    # If true, we are dealing with a prebuilt report
+            self.config_dict = self.config_dict | get_prebuilt_report_config(
+                preset_name=self.config_dict[KEY_PRESET_NAME], aggregation=self.config_dict[KEY_AGGREGATION])
         self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
         self._report_request = self.reporting_service.factory.create(self._report_type + "ReportRequest")
-        self._prebuilt_config_cache = None
         self._create_report_request()
 
     def create(self) -> ReportingDownloadParameters:
@@ -130,16 +130,18 @@ class ReportingDownloadParametersFactory:
 
     def _set_report_request_columns_parameter_and_primary_key(self):
         report_columns = self._report_request.Columns
-        column_array: List[str] = getattr(report_columns, self._report_type + "ReportColumn")
-        if KEY_COLUMNS in self.config_dict:
-            column_names: List[str] = comma_separated_str_to_list(self.config_dict[KEY_COLUMNS])
-        else:
-            column_names: List[str] = self.prebuilt_report_config[KEY_COLUMNS]
+        column_array: list[str] = getattr(report_columns, self._report_type + "ReportColumn")
+        column_spec = self.config_dict[KEY_COLUMNS]
+        if isinstance(column_spec, str):
+            column_names = comma_separated_str_to_list(column_spec)
+        elif isinstance(column_spec, list):
+            column_names = column_spec
         column_array.extend(column_names)
-        if KEY_PRIMARY_KEY in self.config_dict:
-            self.primary_key = comma_separated_str_to_list(self.config_dict[KEY_PRIMARY_KEY])
-        else:
-            self.primary_key: List[str] = self.prebuilt_report_config[KEY_PRIMARY_KEY]
+        primary_key_spec = self.config_dict[KEY_PRIMARY_KEY]
+        if isinstance(primary_key_spec, str):
+            self.primary_key = comma_separated_str_to_list(primary_key_spec)
+        elif isinstance(primary_key_spec, list):
+            self.primary_key = primary_key_spec
         primary_key_columns_not_in_columns = set(self.primary_key) - set(column_names)
         if primary_key_columns_not_in_columns:
             raise UserException(
@@ -148,10 +150,3 @@ class ReportingDownloadParametersFactory:
 
     def _set_report_request_scope_parameter(self):
         self._report_request.Scope.AccountIds = {"long": [self._authorization_data.account_id]}
-
-    @property
-    def prebuilt_report_config(self) -> dict:
-        if not self._prebuilt_config_cache:
-            path = Path(__file__).parent / 'prebuilt_configs' / f'{self._report_type}.json'
-            self._prebuilt_config_cache = json.loads(path.read_text())
-        return self._prebuilt_config_cache
