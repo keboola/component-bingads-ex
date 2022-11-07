@@ -76,11 +76,33 @@
       "propertyOrder": 20,
       "properties": {
         "report_type": {
-          "$ref": "#/definitions/report_type",
+          "enum": [
+            "AccountPerformance",
+            "CampaignPerformance",
+            "AdGroupPerformance"
+          ],
+          "type": "string",
+          "title": "Report type",
+          "default": "Object",
+          "description": "Select one of the available report types described in the <a href='https://google.com'>documentation</a>",
           "propertyOrder": 10
         },
         "aggregation": {
-          "$ref": "#/definitions/aggregation",
+          "title": "Report aggregation",
+          "description": "The type of aggregation to use to aggregate the report data.",
+          "type": "string",
+          "enum": [
+            "Daily",
+            "DayOfWeek",
+            "Hourly",
+            "HourOfDay",
+            "Monthly",
+            "Weekly",
+            "WeeklyStartingMonday",
+            "Yearly",
+            "Summary"
+          ],
+          "default": "Daily",
           "propertyOrder": 20
         },
         "time_range": {
@@ -98,7 +120,7 @@
           "options": {
             "input_height": "100px"
           },
-          "description": "Comma separated list of columns to use for the report, find supported columns for specific report types in the <a href='https://google.com'>documentation</a>",
+          "description": "Comma separated list of columns to use for the report, find supported columns for specific report types in the <a href='https://TODO.com'>documentation</a>",
           "propertyOrder": 50
         },
         "primary_key": {
@@ -108,7 +130,7 @@
           "options": {
             "input_height": "100px"
           },
-          "description": "Comma separated list of columns to be used as primary key, find supported columns for specific report types in the <a href='https://google.com'>documentation</a>",
+          "description": "Comma separated list of columns to be used as primary key, find supported columns for specific report types in the <a href='https://TODO.com'>documentation</a>",
           "propertyOrder": 60
         }
       }
@@ -128,12 +150,28 @@
       },
       "propertyOrder": 20,
       "properties": {
-        "report_type": {
-          "$ref": "#/definitions/report_type",
+        "preset_name": {
+          "enum": [
+            "AccountPerformance",
+            "AccountImpressionPerformance",
+            "AdGroupPerformance",
+            "CampaignPerformance"
+          ],
+          "type": "string",
+          "title": "Report type",
+          "default": "Object",
+          "description": "Select one of the available report presets described in the <a href='https://TODO.com'>documentation</a>",
           "propertyOrder": 10
         },
         "aggregation": {
-          "$ref": "#/definitions/aggregation",
+          "title": "Report aggregation",
+          "description": "The type of aggregation to use to aggregate the report data. Only hourly and daily aggregation is available for prebuilt reports.",
+          "type": "string",
+          "enum": [
+            "Daily",
+            "Hourly"
+          ],
+          "default": "Daily",
           "propertyOrder": 20
         },
         "time_range": {
@@ -183,35 +221,6 @@
     }
   },
   "definitions": {
-    "report_type": {
-      "enum": [
-        "AccountPerformance",
-        "CampaignPerformance"
-      ],
-      "type": "string",
-      "title": "Report type",
-      "default": "Object",
-      "description": "Select one of the available report types described in the <a href='https://google.com'>documentation</a>",
-      "propertyOrder": 10
-    },
-    "aggregation": {
-      "title": "Report aggregation",
-      "description": "The type of aggregation to use to aggregate the report data.",
-      "type": "string",
-      "enum": [
-        "Daily",
-        "DayOfWeek",
-        "Hourly",
-        "HourOfDay",
-        "Monthly",
-        "Weekly",
-        "WeeklyStartingMonday",
-        "Yearly",
-        "Summary"
-      ],
-      "default": "Daily",
-      "propertyOrder": 15
-    },
     "time_range": {
       "type": "object",
       "title": "Time Range",

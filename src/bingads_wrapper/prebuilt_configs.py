@@ -29,7 +29,7 @@ class PrebuiltReportConfig:
     columns_and_primary_key_by_aggregation: dict[Aggregation, ColumnsAndPrimaryKey]
 
 
-COMMON_PRIMARY_KEY_COLUMNS = (
+COMMON_PRIMARY_KEY = (
     "AccountId",
     "TimePeriod",
     "CurrencyCode",
@@ -39,13 +39,15 @@ COMMON_PRIMARY_KEY_COLUMNS = (
     "DeliveredMatchType",
 )
 
-RESTRICTED_PRIMARY_KEY_COLUMNS = (
+RESTRICTED_PRIMARY_KEY = (
     "BidMatchType",
     "DeviceOS",
     "Goal",
     "GoalType",
     "TopVsOther",
 )
+
+AD_GROUP_PRIMARY_KEY = ("AdGroupId",)
 
 CAMPAIGN_PRIMARY_KEY = ("CampaignId",)
 
@@ -137,7 +139,7 @@ RESTRICTING_PERFORMANCE_METRICS = (
     "ExactMatchImpressionSharePercent",
     "ImpressionLostToBudgetPercent",
     "ImpressionLostToRankAggPercent",
-    "ImpressionSharePercent",
+    # "ImpressionSharePercent",
     # "RelativeCtr",
 )
 
@@ -150,8 +152,8 @@ CAMPAIGN_METRICS = (
 
 ACCOUNT_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
     columns=unique(
-        COMMON_PRIMARY_KEY_COLUMNS,
-        RESTRICTED_PRIMARY_KEY_COLUMNS,
+        COMMON_PRIMARY_KEY,
+        RESTRICTED_PRIMARY_KEY,
         COMMON_PERFORMANCE_METRICS,
         AVERAGE_METRICS,
         CONVERSION_METRICS,
@@ -159,32 +161,25 @@ ACCOUNT_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
         REVENUE_METRICS,
     ),
     primary_key=unique(
-        COMMON_PRIMARY_KEY_COLUMNS,
-        RESTRICTED_PRIMARY_KEY_COLUMNS,
+        COMMON_PRIMARY_KEY,
+        RESTRICTED_PRIMARY_KEY,
     ),
 )
 
-ACCOUNT_IMPRESSION_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
-    columns=unique(
-        COMMON_PRIMARY_KEY_COLUMNS,
-        COMMON_PERFORMANCE_METRICS,
-        RESTRICTING_PERFORMANCE_METRICS,
-        AVERAGE_METRICS,
-        CONVERSION_METRICS,
-        LOW_QUALITY_METRICS,
-        REVENUE_METRICS,
-    ),
-    primary_key=unique(COMMON_PRIMARY_KEY_COLUMNS,),
-)
+# ACCOUNT_IMPRESSION_PERFORMANCE_COLUMNS_AND_PK =
 
-CAMPAIGN_PERFORMANCE_PRIMARY_KEY = unique(
-    COMMON_PRIMARY_KEY_COLUMNS,
-    RESTRICTED_PRIMARY_KEY_COLUMNS,
+CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
+    COMMON_PRIMARY_KEY,
     CAMPAIGN_PRIMARY_KEY,
 )
 
-COMMON_CAMPAIGN_PERFORMANCE_COLUMNS = unique(
-    CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
+CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(
+    CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
+    RESTRICTED_PRIMARY_KEY,
+)
+
+CAMPAIGN_PERFORMANCE_COMMON_COLUMNS = unique(
+    CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY,
     CAMPAIGN_COLUMNS,
     COMMON_PERFORMANCE_METRICS,
     ALL_REVENUE_METRICS,
@@ -194,6 +189,26 @@ COMMON_CAMPAIGN_PERFORMANCE_COLUMNS = unique(
     REVENUE_METRICS,
     BUDGET_COLUMNS,
 )
+
+AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
+    CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
+    AD_GROUP_PRIMARY_KEY,
+    ("Language",),
+)
+
+AD_GROUP_PERFORMANCE_COMMON_COLUMNS = unique(
+    AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
+    COMMON_PERFORMANCE_METRICS,
+    CAMPAIGN_METRICS,
+    CAMPAIGN_COLUMNS,
+    ("FinalUrlSuffix",),
+    ALL_REVENUE_METRICS,
+    AVERAGE_METRICS,
+    CONVERSION_METRICS,
+    REVENUE_METRICS,
+)
+
+AD_GROUP_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY, RESTRICTED_PRIMARY_KEY)
 
 PREBUILT_CONFIGS = {
     "AccountPerformance":
@@ -208,8 +223,55 @@ PREBUILT_CONFIGS = {
         PrebuiltReportConfig(
             report_type="AccountPerformance",
             columns_and_primary_key_by_aggregation={
-                "Daily": ACCOUNT_IMPRESSION_PERFORMANCE_COLUMNS_AND_PK,
-                "Hourly": ACCOUNT_IMPRESSION_PERFORMANCE_COLUMNS_AND_PK,
+                "Daily":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            COMMON_PRIMARY_KEY,
+                            COMMON_PERFORMANCE_METRICS,
+                            RESTRICTING_PERFORMANCE_METRICS,
+                            AVERAGE_METRICS,
+                            CONVERSION_METRICS,
+                            LOW_QUALITY_METRICS,
+                            REVENUE_METRICS,
+                            ("ImpressionSharePercent",),
+                        ),
+                        primary_key=unique(COMMON_PRIMARY_KEY,),
+                    ),
+                "Hourly":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            COMMON_PRIMARY_KEY,
+                            COMMON_PERFORMANCE_METRICS,
+                            AVERAGE_METRICS,
+                            CONVERSION_METRICS,
+                            LOW_QUALITY_METRICS,
+                            REVENUE_METRICS,
+                        ),
+                        primary_key=unique(COMMON_PRIMARY_KEY,),
+                    ),
+            },
+        ),
+    "AdGroupPerformance":
+        PrebuiltReportConfig(
+            report_type="AdGroupPerformance",
+            columns_and_primary_key_by_aggregation={
+                "Daily":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
+                            RESTRICTING_PERFORMANCE_METRICS,
+                            HISTORICAL_METRICS,
+                        ),
+                        primary_key=AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
+                    ),
+                "Hourly":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
+                            RESTRICTING_PERFORMANCE_METRICS,
+                        ),
+                        primary_key=AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
+                    )
             },
         ),
     "CampaignPerformance":
@@ -219,15 +281,15 @@ PREBUILT_CONFIGS = {
                 "Daily":
                     ColumnsAndPrimaryKey(
                         columns=unique(
-                            COMMON_CAMPAIGN_PERFORMANCE_COLUMNS,
+                            CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
                             HISTORICAL_METRICS,
                         ),
-                        primary_key=CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
+                        primary_key=CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY,
                     ),
                 "Hourly":
                     ColumnsAndPrimaryKey(
-                        columns=COMMON_CAMPAIGN_PERFORMANCE_COLUMNS,
-                        primary_key=CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
+                        columns=CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
+                        primary_key=CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY,
                     ),
             },
         ),
@@ -248,4 +310,7 @@ def get_prebuilt_report_config(preset_name: str, aggregation: Aggregation) -> di
                             f' and aggregation "{aggregation}" is not available.')
 
 
-pass
+if __name__ == "__main__":
+    import json
+    with open("data/prebuilt_config_preset_names.json", 'w') as out_f:
+        json.dump(list(PREBUILT_CONFIGS.keys()), out_f)
