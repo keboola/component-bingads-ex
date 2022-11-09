@@ -185,7 +185,9 @@
             "AccountPerformance",
             "AccountImpressionPerformance",
             "AdGroupPerformance",
-            "CampaignPerformance"
+            "AdGroupImpressionPerformance",
+            "CampaignPerformance",
+            "CampaignImpressionPerformance"
           ],
           "type": "string",
           "title": "Report type",

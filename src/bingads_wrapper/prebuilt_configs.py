@@ -22,6 +22,13 @@ class ColumnsAndPrimaryKey:
     columns: list[str]
     primary_key: list[str]
 
+    def __post_init__(self):
+        pk_not_in_columns = set(self.primary_key) - set(self.columns)
+        if pk_not_in_columns:
+            missing_col_string = ', '.join(pk_not_in_columns)
+            raise ValueError(f'All primary key columns must be in columns.'
+                             f' Primary key columns missing in columns: {missing_col_string}.')
+
 
 @dataclass(slots=True, frozen=True)
 class PrebuiltReportConfig:
@@ -127,7 +134,7 @@ COMMON_PERFORMANCE_METRICS = (
     "ViewThroughConversionsQualified",
 )
 
-RESTRICTING_PERFORMANCE_METRICS = (
+COMMON_RESTRICTING_PERFORMANCE_METRICS = (
     "AbsoluteTopImpressionRatePercent",
     "AbsoluteTopImpressionShareLostToBudgetPercent",
     "AbsoluteTopImpressionShareLostToRankPercent",
@@ -166,20 +173,13 @@ ACCOUNT_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
     ),
 )
 
-# ACCOUNT_IMPRESSION_PERFORMANCE_COLUMNS_AND_PK =
-
 CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
     COMMON_PRIMARY_KEY,
     CAMPAIGN_PRIMARY_KEY,
 )
 
-CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(
-    CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
-    RESTRICTED_PRIMARY_KEY,
-)
-
 CAMPAIGN_PERFORMANCE_COMMON_COLUMNS = unique(
-    CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY,
+    CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
     CAMPAIGN_COLUMNS,
     COMMON_PERFORMANCE_METRICS,
     ALL_REVENUE_METRICS,
@@ -187,7 +187,6 @@ CAMPAIGN_PERFORMANCE_COMMON_COLUMNS = unique(
     CONVERSION_METRICS,
     LOW_QUALITY_METRICS,
     REVENUE_METRICS,
-    BUDGET_COLUMNS,
 )
 
 AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
@@ -208,7 +207,10 @@ AD_GROUP_PERFORMANCE_COMMON_COLUMNS = unique(
     REVENUE_METRICS,
 )
 
-AD_GROUP_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY, RESTRICTED_PRIMARY_KEY)
+AD_GROUP_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(
+    AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
+    RESTRICTED_PRIMARY_KEY,
+)
 
 PREBUILT_CONFIGS = {
     "AccountPerformance":
@@ -228,12 +230,13 @@ PREBUILT_CONFIGS = {
                         columns=unique(
                             COMMON_PRIMARY_KEY,
                             COMMON_PERFORMANCE_METRICS,
-                            RESTRICTING_PERFORMANCE_METRICS,
+                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
                             AVERAGE_METRICS,
                             CONVERSION_METRICS,
                             LOW_QUALITY_METRICS,
                             REVENUE_METRICS,
-                            ("ImpressionSharePercent",),
+                            IMPRESSION_METRICS,
+                            check_already_unique=False,
                         ),
                         primary_key=unique(COMMON_PRIMARY_KEY,),
                     ),
@@ -259,8 +262,39 @@ PREBUILT_CONFIGS = {
                     ColumnsAndPrimaryKey(
                         columns=unique(
                             AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
-                            RESTRICTING_PERFORMANCE_METRICS,
+                            RESTRICTED_PRIMARY_KEY,
                             HISTORICAL_METRICS,
+                        ),
+                        primary_key=unique(
+                            AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                        ),
+                    ),
+                "Hourly":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
+                            RESTRICTED_PRIMARY_KEY,
+                        ),
+                        primary_key=unique(
+                            AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                        ),
+                    )
+            },
+        ),
+    "AdGroupImpressionPerformance":
+        PrebuiltReportConfig(
+            report_type="AdGroupPerformance",
+            columns_and_primary_key_by_aggregation={
+                "Daily":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
+                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
+                            IMPRESSION_METRICS,
+                            HISTORICAL_METRICS,
+                            check_already_unique=False,
                         ),
                         primary_key=AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
                     ),
@@ -268,7 +302,7 @@ PREBUILT_CONFIGS = {
                     ColumnsAndPrimaryKey(
                         columns=unique(
                             AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
-                            RESTRICTING_PERFORMANCE_METRICS,
+                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
                         ),
                         primary_key=AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
                     )
@@ -282,14 +316,51 @@ PREBUILT_CONFIGS = {
                     ColumnsAndPrimaryKey(
                         columns=unique(
                             CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
+                            RESTRICTED_PRIMARY_KEY,
+                            BUDGET_COLUMNS,
                             HISTORICAL_METRICS,
                         ),
-                        primary_key=CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY,
+                        primary_key=unique(
+                            CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                        ),
                     ),
                 "Hourly":
                     ColumnsAndPrimaryKey(
-                        columns=CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
-                        primary_key=CAMPAIGN_PERFORMANCE_RESTRICTED_PRIMARY_KEY,
+                        columns=unique(
+                            CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
+                            RESTRICTED_PRIMARY_KEY,
+                            BUDGET_COLUMNS,
+                        ),
+                        primary_key=unique(
+                            CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                        ),
+                    ),
+            },
+        ),
+    "CampaignImpressionPerformance":
+        PrebuiltReportConfig(
+            report_type="CampaignPerformance",
+            columns_and_primary_key_by_aggregation={
+                "Daily":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
+                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
+                            IMPRESSION_METRICS,
+                            HISTORICAL_METRICS,
+                            check_already_unique=False,
+                        ),
+                        primary_key=CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
+                    ),
+                "Hourly":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
+                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
+                        ),
+                        primary_key=CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
                     ),
             },
         ),
