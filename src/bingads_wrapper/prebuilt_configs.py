@@ -43,7 +43,6 @@ COMMON_PRIMARY_KEY = (
     "AdDistribution",
     "DeviceType",
     "Network",
-    "DeliveredMatchType",
 )
 
 RESTRICTED_PRIMARY_KEY = (
@@ -54,9 +53,13 @@ RESTRICTED_PRIMARY_KEY = (
     "TopVsOther",
 )
 
+AD_PRIMARY_KEY = ("AdId",)
+
 AD_GROUP_PRIMARY_KEY = ("AdGroupId",)
 
 CAMPAIGN_PRIMARY_KEY = ("CampaignId",)
+
+LANGUAGE_PRIMARY_KEY = ("Language",)
 
 CAMPAIGN_COLUMNS = (
     "CampaignStatus",
@@ -157,9 +160,14 @@ CAMPAIGN_METRICS = (
     "LandingPageExperience",
 )
 
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY = unique(
+    COMMON_PRIMARY_KEY,
+    ("DeliveredMatchType",),
+)
+
 ACCOUNT_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
     columns=unique(
-        COMMON_PRIMARY_KEY,
+        ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
         RESTRICTED_PRIMARY_KEY,
         COMMON_PERFORMANCE_METRICS,
         AVERAGE_METRICS,
@@ -168,19 +176,20 @@ ACCOUNT_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
         REVENUE_METRICS,
     ),
     primary_key=unique(
-        COMMON_PRIMARY_KEY,
+        ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
         RESTRICTED_PRIMARY_KEY,
     ),
 )
 
 CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
-    COMMON_PRIMARY_KEY,
+    ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
     CAMPAIGN_PRIMARY_KEY,
 )
 
 CAMPAIGN_PERFORMANCE_COMMON_COLUMNS = unique(
     CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
     CAMPAIGN_COLUMNS,
+    CAMPAIGN_METRICS,
     COMMON_PERFORMANCE_METRICS,
     ALL_REVENUE_METRICS,
     AVERAGE_METRICS,
@@ -192,7 +201,7 @@ CAMPAIGN_PERFORMANCE_COMMON_COLUMNS = unique(
 AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
     CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
     AD_GROUP_PRIMARY_KEY,
-    ("Language",),
+    LANGUAGE_PRIMARY_KEY,
 )
 
 AD_GROUP_PERFORMANCE_COMMON_COLUMNS = unique(
@@ -212,6 +221,8 @@ AD_GROUP_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(
     RESTRICTED_PRIMARY_KEY,
 )
 
+# PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK = # TODO: remove unless needed
+
 PREBUILT_CONFIGS = {
     "AccountPerformance":
         PrebuiltReportConfig(
@@ -228,7 +239,7 @@ PREBUILT_CONFIGS = {
                 "Daily":
                     ColumnsAndPrimaryKey(
                         columns=unique(
-                            COMMON_PRIMARY_KEY,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
                             COMMON_PERFORMANCE_METRICS,
                             COMMON_RESTRICTING_PERFORMANCE_METRICS,
                             AVERAGE_METRICS,
@@ -238,19 +249,19 @@ PREBUILT_CONFIGS = {
                             IMPRESSION_METRICS,
                             check_already_unique=False,
                         ),
-                        primary_key=unique(COMMON_PRIMARY_KEY,),
+                        primary_key=ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
                     ),
                 "Hourly":
                     ColumnsAndPrimaryKey(
                         columns=unique(
-                            COMMON_PRIMARY_KEY,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
                             COMMON_PERFORMANCE_METRICS,
                             AVERAGE_METRICS,
                             CONVERSION_METRICS,
                             LOW_QUALITY_METRICS,
                             REVENUE_METRICS,
                         ),
-                        primary_key=unique(COMMON_PRIMARY_KEY,),
+                        primary_key=ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
                     ),
             },
         ),
@@ -381,7 +392,52 @@ def get_prebuilt_report_config(preset_name: str, aggregation: Aggregation) -> di
                             f' and aggregation "{aggregation}" is not available.')
 
 
+def __find_columns_containing_string_in_preset(preset_name: str,
+                                               aggregation: Aggregation,
+                                               s: str,
+                                               in_primary_key: bool = False,
+                                               case_sensitive: bool = False) -> list[str]:
+    preset = get_prebuilt_report_config(preset_name, aggregation)
+    columns = preset["columns"] if not in_primary_key else preset["primary_key"]
+    if case_sensitive:
+
+        def predicate(col: str):
+            return s in col
+    else:
+
+        def predicate(col: str):
+            return s.lower() in col.lower()
+
+    return [col for col in columns if predicate(col)]
+
+
 if __name__ == "__main__":
     import json
+    from pathlib import Path
     with open("data/prebuilt_config_preset_names.json", 'w') as out_f:
         json.dump(list(PREBUILT_CONFIGS.keys()), out_f)
+
+    reference_presets_path = Path(__file__).parent / "reference_presets.json"
+    reference_presets = json.loads(reference_presets_path.read_text())
+
+    def compare_prebuilt_config_to_reference(config_name: str, config: PrebuiltReportConfig):
+        reference_preset = reference_presets[config_name]
+        report = dict()
+        for aggregation in config.columns_and_primary_key_by_aggregation.keys():
+            reference_columns_and_primary_key = ColumnsAndPrimaryKey(
+                columns=reference_preset[aggregation]["columns"],
+                primary_key=reference_preset[aggregation]["primary_key"])
+            reference_columns = reference_columns_and_primary_key.columns
+            config_columns_and_primary_key = config.columns_and_primary_key_by_aggregation[aggregation]
+            config_columns = config_columns_and_primary_key.columns
+            missing_columns = [col for col in reference_columns if col not in config_columns]
+            extra_columns = [col for col in config_columns if col not in reference_columns]
+            report[aggregation] = {"missing_columns": missing_columns, "extra_columns": extra_columns}
+        return config_name, report
+
+    reference_comparison_report = {
+        config_name: report for config_name, report in (compare_prebuilt_config_to_reference(config_name, config)
+                                                        for config_name, config in PREBUILT_CONFIGS.items())
+    }
+    with open("data/reference_comparison_report.json", 'w') as out_f:
+        json.dump(reference_comparison_report, out_f)
