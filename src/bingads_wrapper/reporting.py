@@ -44,9 +44,9 @@ class ReportingDownloadParametersFactory:
     reporting_service: ServiceClient
     config_dict: dict[str, str | list[str]]
     result_file_directory: str
-    result_file_name: str
     report_file_format: str
 
+    result_file_name: Optional[str] = None
     last_sync_time_in_utc: Optional[datetime] = None
 
     primary_key: list[str] = field(init=False)
@@ -57,9 +57,20 @@ class ReportingDownloadParametersFactory:
 
     def __post_init__(self):
         self._authorization_data = self.reporting_service.authorization_data
-        if KEY_REPORT_TYPE not in self.config_dict:    # If true, we are dealing with a prebuilt report
+        missing_config_dict_keys = set((KEY_REPORT_TYPE, KEY_COLUMNS, KEY_PRIMARY_KEY)) - set(self.config_dict.keys())
+        if missing_config_dict_keys:
+            if KEY_PRESET_NAME not in self.config_dict:
+                raise UserException(
+                    f"Preset name must be specified if {KEY_REPORT_TYPE}, {KEY_COLUMNS} or {KEY_PRIMARY_KEY}"
+                    f" is not present in report settings.")
+            missing_config_dict_keys_str = ", ".join(missing_config_dict_keys)
+            logging.info(
+                f"Since these keys were not present in report settings: {missing_config_dict_keys_str},"
+                f" trying to find a prebuilt config using specified preset name ({self.config_dict[KEY_PRESET_NAME]}).")
             self.config_dict = self.config_dict | get_prebuilt_report_config(
                 preset_name=self.config_dict[KEY_PRESET_NAME], aggregation=self.config_dict[KEY_AGGREGATION])
+        if not self.result_file_name:
+            self.result_file_name = f"{self.config_dict[KEY_REPORT_TYPE]}Report.csv"
         self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
         self._report_request = self.reporting_service.factory.create(self._report_type + "ReportRequest")
         self._create_report_request()

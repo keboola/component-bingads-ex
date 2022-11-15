@@ -14,7 +14,7 @@ from .error_handling import output_webfault_errors
 
 from .bulk import create_download_parameters as create_bulk_download_parameters
 from .bulk import create_primary_key as create_bulk_primary_key
-from .reporting import ReportingDownloadParametersFactory, KEY_REPORT_TYPE
+from .reporting import ReportingDownloadParametersFactory
 
 REPORT_FILE_FORMAT = "Csv"
 
@@ -35,7 +35,7 @@ class DownloadRequest(ABC):
 
     @abstractmethod
     def __post_init__(self):
-        pass    # Initialization of uninitialized/optional fields must be done in derived classes
+        pass  # Initialization of uninitialized/optional fields must be done in derived classes
 
     def process(self):
         try:
@@ -66,9 +66,10 @@ class BulkDownloadRequest(DownloadRequest):
 
 class ReportDownloadRequest(DownloadRequest):
     def __post_init__(self):
-        if not self.table_name:
-            self.table_name = f"{self.config_dict[KEY_REPORT_TYPE]}Report"
-        self.result_file_name = f"{self.table_name}.csv"
+        if self.table_name:
+            self.result_file_name = f"{self.table_name}.csv"
+        else:
+            self.result_file_name = None
         self._service_manager = ReportingServiceManager(
             authorization_data=self.authorization.authorization_data,
             environment=self.authorization.environment,
@@ -81,4 +82,7 @@ class ReportDownloadRequest(DownloadRequest):
             reporting_service=self._service_manager._service_client,
             last_sync_time_in_utc=self.last_sync_time_in_utc)
         self._download_parameters = reporting_download_parameters_factory.create()
+        if not self.table_name:
+            self.result_file_name = reporting_download_parameters_factory.result_file_name
+            self.table_name = self.result_file_name.removesuffix(".csv")
         self.primary_key = reporting_download_parameters_factory.primary_key
