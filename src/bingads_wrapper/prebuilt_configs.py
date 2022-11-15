@@ -375,6 +375,41 @@ PREBUILT_CONFIGS = {
                     ),
             },
         ),
+    "ProductDimensionPerformance":
+        PrebuiltReportConfig(
+            report_type="ProductDimensionPerformance",
+            columns_and_primary_key_by_aggregation={
+                "Daily":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            COMMON_PRIMARY_KEY,
+                            CAMPAIGN_PRIMARY_KEY,
+                            AD_GROUP_PRIMARY_KEY,
+                            AD_PRIMARY_KEY,
+                            LANGUAGE_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                            BUDGET_COLUMNS,
+                            HISTORICAL_METRICS,
+                        ),
+                        primary_key=unique(
+                            COMMON_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                        ),
+                    ),
+                "Hourly":
+                    ColumnsAndPrimaryKey(
+                        columns=unique(
+                            COMMON_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                            BUDGET_COLUMNS,
+                        ),
+                        primary_key=unique(
+                            COMMON_PRIMARY_KEY,
+                            RESTRICTED_PRIMARY_KEY,
+                        ),
+                    ),
+            },
+        ),
 }
 
 

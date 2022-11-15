@@ -64,7 +64,12 @@
       "type": "object",
       "title": "Report Settings",
       "required": [
-        "report_type"
+        "report_type",
+        "aggregation",
+        "time_range",
+        "return_only_complete_data",
+        "columns",
+        "primary_key"
       ],
       "options": {
         "dependencies": {
@@ -169,7 +174,10 @@
       "type": "object",
       "title": "Report Settings",
       "required": [
-        "report_type"
+        "preset_name",
+        "aggregation",
+        "time_range",
+        "return_only_complete_data"
       ],
       "options": {
         "dependencies": {
@@ -190,7 +198,7 @@
             "CampaignImpressionPerformance"
           ],
           "type": "string",
-          "title": "Report type",
+          "title": "Preset name",
           "default": "Object",
           "description": "Select one of the available report presets described in the <a href='https://TODO.com'>documentation</a>",
           "propertyOrder": 10
