@@ -37,7 +37,6 @@ class PrebuiltReportConfig:
 
 
 COMMON_PRIMARY_KEY = (
-    "AccountId",
     "TimePeriod",
     "CurrencyCode",
     "AdDistribution",
@@ -45,12 +44,21 @@ COMMON_PRIMARY_KEY = (
     "Network",
 )
 
-RESTRICTED_PRIMARY_KEY = (
-    "BidMatchType",
-    "DeviceOS",
-    "Goal",
-    "GoalType",
-    "TopVsOther",
+ACCOUNT_AND_CAMPAIGN_PRIMARY_KEY = unique(
+    COMMON_PRIMARY_KEY,
+    ("AccountId",),
+)
+
+TOP_VS_OTHER_PRIMARY_KEY = ("TopVsOther",)
+
+RESTRICTED_PRIMARY_KEY = unique(
+    (
+        "BidMatchType",
+        "DeviceOS",
+        "Goal",
+        "GoalType",
+    ),
+    TOP_VS_OTHER_PRIMARY_KEY,
 )
 
 AD_PRIMARY_KEY = ("AdId",)
@@ -60,6 +68,23 @@ AD_GROUP_PRIMARY_KEY = ("AdGroupId",)
 CAMPAIGN_PRIMARY_KEY = ("CampaignId",)
 
 LANGUAGE_PRIMARY_KEY = ("Language",)
+
+PRODUCT_DIMENSION_PRIMARY_KEY = unique(
+    COMMON_PRIMARY_KEY,
+    CAMPAIGN_PRIMARY_KEY,
+    AD_GROUP_PRIMARY_KEY,
+    AD_PRIMARY_KEY,
+    LANGUAGE_PRIMARY_KEY,
+    TOP_VS_OTHER_PRIMARY_KEY,
+    (
+        "MerchantProductId",
+        "Condition",
+        "Price",
+        "ClickTypeId",
+        "BidStrategyType",
+        "StoreId",
+    ),
+)
 
 CAMPAIGN_COLUMNS = (
     "CampaignStatus",
@@ -72,10 +97,14 @@ BUDGET_COLUMNS = (
     "BudgetAssociationStatus",
 )
 
-AVERAGE_METRICS = (
+AVERAGE_COST_METRICS = (
     "AverageCpc",
     "AverageCpm",
-    "AveragePosition",
+)
+
+ALL_AVERAGE_METRICS = unique(
+    AVERAGE_COST_METRICS,
+    ("AveragePosition",),
 )
 
 CONVERSION_METRICS = (
@@ -96,10 +125,14 @@ LOW_QUALITY_METRICS = (
     "LowQualitySophisticatedClicks",
 )
 
-REVENUE_METRICS = (
+COMMON_REVENUE_METRICS = (
     "Revenue",
-    "RevenuePerAssist",
     "RevenuePerConversion",
+)
+
+ACCOUNT_AND_CAMPAIGN_REVENUE_METRICS = unique(
+    COMMON_REVENUE_METRICS,
+    ("RevenuePerAssist",),
 )
 
 ALL_REVENUE_METRICS = (
@@ -121,23 +154,34 @@ HISTORICAL_METRICS = (
     "HistoricalQualityScore",
 )
 
+ASSISTED_METRICS = (
+    "AssistedImpressions",
+    "AssistedClicks",
+)
+
 COMMON_PERFORMANCE_METRICS = (
-    "PhoneImpressions",
-    "PhoneCalls",
+    "Impressions",
     "Clicks",
     "Ctr",
     "Spend",
-    "Impressions",
-    "CostPerConversion",
-    "Ptr",
-    "Assists",
     "ReturnOnAdSpend",
-    "CostPerAssist",
     "AllConversionsQualified",
     "ViewThroughConversionsQualified",
 )
 
-COMMON_RESTRICTING_PERFORMANCE_METRICS = (
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS = unique(
+    COMMON_PERFORMANCE_METRICS,
+    (
+        "PhoneImpressions",
+        "PhoneCalls",
+        "CostPerConversion",
+        "Ptr",
+        "Assists",
+        "CostPerAssist",
+    ),
+)
+
+DAILY_RESTRICTING_PERFORMANCE_METRICS = (
     "AbsoluteTopImpressionRatePercent",
     "AbsoluteTopImpressionShareLostToBudgetPercent",
     "AbsoluteTopImpressionShareLostToRankPercent",
@@ -160,8 +204,14 @@ CAMPAIGN_METRICS = (
     "LandingPageExperience",
 )
 
+CUSTOM_LABEL_COLUMNS = tuple(f"CustomLabel{i}" for i in range(5))
+
+PRODUCT_CATEGORY_COLUMNS = tuple(f"ProductCategory{i}" for i in range(1, 6))
+
+PRODUCT_TYPE_COLUMNS = tuple(f"ProductType{i}" for i in range(1, 6))
+
 ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY = unique(
-    COMMON_PRIMARY_KEY,
+    ACCOUNT_AND_CAMPAIGN_PRIMARY_KEY,
     ("DeliveredMatchType",),
 )
 
@@ -169,11 +219,11 @@ ACCOUNT_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
     columns=unique(
         ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
         RESTRICTED_PRIMARY_KEY,
-        COMMON_PERFORMANCE_METRICS,
-        AVERAGE_METRICS,
+        ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
+        ALL_AVERAGE_METRICS,
         CONVERSION_METRICS,
         LOW_QUALITY_METRICS,
-        REVENUE_METRICS,
+        ACCOUNT_AND_CAMPAIGN_REVENUE_METRICS,
     ),
     primary_key=unique(
         ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
@@ -190,12 +240,12 @@ CAMPAIGN_PERFORMANCE_COMMON_COLUMNS = unique(
     CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
     CAMPAIGN_COLUMNS,
     CAMPAIGN_METRICS,
-    COMMON_PERFORMANCE_METRICS,
+    ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
     ALL_REVENUE_METRICS,
-    AVERAGE_METRICS,
+    ALL_AVERAGE_METRICS,
     CONVERSION_METRICS,
     LOW_QUALITY_METRICS,
-    REVENUE_METRICS,
+    ACCOUNT_AND_CAMPAIGN_REVENUE_METRICS,
 )
 
 AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
@@ -206,14 +256,14 @@ AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY = unique(
 
 AD_GROUP_PERFORMANCE_COMMON_COLUMNS = unique(
     AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
-    COMMON_PERFORMANCE_METRICS,
+    ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
     CAMPAIGN_METRICS,
     CAMPAIGN_COLUMNS,
     ("FinalUrlSuffix",),
     ALL_REVENUE_METRICS,
-    AVERAGE_METRICS,
+    ALL_AVERAGE_METRICS,
     CONVERSION_METRICS,
-    REVENUE_METRICS,
+    ACCOUNT_AND_CAMPAIGN_REVENUE_METRICS,
 )
 
 AD_GROUP_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(
@@ -221,7 +271,30 @@ AD_GROUP_PERFORMANCE_RESTRICTED_PRIMARY_KEY = unique(
     RESTRICTED_PRIMARY_KEY,
 )
 
-# PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK = # TODO: remove unless needed
+PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
+    columns=unique(
+        PRODUCT_DIMENSION_PRIMARY_KEY,
+        (
+            "Brand",
+            "LocalStoreCode",
+            "ClickType",
+            "Title",
+            "SellerName",
+            "OfferLanguage",
+            "CountryOfSale",
+            "TotalClicksOnAdElements",
+        ),
+        CUSTOM_LABEL_COLUMNS,
+        PRODUCT_CATEGORY_COLUMNS,
+        PRODUCT_TYPE_COLUMNS,
+        COMMON_PERFORMANCE_METRICS,
+        CONVERSION_METRICS,
+        COMMON_REVENUE_METRICS,
+        ASSISTED_METRICS,
+        AVERAGE_COST_METRICS,
+    ),
+    primary_key=unique(PRODUCT_DIMENSION_PRIMARY_KEY,),
+)
 
 PREBUILT_CONFIGS = {
     "AccountPerformance":
@@ -240,12 +313,12 @@ PREBUILT_CONFIGS = {
                     ColumnsAndPrimaryKey(
                         columns=unique(
                             ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
-                            COMMON_PERFORMANCE_METRICS,
-                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
-                            AVERAGE_METRICS,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
+                            DAILY_RESTRICTING_PERFORMANCE_METRICS,
+                            ALL_AVERAGE_METRICS,
                             CONVERSION_METRICS,
                             LOW_QUALITY_METRICS,
-                            REVENUE_METRICS,
+                            ACCOUNT_AND_CAMPAIGN_REVENUE_METRICS,
                             IMPRESSION_METRICS,
                             check_already_unique=False,
                         ),
@@ -255,11 +328,11 @@ PREBUILT_CONFIGS = {
                     ColumnsAndPrimaryKey(
                         columns=unique(
                             ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
-                            COMMON_PERFORMANCE_METRICS,
-                            AVERAGE_METRICS,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
+                            ALL_AVERAGE_METRICS,
                             CONVERSION_METRICS,
                             LOW_QUALITY_METRICS,
-                            REVENUE_METRICS,
+                            ACCOUNT_AND_CAMPAIGN_REVENUE_METRICS,
                         ),
                         primary_key=ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
                     ),
@@ -302,7 +375,7 @@ PREBUILT_CONFIGS = {
                     ColumnsAndPrimaryKey(
                         columns=unique(
                             AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
-                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
+                            DAILY_RESTRICTING_PERFORMANCE_METRICS,
                             IMPRESSION_METRICS,
                             HISTORICAL_METRICS,
                             check_already_unique=False,
@@ -311,10 +384,7 @@ PREBUILT_CONFIGS = {
                     ),
                 "Hourly":
                     ColumnsAndPrimaryKey(
-                        columns=unique(
-                            AD_GROUP_PERFORMANCE_COMMON_COLUMNS,
-                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
-                        ),
+                        columns=unique(AD_GROUP_PERFORMANCE_COMMON_COLUMNS,),
                         primary_key=AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
                     )
             },
@@ -358,7 +428,7 @@ PREBUILT_CONFIGS = {
                     ColumnsAndPrimaryKey(
                         columns=unique(
                             CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
-                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
+                            DAILY_RESTRICTING_PERFORMANCE_METRICS,
                             IMPRESSION_METRICS,
                             HISTORICAL_METRICS,
                             check_already_unique=False,
@@ -367,10 +437,7 @@ PREBUILT_CONFIGS = {
                     ),
                 "Hourly":
                     ColumnsAndPrimaryKey(
-                        columns=unique(
-                            CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,
-                            COMMON_RESTRICTING_PERFORMANCE_METRICS,
-                        ),
+                        columns=unique(CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,),
                         primary_key=CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
                     ),
             },
@@ -379,35 +446,8 @@ PREBUILT_CONFIGS = {
         PrebuiltReportConfig(
             report_type="ProductDimensionPerformance",
             columns_and_primary_key_by_aggregation={
-                "Daily":
-                    ColumnsAndPrimaryKey(
-                        columns=unique(
-                            COMMON_PRIMARY_KEY,
-                            CAMPAIGN_PRIMARY_KEY,
-                            AD_GROUP_PRIMARY_KEY,
-                            AD_PRIMARY_KEY,
-                            LANGUAGE_PRIMARY_KEY,
-                            RESTRICTED_PRIMARY_KEY,
-                            BUDGET_COLUMNS,
-                            HISTORICAL_METRICS,
-                        ),
-                        primary_key=unique(
-                            COMMON_PRIMARY_KEY,
-                            RESTRICTED_PRIMARY_KEY,
-                        ),
-                    ),
-                "Hourly":
-                    ColumnsAndPrimaryKey(
-                        columns=unique(
-                            COMMON_PRIMARY_KEY,
-                            RESTRICTED_PRIMARY_KEY,
-                            BUDGET_COLUMNS,
-                        ),
-                        primary_key=unique(
-                            COMMON_PRIMARY_KEY,
-                            RESTRICTED_PRIMARY_KEY,
-                        ),
-                    ),
+                "Daily": PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK,
+                "Hourly": PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK,
             },
         ),
 }
