@@ -463,11 +463,20 @@ if __name__ == "__main__":
                 columns=reference_preset[aggregation]["columns"],
                 primary_key=reference_preset[aggregation]["primary_key"])
             reference_columns = reference_columns_and_primary_key.columns
+            reference_primary_key = reference_columns_and_primary_key.primary_key
             config_columns_and_primary_key = config.columns_and_primary_key_by_aggregation[aggregation]
             config_columns = config_columns_and_primary_key.columns
+            config_primary_key = config_columns_and_primary_key.primary_key
             missing_columns = [col for col in reference_columns if col not in config_columns]
             extra_columns = [col for col in config_columns if col not in reference_columns]
-            report[aggregation] = {"missing_columns": missing_columns, "extra_columns": extra_columns}
+            missing_primary_key = [col for col in reference_primary_key if col not in config_primary_key]
+            extra_primary_key = [col for col in config_primary_key if col not in reference_primary_key]
+            report[aggregation] = {
+                "missing_columns": missing_columns,
+                "extra_columns": extra_columns,
+                "missing_primary_key": missing_primary_key,
+                "extra_primary_key": extra_primary_key
+            }
         return config_name, report
 
     reference_comparison_report = {
