@@ -1,8 +1,10 @@
 from dataclasses import dataclass, field
 import logging
 from typing import Callable, Literal, Optional
+import webbrowser
 
-from bingads.authorization import (AuthorizationData, OAuthTokens, OAuthWithAuthorizationCode)
+from bingads.authorization import (AuthorizationData, OAuthTokens, OAuthWithAuthorizationCode,
+                                   OAuthDesktopMobileAuthCodeGrant)
 from bingads.exceptions import OAuthTokenRequestException
 
 from keboola.component.dao import OauthCredentials
@@ -12,6 +14,17 @@ KEY_DEVELOPER_TOKEN = "#developer_token"
 KEY_CUSTOMER_ID = "customer_id"
 KEY_ACCOUNT_ID = "account_id"
 KEY_ENVIRONMENT = "environment"
+
+
+def request_user_consent(authentication: OAuthWithAuthorizationCode):
+    webbrowser.open(authentication.get_authorization_endpoint(), new=1)
+    response_uri = input(
+        "You need to provide consent for the application to access your Microsoft Advertising accounts."
+        " After you have granted consent in the web browser for the application"
+        " to access your Microsoft Advertising accounts,"
+        " please enter the response URI that includes the authorization 'code' parameter: \n")
+    # Request access and refresh tokens using the URI that you provided manually during program execution.
+    authentication.request_oauth_tokens_by_response_uri(response_uri=response_uri)
 
 
 @dataclass(slots=True)
@@ -37,17 +50,25 @@ class Authorization:
     def __post_init__(self):
         self.client_id = self.oauth_credentials.appKey
         self.client_secret = self.oauth_credentials.appSecret
-        self.refresh_token = self.oauth_credentials.data["refresh_token"]
-        self.environment = self.config_dict[KEY_ENVIRONMENT]
-        self.customer_id = self.config_dict[KEY_CUSTOMER_ID]
-        self.account_id = self.config_dict[KEY_ACCOUNT_ID]
-        self.developer_token = self.config_dict[KEY_DEVELOPER_TOKEN]
+        self.refresh_token: Optional[str] = self.oauth_credentials.data.get("refresh_token")
+        self.environment: str = self.config_dict[KEY_ENVIRONMENT]
+        self.customer_id: int = self.config_dict[KEY_CUSTOMER_ID]
+        self.account_id: int = self.config_dict[KEY_ACCOUNT_ID]
+        self.developer_token: str = self.config_dict[KEY_DEVELOPER_TOKEN]
 
-        authentication = OAuthWithAuthorizationCode(client_id=self.client_id,
-                                                    client_secret=self.client_secret,
-                                                    env=self.environment,
-                                                    redirection_uri="",
-                                                    token_refreshed_callback=self.save_refresh_token)
+        self.refresh_token = self.refresh_token or self.refresh_token_from_state
+
+        if self.refresh_token:
+            authentication = OAuthWithAuthorizationCode(client_id=self.client_id,
+                                                        client_secret=self.client_secret,
+                                                        env=self.environment,
+                                                        redirection_uri="",
+                                                        token_refreshed_callback=self.save_refresh_token)
+        else:
+            authentication = OAuthDesktopMobileAuthCodeGrant(client_id=self.client_id, env=self.environment)
+            authentication.token_refreshed_callback = self.save_refresh_token
+            request_user_consent(authentication)
+            logging.info("User consent acquired successfully")
 
         try:
             authentication.request_oauth_tokens_by_refresh_token(self.refresh_token)
