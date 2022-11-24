@@ -70,7 +70,11 @@ class ReportingDownloadParametersFactory:
             self.config_dict = self.config_dict | get_prebuilt_report_config(
                 preset_name=self.config_dict[KEY_PRESET_NAME], aggregation=self.config_dict[KEY_AGGREGATION])
         if not self.result_file_name:
-            self.result_file_name = f"{self.config_dict[KEY_REPORT_TYPE]}Report.csv"
+            if KEY_PRESET_NAME in self.config_dict:
+                self.result_file_name = (f"{self.config_dict[KEY_PRESET_NAME]}_"
+                                         f"{self.config_dict[KEY_AGGREGATION]}_Report.csv")
+            else:
+                self.result_file_name = f"{self.config_dict[KEY_REPORT_TYPE]}_Report.csv"
         self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
         self._report_request = self.reporting_service.factory.create(self._report_type + "ReportRequest")
         self._create_report_request()
