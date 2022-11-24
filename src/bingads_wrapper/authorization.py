@@ -51,7 +51,7 @@ class Authorization:
         self.client_id = self.oauth_credentials.appKey
         self.client_secret = self.oauth_credentials.appSecret
         self.refresh_token: Optional[str] = self.oauth_credentials.data.get("refresh_token")
-        self.environment: str = self.config_dict[KEY_ENVIRONMENT]
+        self.environment: str = self.config_dict.get(KEY_ENVIRONMENT, "production")
         self.customer_id: int = self.config_dict[KEY_CUSTOMER_ID]
         self.account_id: int = self.config_dict[KEY_ACCOUNT_ID]
         self.developer_token: str = self.config_dict[KEY_DEVELOPER_TOKEN]

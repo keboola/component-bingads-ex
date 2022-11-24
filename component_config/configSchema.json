@@ -12,7 +12,6 @@
       "format": "table",
       "required": [
         "#developer_token",
-        "environment",
         "customer_id",
         "account_id"
       ],
@@ -23,17 +22,6 @@
           "description": "Your developer token",
           "format": "password",
           "propertyOrder": 2000
-        },
-        "environment": {
-          "type": "string",
-          "title": "Environment",
-          "enum": [
-            "sandbox",
-            "production"
-          ],
-          "default": "production",
-          "description": "Environment to use.",
-          "propertyOrder": 3000
         },
         "customer_id": {
           "type": "integer",
