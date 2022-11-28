@@ -624,3 +624,18 @@ if __name__ == "__main__":
     }
     with open("data/reference_comparison_report.json", 'w') as out_f:
         json.dump(reference_comparison_report, out_f)
+
+    def create_prebuilt_config_markdown_fragment(config_name: str, config: PrebuiltReportConfig):
+        fragment = f"## {config_name} Report Presets"
+        for aggregation, columns_and_pk in config.columns_and_primary_key_by_aggregation.items():
+            column_str = ", ".join(columns_and_pk.columns)
+            pk_str = ", ".join(columns_and_pk.primary_key)
+            agg_fragment = f"\n### {aggregation} aggregation\n#### Columns\n{column_str}\n#### Primary key\n{pk_str}"
+            fragment += agg_fragment
+        return fragment
+
+    report_presets_markdown = ("# Columns and primary key of report configuration presets\n" + "\n".join(
+        create_prebuilt_config_markdown_fragment(config_name, config)
+        for config_name, config in PREBUILT_CONFIGS.items()))
+    with open("docs/report_presets_columns_and_pk.md", 'w') as out_f:
+        out_f.write(report_presets_markdown)
