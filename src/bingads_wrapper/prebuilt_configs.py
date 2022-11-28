@@ -491,6 +491,54 @@ PREBUILT_CONFIGS = {
                 "Hourly": PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK,
             },
         ),
+    "KeywordPerformance":
+        PrebuiltReportConfig(
+            report_type="KeywordPerformance",
+            columns_and_primary_key_by_aggregation={
+                "Daily":
+                    ColumnsAndPrimaryKey(
+                        columns=[
+                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
+                            "TopVsOther", "BidMatchType", "KeywordStatus", "Impressions", "Clicks", "Ctr",
+                            "CurrentMaxCpc", "AverageCpc", "Spend", "AveragePosition", "Conversions",
+                            "ConversionsQualified", "ConversionRate", "CostPerConversion", "QualityScore",
+                            "ExpectedCtr", "AdRelevance", "LandingPageExperience", "QualityImpact", "Assists",
+                            "ReturnOnAdSpend", "CostPerAssist", "CustomParameters", "FinalAppUrl", "Mainline1Bid",
+                            "MainlineBid", "FirstPageBid", "FinalUrlSuffix", "ViewThroughConversions",
+                            "ViewThroughConversionsQualified", "AllCostPerConversion", "AllReturnOnAdSpend",
+                            "AllConversionsQualified", "AllRevenue", "AllRevenuePerConversion", "HistoricalAdRelevance",
+                            "HistoricalExpectedCtr", "HistoricalLandingPageExperience", "HistoricalQualityScore",
+                            "Revenue", "RevenuePerAssist", "RevenuePerConversion"
+                        ],
+                        primary_key=[
+                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
+                            "TopVsOther", "BidMatchType"
+                        ],
+                    ),
+                "Hourly":
+                    ColumnsAndPrimaryKey(
+                        columns=[
+                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
+                            "TopVsOther", "BidMatchType", "KeywordStatus", "Impressions", "Clicks", "Ctr",
+                            "CurrentMaxCpc", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate",
+                            "CostPerConversion", "QualityScore", "ExpectedCtr", "AdRelevance", "LandingPageExperience",
+                            "QualityImpact", "Assists", "ReturnOnAdSpend", "CostPerAssist", "CustomParameters",
+                            "FinalAppUrl", "FinalUrlSuffix", "Mainline1Bid", "MainlineBid", "FirstPageBid",
+                            "ViewThroughConversions", "AllCostPerConversion", "AllReturnOnAdSpend",
+                            "AllConversionsQualified", "AllRevenue", "AllRevenuePerConversion", "Revenue",
+                            "RevenuePerAssist", "RevenuePerConversion"
+                        ],
+                        primary_key=[
+                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
+                            "TopVsOther", "BidMatchType"
+                        ],
+                    ),
+            },
+        ),
     "GeographicPerformance":
         PrebuiltReportConfig(
             report_type="GeographicPerformance",
@@ -542,10 +590,12 @@ if __name__ == "__main__":
         json.dump(list(PREBUILT_CONFIGS.keys()), out_f)
 
     reference_presets_path = Path(__file__).parent / "reference_presets.json"
-    reference_presets = json.loads(reference_presets_path.read_text())
+    reference_presets: dict[str, dict[str, dict[str, list[str]]]] = json.loads(reference_presets_path.read_text())
 
     def compare_prebuilt_config_to_reference(config_name: str, config: PrebuiltReportConfig):
-        reference_preset = reference_presets[config_name]
+        reference_preset = reference_presets.get(config_name)
+        if not reference_preset:
+            return config_name, {"Error": "No reference report."}
         report = dict()
         for aggregation in config.columns_and_primary_key_by_aggregation.keys():
             reference_columns_and_primary_key = ColumnsAndPrimaryKey(
