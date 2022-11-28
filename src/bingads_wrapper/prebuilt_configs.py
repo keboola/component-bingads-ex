@@ -49,6 +49,8 @@ ACCOUNT_AND_CAMPAIGN_PRIMARY_KEY = unique(
     ("AccountId",),
 )
 
+ACCOUNT_NAME_PRIMARY_KEY = ("AccountName",)
+
 TOP_VS_OTHER_PRIMARY_KEY = ("TopVsOther",)
 
 RESTRICTED_PRIMARY_KEY = unique(
@@ -86,6 +88,19 @@ PRODUCT_DIMENSION_PRIMARY_KEY = unique(
     ),
 )
 
+GEOGRAPHIC_PRIMARY_KEY = (
+    "LocationType",
+    "Country",
+    "State",
+    "County",
+    "MetroArea",
+    "City",
+    "Neighborhood",
+    "MostSpecificLocation",
+    "LocationId",
+    "ProximityTargetLocation",
+)
+
 CAMPAIGN_COLUMNS = (
     "CampaignStatus",
     "CustomParameters",
@@ -108,7 +123,7 @@ ALL_AVERAGE_METRICS = unique(
 )
 
 CONVERSION_METRICS = (
-    "Conversions",
+    # "Conversions",
     "ConversionRate",
     "ConversionsQualified",
 )
@@ -179,6 +194,17 @@ ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS = unique(
         "Assists",
         "CostPerAssist",
     ),
+)
+
+GEOGRAPHIC_PERFORMANCE_METRICS = unique(
+    COMMON_PERFORMANCE_METRICS,
+    (
+        "Radius",
+        "CostPerConversion",
+        "CostPerAssist",
+        "Assists",
+    ),
+    CONVERSION_METRICS,
 )
 
 DAILY_RESTRICTING_PERFORMANCE_METRICS = (
@@ -294,6 +320,21 @@ PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
         AVERAGE_COST_METRICS,
     ),
     primary_key=unique(PRODUCT_DIMENSION_PRIMARY_KEY,),
+)
+
+GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
+    columns=unique(
+        CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
+        ACCOUNT_NAME_PRIMARY_KEY,
+        RESTRICTED_PRIMARY_KEY,
+        GEOGRAPHIC_PRIMARY_KEY,
+        GEOGRAPHIC_PERFORMANCE_METRICS,
+    ),
+    primary_key=unique(
+        CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
+        RESTRICTED_PRIMARY_KEY,
+        GEOGRAPHIC_PRIMARY_KEY,
+    ),
 )
 
 PREBUILT_CONFIGS = {
@@ -450,6 +491,14 @@ PREBUILT_CONFIGS = {
                 "Hourly": PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK,
             },
         ),
+    "GeographicPerformance":
+        PrebuiltReportConfig(
+            report_type="GeographicPerformance",
+            columns_and_primary_key_by_aggregation={
+                "Daily": GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK,
+                "Hourly": GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK,
+            },
+        )
 }
 
 
