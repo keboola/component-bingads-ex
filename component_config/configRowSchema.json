@@ -196,7 +196,9 @@
             "AdGroupImpressionPerformance",
             "CampaignPerformance",
             "CampaignImpressionPerformance",
-            "ProductDimensionPerformance"
+            "ProductDimensionPerformance",
+            "KeywordPerformance",
+            "GeographicPerformance"
           ],
           "type": "string",
           "title": "Preset name",
