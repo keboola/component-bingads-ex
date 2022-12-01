@@ -101,7 +101,7 @@ class BingAdsExtractor(ComponentBase):
         last_sync_time_in_utc_str: Optional[str] = self.previous_state.get(KEY_LAST_SYNC_TIME_IN_UTC)
         self.last_sync_time_in_utc = (datetime.fromisoformat(last_sync_time_in_utc_str)
                                       if last_sync_time_in_utc_str else None)
-        self.sync_time_in_utc_str = last_sync_time_in_utc_str    # Saving the old timestamp until new sync is done
+        self.sync_time_in_utc_str = last_sync_time_in_utc_str  # Saving the old timestamp until new sync is done
 
     def run(self):
         """
@@ -151,10 +151,10 @@ class BingAdsExtractor(ComponentBase):
         table_def = self.create_out_table_definition(download_request.result_file_name, incremental=incremental)
         table_def.primary_key = download_request.primary_key
 
-        if os.path.exists(table_def.full_path):    # Checking whether a CSV file was created
+        if os.path.exists(table_def.full_path):  # Checking whether a CSV file was created
             self.write_manifest(table_def)
 
-        self.sync_time_in_utc_str = new_sync_time_in_utc_str    # Extraction done, updating sync timestamp in state
+        self.sync_time_in_utc_str = new_sync_time_in_utc_str  # Extraction done, updating sync timestamp in state
         self.save_state(authorization.refresh_token)
 
     def save_state(self, refresh_token: str):

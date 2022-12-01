@@ -16,6 +16,8 @@ from .bulk import create_download_parameters as create_bulk_download_parameters
 from .bulk import create_primary_key as create_bulk_primary_key
 from .reporting import ReportingDownloadParametersFactory
 
+from keboola.component.exceptions import UserException
+
 REPORT_FILE_FORMAT = "Csv"
 
 
@@ -42,7 +44,8 @@ class DownloadRequest(ABC):
             self._service_manager.download_file(self._download_parameters)
         except WebFault as ex:
             output_webfault_errors(ex)
-            raise
+            raise UserException("Bing Ads API could not process the produced request."
+                                " For more information see the previous log messages.")
 
 
 class BulkDownloadRequest(DownloadRequest):
