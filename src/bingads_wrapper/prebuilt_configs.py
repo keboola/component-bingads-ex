@@ -630,7 +630,8 @@ if __name__ == "__main__":
         for aggregation, columns_and_pk in config.columns_and_primary_key_by_aggregation.items():
             column_str = ", ".join(columns_and_pk.columns)
             pk_str = ", ".join(columns_and_pk.primary_key)
-            agg_fragment = f"\n### {aggregation} aggregation\n#### Columns\n{column_str}\n#### Primary key\n{pk_str}"
+            agg_fragment = (f"\n### {aggregation} aggregation"
+                            f"\n#### Columns\n`{column_str}`\n#### Primary key\n`{pk_str}`")
             fragment += agg_fragment
         return fragment
 
