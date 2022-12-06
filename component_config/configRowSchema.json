@@ -47,12 +47,13 @@
           "options": {
             "input_height": "100px"
           },
-          "description": "Comma separated list of entities to download, find supported entities in the <a href='https://google.com'>documentation</a>",
+          "description": "Comma separated list of entities to download, find supported entities in the <a href='https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13'>documentation</a>.",
           "propertyOrder": 3000
         },
         "since_last_sync_time": {
           "type": "boolean",
           "title": "Only download changes since the last run",
+          "description": "If checked, only changes since the last component run will be downloaded. If checked for the first run of this component row, it will be ignored (i.e. all data will be downloaded).",
           "format": "checkbox",
           "default": true
         }
@@ -62,7 +63,7 @@
     },
     "report_settings_custom": {
       "type": "object",
-      "title": "Report Settings",
+      "title": "Report Settings Custom",
       "required": [
         "report_type",
         "aggregation",
@@ -119,11 +120,11 @@
           "type": "string",
           "title": "Report type",
           "default": "Object",
-          "description": "Select one of the available report types described in the <a href='https://google.com'>documentation</a>",
+          "description": "Select one of the available report types described in the <a href='https://learn.microsoft.com/en-us/advertising/guides/report-types?view=bingads-13'>offical documentation</a>",
           "propertyOrder": 10
         },
         "aggregation": {
-          "title": "Report aggregation",
+          "title": "Report Aggregation",
           "description": "The type of aggregation to use to aggregate the report data.",
           "type": "string",
           "enum": [
@@ -155,7 +156,7 @@
           "options": {
             "input_height": "100px"
           },
-          "description": "Comma separated list of columns to use for the report, find supported columns for specific report types in the <a href='https://TODO.com'>documentation</a>",
+          "description": "Comma separated list of columns to use for the report. For your convenience, available columns for each report type are listed in the appropriate format in <a href='https://bitbucket.org/kds_consulting_team/kds-team.ex-bingads/src/master/docs/reports_available_columns.md'>this markdown file</a>.",
           "propertyOrder": 50
         },
         "primary_key": {
@@ -165,7 +166,7 @@
           "options": {
             "input_height": "100px"
           },
-          "description": "Comma separated list of columns to be used as primary key, find supported columns for specific report types in the <a href='https://TODO.com'>documentation</a>",
+          "description": "Comma separated list of columns to be used as primary key. For your convenience, available columns for each report type are listed in the appropriate format in <a href='https://bitbucket.org/kds_consulting_team/kds-team.ex-bingads/src/master/docs/reports_available_columns.md'>this markdown file</a>.",
           "propertyOrder": 60
         }
       }
@@ -203,7 +204,7 @@
           "type": "string",
           "title": "Preset name",
           "default": "Object",
-          "description": "Select one of the available report presets described in the <a href='https://TODO.com'>documentation</a>",
+          "description": "Select one of the available report presets. The columns and primary key that will be used for each preset are described in <a href='https://bitbucket.org/kds_consulting_team/kds-team.ex-bingads/src/master/docs/report_presets_columns_and_pk.md'>this markdown file</a>.",
           "propertyOrder": 10
         },
         "aggregation": {
@@ -242,7 +243,6 @@
           ],
           "type": "string",
           "title": "Load Type",
-          "format": "checkbox",
           "default": "incremental_load",
           "options": {
             "enum_titles": [
@@ -250,13 +250,13 @@
               "Incremental Load"
             ]
           },
-          "description": "If Full load is used, the destination table will be overwritten every run. If incremental load is used, data will be upserted into the destination table. Tables with a primary key will have rows updated, tables without a primary key will have rows appended.",
+          "description": "If Full load is used, the destination table will be overwritten every run. If Incremental Load is used, data will be upserted into the destination table.",
           "propertyOrder": 10
         },
         "output_table_name": {
           "type": "string",
           "title": "Storage Table Name",
-          "description": "Name of the table stored in Storage. Default object name used if empty.",
+          "description": "Name of the table stored in Storage. Default object name used if left empty.",
           "propertyOrder": 20
         }
       },
@@ -275,7 +275,7 @@
       "properties": {
         "time_zone": {
           "type": "string",
-          "title": "Report time zone",
+          "title": "Report Time Zone",
           "propertyOrder": 10,
           "description": "Determines the time zone that is used to establish today's date.",
           "enum": [
@@ -387,7 +387,7 @@
           "type": "string",
           "title": "Date From",
           "default": "1 week ago",
-          "description": "Start date of the report. Either date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc.",
+          "description": "Start date of the report. Either date in YYYY-MM-DD format or a relative date string i.e. 5 days ago, 1 month ago, yesterday, etc. Can also be specified as `last run` to start the reporting period at the time of last extraction (this cannot be done in case of the first run for obvious reasons).",
           "options": {
             "dependencies": {
               "period": "CustomTimeRange"
@@ -397,9 +397,9 @@
         },
         "date_to": {
           "type": "string",
-          "title": "Date to",
+          "title": "Date To",
           "default": "now",
-          "description": "End date of the report. Either date in YYYY-MM-DD format or dateparser string i.e. 5 days ago, 1 month ago, yesterday, etc.",
+          "description": "End date of the report. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, yesterday, etc.",
           "options": {
             "dependencies": {
               "period": "CustomTimeRange"
@@ -411,7 +411,7 @@
     },
     "return_only_complete_data": {
       "title": "Return only complete data",
-      "description": "Determines whether or not the service must ensure that all the data has been processed and is available.",
+      "description": "Determines whether or not the service must ensure that all the data has been processed and is available. If checked, and the requested data are (partially) incomplete or unavailable, an error will be raised.",
       "type": "boolean",
       "format": "checkbox",
       "default": true,
