@@ -129,6 +129,10 @@ class ReportingDownloadParametersFactory:
             else:
                 start_date = parse(time_dict[KEY_DATE_RANGE_START])
             end_date = parse(time_dict[KEY_DATE_RANGE_END])
+            if not start_date:
+                raise UserException("Date From could not be parsed.")
+            if not end_date:
+                raise UserException("Date To could not be parsed.")
             logging.info(f"Custom dates parsed to these absolute values:\n"
                          f" Date From: {start_date.isoformat(timespec='seconds')},"
                          f" Date To: {end_date.isoformat(timespec='seconds')}")
