@@ -1,57 +1,104 @@
-Bing Ads Extractorr
-=============
+# Bing Ads Extractor
 
-Description
+This data source component supports extracting either campaign entity data or various types of reports available. In case of reports you can specify your own set of columns and primary key to use in Keboola Storage, but there are also presets of columns and appropriate primary keys available.
 
 **Table of contents:**
 
 [TOC]
 
-Functionality notes
-===================
+<!-- Functionality notes
+=================== -->
 
-Prerequisites
-=============
+## Prerequisites
+<!-- TODO: Toto prosím zkontrolovat, že je správný postup. -->
 
-Get the API token, register application, etc.
+1. First, you must create a Developer Token. To do so, please follow [this guide in the official documentation](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
 
-Features
-========
+2. Then you must find your Bing Ads Account ID and Customer ID. Once again, please follow [this part of the official documentation](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids). Both should be numbers such as `391827251`.
 
-| **Feature**             | **Note**                                      |
-|-------------------------|-----------------------------------------------|
-| Generic UI form         | Dynamic UI form                               |
-| Row Based configuration | Allows structuring the configuration in rows. |
-| oAuth                   | oAuth authentication enabled                  |
-| Incremental loading     | Allows fetching data in new increments.       |
-| Backfill mode           | Support for seamless backfill setup.          |
-| Date range filter       | Specify date range.                           |
+3. After that, enter the created Developer Token as well as your Account ID and Customer ID into the components global configuration as you can see on the screenshot below. Don't forget to save the configuration. ![Global Configuration](docs/imgs/config_global.png)
 
-Supported endpoints
-===================
+4. Finally, you must enter this information into the global configuration log into your account using the Authorize Account button in the Keboola interface. ![OAuth Authorization](docs/imgs/config_oauth.png)
 
-If you need more endpoints, please submit your request to
-[ideas.keboola.com](https://ideas.keboola.com/)
+<!-- ## Supported endpoints
+TODO: Zatím vynechávám, kdyžtak rozvedu, pokud to bude potřeba -->
 
-Configuration
-=============
+## Configuration
 
-Param 1
--------
+### Global configuraiton
+- Developer Token (#developer_token) - [REQ] Your developer token. (See [Prerequisites](#prerequisites) for info on how to obtain it.)
+- Customer ID (customer_id) - [REQ] Customer identifier. (See [Prerequisites](#prerequisites) for info on how to find it.)
+- Account ID (account_id) - [REQ] Account identifier.. (See [Prerequisites](#prerequisites) for info on how to find it.)
 
-Param 2
--------
+### Row configuration
 
-Output
-======
+- Object type (object_type) - [REQ] This determines whether you want to extract campaign entities (such as Ads, Ad Groups, Campaigns etc.) or reports, and, if you want to extract reports, whether you want to use one of the presets or your own set of columns and primary key.
+- Destination (destination) - [REQ] This part of row configuration determines how the extracted data will be saved in Keboola Storage.
+    - Load Type (load_type) - [REQ] If Full load is used, the destination table will be overwritten every run. If Incremental Load is used, data will be upserted into the destination table.
+    - Storage Table Name (output_table_name) - [REQ] Name of the table stored in Storage. Default object name used if left empty.
 
-List of tables, foreign keys, schema.
+Rest of the configuration depends on what Object Type is selected:
 
-Development
------------
+- Entity Settings (bulk_settings) - [OPT] This part of row configuration only becomes available if Entity is selected as the Object Type.
+    - Entities (download_entities) - [REQ] Comma separated list of entities to download, find supported entities in the [official documentation](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13#values).
+    - Only download changes since the last run (since_last_sync_time) - [REQ] If checked, only changes since the last component run will be downloaded. If checked for the first run of this component row, it will be ignored (i.e. all data will be downloaded).
+- Report Settings Custom (report_settings_custom) - [OPT] This part of row configuration only becomes available if Report (Custom) is selected as the Object Type.
+    - Report type (report_type) - [REQ] Select one of the available report types described in the [official documentation](https://learn.microsoft.com/en-us/advertising/guides/report-types?view=bingads-13).
+    - Report Aggregation (aggregation) - [REQ] The type of aggregation to use to aggregate the report data.
+    - Time Range (time_range) - [REQ] Settings determining what time period the report should be about.
+        - Report Time Zone (time_zone) - [REQ] Determines the time zone that is used to establish today's date.
+        - Report Period (period) - [REQ] The time period the report should be about. If `CustomTimeRange` you will also need to provide the next 2 parameters:
+        - Date From (date_from) - [OPT] Start date of the report. Either date in YYYY-MM-DD format or a relative date string i.e. 5 days ago, 1 month ago, yesterday, etc. Can also be specified as `last run` to start the reporting period at the time of last extraction (this cannot be done in case of the first run for obvious reasons).
+        - Date To (date_to) - [OPT] End date of the report. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, yesterday, etc.
+    - Return only complete data (return_only_complete_data) - [REQ] Determines whether or not the service must ensure that all the data has been processed and is available. If checked, and the requested data are (partially) incomplete or unavailable, an error will be raised.
+    - Columns (columns) - [REQ] Comma separated list of columns to use for the report. For your convenience, available columns for each report type are listed in the appropriate format in [this markdown file inside this git repository](docs/reports_available_columns.md).
+    - Primary Key Columns (primary_key) - [REQ] Comma separated list of columns to be used as primary key. For your convenience, available columns for each report type are listed in the appropriate format in [this markdown file inside this git repository](docs/reports_available_columns.md).
+- Report Settings Prebuilt (report_settings_prebuilt) - [OPT] This part of row configuration only becomes available if Report (Prebuilt) is selected as the Object Type.
+    - Preset name (preset_name) - [REQ] Select one of the available report presets. The columns and primary key that will be used for each preset are described in [this markdown file inside this git repository](docs/report_presets_columns_and_pk.md).
+    - Report Aggregation (aggregation) - [REQ] The type of aggregation to use to aggregate the report data.
+    - Time Range (time_range) - [REQ] Settings determining what time period the report should be about.
+        - Report Time Zone (time_zone) - [REQ] Determines the time zone that is used to establish today's date.
+        - Report Period (period) - [REQ] The time period the report should be about. If `CustomTimeRange` you will also need to provide the next 2 parameters:
+        - Date From (date_from) - [OPT] Start date of the report. Either date in YYYY-MM-DD format or a relative date string i.e. 5 days ago, 1 month ago, yesterday, etc. Can also be specified as `last run` to start the reporting period at the time of last extraction (this cannot be done in case of the first run for obvious reasons).
+        - Date To (date_to) - [OPT] End date of the report. Either date in YYYY-MM-DD format or relative date string i.e. 5 days ago, 1 month ago, yesterday, etc.
+    - Return only complete data (return_only_complete_data) - [REQ] Determines whether or not the service must ensure that all the data has been processed and is available. If checked, and the requested data are (partially) incomplete or unavailable, an error will be raised.
+        
 
-If required, change local data folder (the `CUSTOM_FOLDER` placeholder) path to
-your custom path in the `docker-compose.yml` file:
+### Sample Configuration
+This sample configuration will download an AdGroupPerformance report with [the preset columns and primary key](docs/report_presets_columns_and_pk.md#adgroupperformance-report-presets) and upsert the data into a table called `prebuilt_AdGroupPerformance_ThisYear_Daily`.
+```json
+{
+    "parameters": {
+        "authorization": {
+            "#developer_token": "BBD37VB98",
+            "customer_id": 313617589,
+            "account_id": 391827251
+        },
+        "object_type": "report_prebuilt",
+        "report_settings_prebuilt": {
+            "report_type": "AdGroupPerformance",
+            "aggregation": "Daily",
+            "time_range": {
+                "time_zone": "BelgradeBratislavaBudapestLjubljanaPrague",
+                "period": "ThisYear"
+            },
+            "return_only_complete_data": false
+        },
+        "destination": {
+            "load_type": "incremental_load",
+            "output_table_name": "prebuilt_AdGroupPerformance_ThisYear_Daily"
+        }
+    }
+}
+```
+
+<!-- ## Output
+TODO: Je tohle potřeba? -->
+
+## Development
+
+If required, change local data folder (the `CUSTOM_FOLDER` placeholder) path to your custom path in
+the `docker-compose.yml` file:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     volumes:
@@ -59,12 +106,9 @@ your custom path in the `docker-compose.yml` file:
       - ./CUSTOM_FOLDER:/data
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Clone this repository, init the workspace and run the component with following
-command:
+Clone this repository, init the workspace and run the component with following command:
 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-git clone git@bitbucket.org:kds_consulting_team/kds-team.ex-bingads.git kds-team.ex-bingads
-cd kds-team.ex-bingads
 docker-compose build
 docker-compose run --rm dev
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -75,9 +119,7 @@ Run the test suite and lint check using this command:
 docker-compose run --rm test
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Integration
-===========
+## Integration
 
 For information about deployment and integration with KBC, please refer to the
-[deployment section of developers
-documentation](https://developers.keboola.com/extend/component/deployment/)
+[deployment section of developers documentation](https://developers.keboola.com/extend/component/deployment/)
