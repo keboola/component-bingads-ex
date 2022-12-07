@@ -202,7 +202,7 @@
             "GeographicPerformance"
           ],
           "type": "string",
-          "title": "Preset name",
+          "title": "Preset Name",
           "default": "Object",
           "description": "Select one of the available report presets. The columns and primary key that will be used for each preset are described in <a href='https://bitbucket.org/kds_consulting_team/kds-team.ex-bingads/src/master/docs/report_presets_columns_and_pk.md'>this markdown file</a>.",
           "propertyOrder": 10
