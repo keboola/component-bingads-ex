@@ -39,10 +39,10 @@ TODO: Zatím vynechávám, kdyžtak rozvedu, pokud to bude potřeba -->
 
 Rest of the configuration depends on what Object Type is selected:
 
-- Entity Settings (bulk_settings) - [OPT] This part of row configuration only becomes available if Entity is selected as the Object Type.
-    - Entities (download_entities) - [REQ] Comma separated list of entities to download, find supported entities in the [official documentation](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13#values).
+- Entity Settings (bulk_settings) - [OPT] This part of row configuration only becomes available if `Entity` is selected as the Object Type.
+    - Entities (download_entities) - [REQ] Comma separated list of entities (or rather entity types) to download, find supported entities in the [official documentation](https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13#values). Currently only the extraction of entities within the `EntityData` data scope is supported.
     - Only download changes since the last run (since_last_sync_time) - [REQ] If checked, only changes since the last component run will be downloaded. If checked for the first run of this component row, it will be ignored (i.e. all data will be downloaded).
-- Report Settings Custom (report_settings_custom) - [OPT] This part of row configuration only becomes available if Report (Custom) is selected as the Object Type.
+- Report Settings Custom (report_settings_custom) - [OPT] This part of row configuration only becomes available if `Report (Custom)` is selected as the Object Type.
     - Report type (report_type) - [REQ] Select one of the available report types described in the [official documentation](https://learn.microsoft.com/en-us/advertising/guides/report-types?view=bingads-13).
     - Report Aggregation (aggregation) - [REQ] The type of aggregation to use to aggregate the report data.
     - Time Range (time_range) - [REQ] Settings determining what time period the report should be about.
@@ -53,9 +53,9 @@ Rest of the configuration depends on what Object Type is selected:
     - Return only complete data (return_only_complete_data) - [REQ] Determines whether or not the service must ensure that all the data has been processed and is available. If checked, and the requested data are (partially) incomplete or unavailable, an error will be raised.
     - Columns (columns) - [REQ] Comma separated list of columns to use for the report. For your convenience, available columns for each report type are listed in the appropriate format in [this markdown file inside this git repository](docs/reports_available_columns.md).
     - Primary Key Columns (primary_key) - [REQ] Comma separated list of columns to be used as primary key. For your convenience, available columns for each report type are listed in the appropriate format in [this markdown file inside this git repository](docs/reports_available_columns.md).
-- Report Settings Prebuilt (report_settings_prebuilt) - [OPT] This part of row configuration only becomes available if Report (Prebuilt) is selected as the Object Type.
-    - Preset name (preset_name) - [REQ] Select one of the available report presets. The columns and primary key that will be used for each preset are described in [this markdown file inside this git repository](docs/report_presets_columns_and_pk.md).
-    - Report Aggregation (aggregation) - [REQ] The type of aggregation to use to aggregate the report data.
+- Report Settings Prebuilt (report_settings_prebuilt) - [OPT] This part of row configuration only becomes available if `Report (Prebuilt)` is selected as the Object Type.
+    - Preset Name (preset_name) - [REQ] Select one of the available report presets. The columns and primary key that will be used for each preset are described in [this markdown file inside this git repository](docs/report_presets_columns_and_pk.md).
+    - Report Aggregation (aggregation) - [REQ] The type of aggregation to use to aggregate the report data. For prebuilt report presets, only Daily and Hourly aggregation is available.
     - Time Range (time_range) - [REQ] Settings determining what time period the report should be about.
         - Report Time Zone (time_zone) - [REQ] Determines the time zone that is used to establish today's date.
         - Report Period (period) - [REQ] The time period the report should be about. If `CustomTimeRange` you will also need to provide the next 2 parameters:
@@ -92,8 +92,19 @@ This sample configuration will download an AdGroupPerformance report with [the p
 }
 ```
 
-<!-- ## Output
-TODO: Je tohle potřeba? -->
+## Output
+The output of every configuration row is always a single table in the Keboola Storage. If you specify the Storage Table Name in the [row configuration](#row-configuration), this name is used, otherwise a default name is generated as specified below.
+
+
+### Entities
+When extracting campaign entity data (i. e. when Object Type in row config is set to `Entity`), the default name of the Keboola Storage output table is `entities`. The schema of the output table is rather complicated (418 columns), since all possible entity fields need to be covered. It therefore is rather sparse (most values are empty because they do not apply to the entity type of any given row).
+
+### Reports
+#### Custom
+When extracting report data (i. e. when Object Type in row config is set to `Report (Custom)`), the output table schema depends on the columns set in the Columns parameter. The default table name is constructed as `{report_type}_Report.csv`, where `{report_type}` is the Report Type parameter value specified in the row configuration.
+#### Prebuilt
+When extracting report data (i. e. when Object Type in row config is set to `Report (Prebuilt)`), the output table schema depends on which report preset specified in the Preset Name row configuration parameter and the chosen aggregation in the Aggregation parameter. You can see what columns are extracted for each combination of Preset Name and Aggregation in [this markdown file inside this git repository](docs/report_presets_columns_and_pk.md). The default table name is constructed as `{preset_name}_{aggregation}_Report.csv`, where `{preset_name}` is the Preset Name parameter value and `{aggregation}` is the value of the Aggregation parameter.
+
 
 ## Development
 
