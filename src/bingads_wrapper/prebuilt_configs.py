@@ -351,8 +351,6 @@ AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY.extend(["AccountName", "CampaignName", "
 # Add AccountName, CampaignName and AdGroupName to CampaignPerformance and CampaignImpressionPerformance
 CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.extend(["AccountName", "CampaignName"])
 CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY.extend(["AccountName", "CampaignName"])
-print(CAMPAIGN_PERFORMANCE_COMMON_COLUMNS)
-print(CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY)
 
 # Add AdGroupName, CampaignName to ProductDimensionPerformance
 PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["AdGroupName", "CampaignName"])
