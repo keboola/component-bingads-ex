@@ -46,8 +46,7 @@ COMMON_PRIMARY_KEY = (
 
 ACCOUNT_AND_CAMPAIGN_PRIMARY_KEY = unique(
     COMMON_PRIMARY_KEY,
-    ("AccountId",
-     "AccountName"),
+    ("AccountId",),
 )
 
 ACCOUNT_NAME_PRIMARY_KEY = ("AccountName",)
@@ -337,6 +336,10 @@ GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
         GEOGRAPHIC_PRIMARY_KEY,
     ),
 )
+
+# Add AccountName as column and PK to AccountPerformance Report
+ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns.append("AccountName")
+ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.primary_key.append("AccountName")
 
 PREBUILT_CONFIGS = {
     "AccountPerformance":
