@@ -46,7 +46,8 @@ COMMON_PRIMARY_KEY = (
 
 ACCOUNT_AND_CAMPAIGN_PRIMARY_KEY = unique(
     COMMON_PRIMARY_KEY,
-    ("AccountId",),
+    ("AccountId",
+     "AccountName"),
 )
 
 ACCOUNT_NAME_PRIMARY_KEY = ("AccountName",)
