@@ -341,6 +341,9 @@ GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
 ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns.append("AccountName")
 ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.primary_key.append("AccountName")
 
+# Add AccountName as column and PK to AccountImpressionPerformance Report
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY.append("AccountName")
+
 PREBUILT_CONFIGS = {
     "AccountPerformance":
         PrebuiltReportConfig(
