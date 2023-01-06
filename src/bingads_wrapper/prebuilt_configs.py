@@ -338,17 +338,21 @@ GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
 )
 
 # Add AccountName as column and PK to AccountPerformance
-ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns.append("AccountName")
+ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns.insert(6, "AccountName")
 
 # Add AccountName as column and PK to AccountImpressionPerformance
 ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES = ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY
-ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES.append("AccountName")
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES.insert(6, "AccountName")
 
 # Add AccountName, CampaignName and AdGroupName to AdGroupPerformance, AdGroupImpressionPerformance
-AD_GROUP_PERFORMANCE_COMMON_COLUMNS.extend(["AccountName", "CampaignName", "AdGroupName"])
+AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(6, "AccountName")
+AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(9, "CampaignName")
+AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(11, "AdGroupName")
 
 # Add AccountName, CampaignName and AdGroupName to CampaignPerformance and CampaignImpressionPerformance
 CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.extend(["AccountName", "CampaignName"])
+CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.insert(6, "AccountName")
+CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.insert(9, "CampaignName")
 
 # Add AdGroupName, CampaignName to ProductDimensionPerformance
 PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["AdGroupName", "CampaignName"])
@@ -517,7 +521,8 @@ PREBUILT_CONFIGS = {
                 "Daily":
                     ColumnsAndPrimaryKey(
                         columns=[
-                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "AccountId", "AccountName", "CampaignId", "CampaignName", "AdGroupId", "AdGroupName",
+                            "KeywordId", "Keyword", "AdId", "TimePeriod", "CurrencyCode",
                             "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
                             "TopVsOther", "BidMatchType", "KeywordStatus", "Impressions", "Clicks", "Ctr",
                             "CurrentMaxCpc", "AverageCpc", "Spend", "AveragePosition", "Conversions",
@@ -528,8 +533,7 @@ PREBUILT_CONFIGS = {
                             "ViewThroughConversionsQualified", "AllCostPerConversion", "AllReturnOnAdSpend",
                             "AllConversionsQualified", "AllRevenue", "AllRevenuePerConversion", "HistoricalAdRelevance",
                             "HistoricalExpectedCtr", "HistoricalLandingPageExperience", "HistoricalQualityScore",
-                            "Revenue", "RevenuePerAssist", "RevenuePerConversion", "AccountName", "CampaignName",
-                            "AdGroupName", "Keyword"
+                            "Revenue", "RevenuePerAssist", "RevenuePerConversion"
                         ],
                         primary_key=[
                             "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
@@ -540,7 +544,8 @@ PREBUILT_CONFIGS = {
                 "Hourly":
                     ColumnsAndPrimaryKey(
                         columns=[
-                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "AccountId", "AccountName", "CampaignId", "CampaignName", "AdGroupId", "AdGroupName",
+                            "KeywordId", "Keyword", "AdId", "TimePeriod", "CurrencyCode",
                             "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
                             "TopVsOther", "BidMatchType", "KeywordStatus", "Impressions", "Clicks", "Ctr",
                             "CurrentMaxCpc", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate",
@@ -549,8 +554,8 @@ PREBUILT_CONFIGS = {
                             "FinalAppUrl", "FinalUrlSuffix", "Mainline1Bid", "MainlineBid", "FirstPageBid",
                             "ViewThroughConversions", "AllCostPerConversion", "AllReturnOnAdSpend",
                             "AllConversionsQualified", "AllRevenue", "AllRevenuePerConversion", "Revenue",
-                            "RevenuePerAssist", "RevenuePerConversion", "AccountName", "CampaignName",
-                            "AdGroupName", "Keyword"
+                            "RevenuePerAssist", "RevenuePerConversion",
+
                         ],
                         primary_key=[
                             "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
