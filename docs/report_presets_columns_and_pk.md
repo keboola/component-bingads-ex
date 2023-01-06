@@ -28,9 +28,9 @@
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, AccountName`
 ### Hourly aggregation
 #### Columns
-`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, LowQualityClicks, LowQualityClicksPercent, LowQualityConversionRate, LowQualityConversions, LowQualityConversionsQualified, LowQualityGeneralClicks, LowQualityImpressions, LowQualityImpressionsPercent, LowQualitySophisticatedClicks, Revenue, RevenuePerConversion, RevenuePerAssist, AccountName`
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, LowQualityClicks, LowQualityClicksPercent, LowQualityConversionRate, LowQualityConversions, LowQualityConversionsQualified, LowQualityGeneralClicks, LowQualityImpressions, LowQualityImpressionsPercent, LowQualitySophisticatedClicks, Revenue, RevenuePerConversion, RevenuePerAssist`
 #### Primary key
-`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, AccountName`
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther`
 ## AccountImpressionPerformance Report Presets
 ### Daily aggregation
 #### Columns
