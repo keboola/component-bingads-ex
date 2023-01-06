@@ -338,8 +338,7 @@ GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
 )
 
 # Add AccountName as column and PK to AccountPerformance
-ACCOUNT_PERFORMANCE_COLUMNS = ACCOUNT_PERFORMANCE_COLUMNS_AND_PK
-ACCOUNT_PERFORMANCE_COLUMNS.columns.append("AccountName")
+ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns.append("AccountName")
 
 # Add AccountName as column and PK to AccountImpressionPerformance
 ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES = ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY
@@ -353,7 +352,6 @@ CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.extend(["AccountName", "CampaignName"])
 
 # Add AdGroupName, CampaignName to ProductDimensionPerformance
 PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["AdGroupName", "CampaignName"])
-PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK
 
 # Add CampaignName to GeographicPerformance
 GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["CampaignName"])
@@ -363,8 +361,8 @@ PREBUILT_CONFIGS = {
         PrebuiltReportConfig(
             report_type="AccountPerformance",
             columns_and_primary_key_by_aggregation={
-                "Daily": ACCOUNT_PERFORMANCE_COLUMNS,
-                "Hourly": ACCOUNT_PERFORMANCE_COLUMNS,
+                "Daily": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
+                "Hourly": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
             },
         ),
     "AccountImpressionPerformance":
