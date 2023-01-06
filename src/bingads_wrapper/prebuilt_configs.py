@@ -350,12 +350,13 @@ AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(9, "CampaignName")
 AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(11, "AdGroupName")
 
 # Add AccountName, CampaignName and AdGroupName to CampaignPerformance and CampaignImpressionPerformance
-CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.extend(["AccountName", "CampaignName"])
 CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.insert(6, "AccountName")
 CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.insert(9, "CampaignName")
 
 # Add AdGroupName, CampaignName to ProductDimensionPerformance
-PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["AdGroupName", "CampaignName"])
+PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.insert(6, "CampaignName")
+PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.insert(8, "AdGroupName")
+print(PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns)
 
 # Add CampaignName to GeographicPerformance
 GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["CampaignName"])
