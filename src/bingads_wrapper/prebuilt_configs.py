@@ -338,35 +338,33 @@ GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
 )
 
 # Add AccountName as column and PK to AccountPerformance
-ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns.append("AccountName")
-ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.primary_key.append("AccountName")
+ACCOUNT_PERFORMANCE_COLUMNS = ACCOUNT_PERFORMANCE_COLUMNS_AND_PK
+ACCOUNT_PERFORMANCE_COLUMNS.columns.append("AccountName")
 
 # Add AccountName as column and PK to AccountImpressionPerformance
-ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY.append("AccountName")
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES = ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES.append("AccountName")
 
 # Add AccountName, CampaignName and AdGroupName to AdGroupPerformance, AdGroupImpressionPerformance
 AD_GROUP_PERFORMANCE_COMMON_COLUMNS.extend(["AccountName", "CampaignName", "AdGroupName"])
-AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY.extend(["AccountName", "CampaignName", "AdGroupName"])
 
 # Add AccountName, CampaignName and AdGroupName to CampaignPerformance and CampaignImpressionPerformance
 CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.extend(["AccountName", "CampaignName"])
-CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY.extend(["AccountName", "CampaignName"])
 
 # Add AdGroupName, CampaignName to ProductDimensionPerformance
 PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["AdGroupName", "CampaignName"])
-PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.primary_key.extend(["AdGroupName", "CampaignName"])
+PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK
 
 # Add CampaignName to GeographicPerformance
 GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK.columns.extend(["CampaignName"])
-GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK.primary_key.extend(["CampaignName"])
 
 PREBUILT_CONFIGS = {
     "AccountPerformance":
         PrebuiltReportConfig(
             report_type="AccountPerformance",
             columns_and_primary_key_by_aggregation={
-                "Daily": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
-                "Hourly": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
+                "Daily": ACCOUNT_PERFORMANCE_COLUMNS,
+                "Hourly": ACCOUNT_PERFORMANCE_COLUMNS,
             },
         ),
     "AccountImpressionPerformance":
@@ -376,7 +374,7 @@ PREBUILT_CONFIGS = {
                 "Daily":
                     ColumnsAndPrimaryKey(
                         columns=unique(
-                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES,
                             ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
                             DAILY_RESTRICTING_PERFORMANCE_METRICS,
                             ALL_AVERAGE_METRICS,
@@ -391,7 +389,7 @@ PREBUILT_CONFIGS = {
                 "Hourly":
                     ColumnsAndPrimaryKey(
                         columns=unique(
-                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES,
                             ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
                             ALL_AVERAGE_METRICS,
                             CONVERSION_METRICS,
@@ -538,8 +536,7 @@ PREBUILT_CONFIGS = {
                         primary_key=[
                             "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
                             "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
-                            "TopVsOther", "BidMatchType", "AccountName", "CampaignName",
-                            "AdGroupName", "Keyword"
+                            "TopVsOther", "BidMatchType"
                         ],
                     ),
                 "Hourly":
@@ -560,7 +557,7 @@ PREBUILT_CONFIGS = {
                         primary_key=[
                             "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
                             "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
-                            "TopVsOther", "BidMatchType", "AccountName", "CampaignName", "AdGroupName", "Keyword"
+                            "TopVsOther", "BidMatchType"
                         ],
                     ),
             },
