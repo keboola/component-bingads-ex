@@ -18,7 +18,7 @@ This data source component supports extracting either campaign entity data or va
 
 3. After that, enter the created Developer Token as well as your Account ID and Customer ID into the components global configuration as you can see on the screenshot below. Don't forget to save the configuration. ![Global Configuration](docs/imgs/config_global.png)
 
-4. Finally, you must enter this information into the global configuration log into your account using the Authorize Account button in the Keboola interface. ![OAuth Authorization](docs/imgs/config_oauth.png)
+4. Finally, you must log into your account using the Authorize Account button in the Keboola interface. ![OAuth Authorization](docs/imgs/config_oauth.png)
 
 <!-- ## Supported endpoints
 TODO: Zatím vynechávám, kdyžtak rozvedu, pokud to bude potřeba -->
@@ -28,7 +28,7 @@ TODO: Zatím vynechávám, kdyžtak rozvedu, pokud to bude potřeba -->
 ### Global configuraiton
 - Developer Token (#developer_token) - [REQ] Your developer token. (See [Prerequisites](#prerequisites) for info on how to obtain it.)
 - Customer ID (customer_id) - [REQ] Customer identifier. (See [Prerequisites](#prerequisites) for info on how to find it.)
-- Account ID (account_id) - [REQ] Account identifier.. (See [Prerequisites](#prerequisites) for info on how to find it.)
+- Account ID (account_id) - [REQ] Account identifier. (See [Prerequisites](#prerequisites) for info on how to find it.)
 
 ### Row configuration
 
@@ -76,7 +76,7 @@ This sample configuration will download an AdGroupPerformance report with [the p
         },
         "object_type": "report_prebuilt",
         "report_settings_prebuilt": {
-            "report_type": "AdGroupPerformance",
+            "preset_name": "AdGroupPerformance",
             "aggregation": "Daily",
             "time_range": {
                 "time_zone": "BelgradeBratislavaBudapestLjubljanaPrague",
