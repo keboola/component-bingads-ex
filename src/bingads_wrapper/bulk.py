@@ -21,14 +21,19 @@ def _get_last_sync_time_argument(config_dict: dict, data_scope: List[str],
     since_last_sync_time: bool = config_dict.get(KEY_SINCE_LAST_SYNC_TIME, False)
     if not since_last_sync_time:
         return None
+    elif not last_sync_time_in_utc:
+        logging.warning(
+            '"Only download changes since the last run" option is used, but no last run timestamp was found'
+            ' (probably caused by this being the first run of this configuration row). Will download all data.')
+        return None
     incompatible_data_scope_elements = DATA_SCOPES_INCOMPATIBLE_WITH_LAST_SYNC_TIME.intersection(data_scope)
     if incompatible_data_scope_elements:
         logging.warning(f"Data scope elements {incompatible_data_scope_elements} are incompatible with"
-                        f" only downloading changes since the last run. Will do full sync.")
+                        f" only downloading changes since the last run. Will download all data.")
         return None
     last_sync_time_to_now: timedelta = datetime.now(tz=timezone.utc) - last_sync_time_in_utc
     if last_sync_time_to_now.days >= 30:
-        logging.warning("Last sync done more than 30 days ago, cannot do incremental sync. Will do full sync.")
+        logging.warning("Last sync done more than 30 days ago, cannot do incremental sync. Will download all data.")
         return None
     return last_sync_time_in_utc
 
