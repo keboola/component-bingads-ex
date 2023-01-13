@@ -554,8 +554,7 @@ PREBUILT_CONFIGS = {
                             "FinalAppUrl", "FinalUrlSuffix", "Mainline1Bid", "MainlineBid", "FirstPageBid",
                             "ViewThroughConversions", "AllCostPerConversion", "AllReturnOnAdSpend",
                             "AllConversionsQualified", "AllRevenue", "AllRevenuePerConversion", "Revenue",
-                            "RevenuePerAssist", "RevenuePerConversion",
-
+                            "RevenuePerAssist", "RevenuePerConversion"
                         ],
                         primary_key=[
                             "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
