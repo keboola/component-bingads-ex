@@ -14,7 +14,7 @@ def generate_report_request_md_fragment(report_request_subtype_element: ET.Eleme
     assert len(column_names) > 0
     column_str = ", ".join(column_names)
 
-    return f"## {subtype_name} Report\n`{column_str}`"
+    return f"## {subtype_name} Report\n```{column_str}```"
 
 
 if __name__ == '__main__':

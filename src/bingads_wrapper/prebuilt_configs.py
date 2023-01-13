@@ -631,7 +631,7 @@ if __name__ == "__main__":
             column_str = ", ".join(columns_and_pk.columns)
             pk_str = ", ".join(columns_and_pk.primary_key)
             agg_fragment = (f"\n### {aggregation} aggregation"
-                            f"\n#### Columns\n`{column_str}`\n#### Primary key\n`{pk_str}`")
+                            f"\n#### Columns\n```{column_str}```\n#### Primary key\n```{pk_str}```")
             fragment += agg_fragment
         return fragment
 
