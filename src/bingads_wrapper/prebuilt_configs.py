@@ -365,8 +365,13 @@ PREBUILT_CONFIGS = {
         PrebuiltReportConfig(
             report_type="AccountPerformance",
             columns_and_primary_key_by_aggregation={
-                "Daily": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
-                "Hourly": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
+                "Daily": ColumnsAndPrimaryKey(
+                    columns=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns,
+                    primary_key=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.primary_key
+                ),
+                "Hourly": ColumnsAndPrimaryKey(
+                    columns=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns,
+                    primary_key=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.primary_key),
             },
         ),
     "AccountImpressionPerformance":
