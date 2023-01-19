@@ -53,8 +53,12 @@
 =======
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, AdGroupId, Language, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, QualityScore, ExpectedCtr, AdRelevance, LandingPageExperience, CampaignStatus, CustomParameters, FinalUrlSuffix, AllRevenue, AllRevenuePerConversion, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, Revenue, RevenuePerConversion, RevenuePerAssist, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, HistoricalAdRelevance, HistoricalExpectedCtr, HistoricalLandingPageExperience, HistoricalQualityScore, AccountName, CampaignName, AdGroupName`
 #### Primary key
+<<<<<<< HEAD
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, AdGroupId, Language, BidMatchType, DeviceOS, Goal, GoalType, TopVsOtherAccountName, CampaignName, AdGroupName`
 >>>>>>> 892b846 (add new columns with names)
+=======
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, AdGroupId, Language, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, AccountName, CampaignName, AdGroupName`
+>>>>>>> a1e14c2 (fix typo in docu)
 ### Hourly aggregation
 #### Columns
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, AdGroupId, Language, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, QualityScore, ExpectedCtr, AdRelevance, LandingPageExperience, CampaignStatus, CustomParameters, FinalUrlSuffix, AllRevenue, AllRevenuePerConversion, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, Revenue, RevenuePerConversion, RevenuePerAssist, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther```
