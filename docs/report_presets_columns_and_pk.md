@@ -40,11 +40,12 @@
 #### Columns
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, AbsoluteTopImpressionRatePercent, AbsoluteTopImpressionShareLostToBudgetPercent, AbsoluteTopImpressionShareLostToRankPercent, AbsoluteTopImpressionSharePercent, ClickSharePercent, ExactMatchImpressionSharePercent, ImpressionLostToBudgetPercent, ImpressionLostToRankAggPercent, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, LowQualityClicks, LowQualityClicksPercent, LowQualityConversionRate, LowQualityConversions, LowQualityConversionsQualified, LowQualityGeneralClicks, LowQualityImpressions, LowQualityImpressionsPercent, LowQualitySophisticatedClicks, Revenue, RevenuePerConversion, RevenuePerAssist, ImpressionSharePercent`
 #### Primary key
-`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType`
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType`
 ### Hourly aggregation
 #### Columns
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, LowQualityClicks, LowQualityClicksPercent, LowQualityConversionRate, LowQualityConversions, LowQualityConversionsQualified, LowQualityGeneralClicks, LowQualityImpressions, LowQualityImpressionsPercent, LowQualitySophisticatedClicks, Revenue, RevenuePerConversion, RevenuePerAssist`
 #### Primary key
+<<<<<<< HEAD
 <<<<<<< HEAD
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, AccountName`
 >>>>>>> 5da899f (add AccountName to AccountImpressionPerformance report)
@@ -69,6 +70,9 @@
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, AdGroupId, Language, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, QualityScore, ExpectedCtr, AdRelevance, LandingPageExperience, CampaignStatus, CustomParameters, FinalUrlSuffix, AllRevenue, AllRevenuePerConversion, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, Revenue, RevenuePerConversion, RevenuePerAssist, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther```
 =======
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType`
+=======
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType`
+>>>>>>> 81856d2 (generate new md file)
 ## AdGroupPerformance Report Presets
 ### Daily aggregation
 #### Columns
@@ -208,12 +212,12 @@
 ## GeographicPerformance Report Presets
 ### Daily aggregation
 #### Columns
-`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, CampaignId, CampaignName, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, Radius, CostPerConversion, CostPerAssist, Assists, ConversionRate, ConversionsQualified`
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, CampaignName, AccountName, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, Radius, CostPerConversion, CostPerAssist, Assists, ConversionRate, ConversionsQualified`
 #### Primary key
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation`
 ### Hourly aggregation
 #### Columns
-`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, CampaignId, CampaignName, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, Radius, CostPerConversion, CostPerAssist, Assists, ConversionRate, ConversionsQualified`
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, CampaignName, AccountName, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, Radius, CostPerConversion, CostPerAssist, Assists, ConversionRate, ConversionsQualified`
 #### Primary key
 <<<<<<< HEAD
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation, CampaignName`
