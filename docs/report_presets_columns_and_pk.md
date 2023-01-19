@@ -40,11 +40,12 @@
 #### Columns
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, AbsoluteTopImpressionRatePercent, AbsoluteTopImpressionShareLostToBudgetPercent, AbsoluteTopImpressionShareLostToRankPercent, AbsoluteTopImpressionSharePercent, ClickSharePercent, ExactMatchImpressionSharePercent, ImpressionLostToBudgetPercent, ImpressionLostToRankAggPercent, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, LowQualityClicks, LowQualityClicksPercent, LowQualityConversionRate, LowQualityConversions, LowQualityConversionsQualified, LowQualityGeneralClicks, LowQualityImpressions, LowQualityImpressionsPercent, LowQualitySophisticatedClicks, Revenue, RevenuePerConversion, RevenuePerAssist, ImpressionSharePercent`
 #### Primary key
-`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType`
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType`
 ### Hourly aggregation
 #### Columns
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType, Impressions, Clicks, Ctr, Spend, ReturnOnAdSpend, AllConversionsQualified, ViewThroughConversionsQualified, PhoneImpressions, PhoneCalls, CostPerConversion, Ptr, Assists, CostPerAssist, AverageCpc, AverageCpm, AveragePosition, ConversionRate, ConversionsQualified, LowQualityClicks, LowQualityClicksPercent, LowQualityConversionRate, LowQualityConversions, LowQualityConversionsQualified, LowQualityGeneralClicks, LowQualityImpressions, LowQualityImpressionsPercent, LowQualitySophisticatedClicks, Revenue, RevenuePerConversion, RevenuePerAssist`
 #### Primary key
+<<<<<<< HEAD
 <<<<<<< HEAD
 <<<<<<< HEAD
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, AccountName`
@@ -73,6 +74,9 @@
 =======
 `TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, AccountName, DeliveredMatchType`
 >>>>>>> 81856d2 (generate new md file)
+=======
+`TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType`
+>>>>>>> 4552636 (regenerate docs file)
 ## AdGroupPerformance Report Presets
 ### Daily aggregation
 #### Columns
