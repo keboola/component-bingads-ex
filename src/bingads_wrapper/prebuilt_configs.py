@@ -337,13 +337,41 @@ GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
     ),
 )
 
+# Add AccountName as column and PK to AccountPerformance
+ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns.insert(6, "AccountName")
+
+# Add AccountName as column and PK to AccountImpressionPerformance
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES = ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY.copy()
+ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES.insert(6, "AccountName")
+
+# Add AccountName, CampaignName and AdGroupName to AdGroupPerformance, AdGroupImpressionPerformance
+AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(6, "AccountName")
+AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(9, "CampaignName")
+AD_GROUP_PERFORMANCE_COMMON_COLUMNS.insert(11, "AdGroupName")
+
+# Add AccountName, CampaignName and AdGroupName to CampaignPerformance and CampaignImpressionPerformance
+CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.insert(6, "AccountName")
+CAMPAIGN_PERFORMANCE_COMMON_COLUMNS.insert(9, "CampaignName")
+
+# Add AdGroupName, CampaignName to ProductDimensionPerformance
+PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.insert(6, "CampaignName")
+PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK.columns.insert(8, "AdGroupName")
+
+# Add CampaignName to GeographicPerformance
+GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK.columns.insert(8, "CampaignName")
+
 PREBUILT_CONFIGS = {
     "AccountPerformance":
         PrebuiltReportConfig(
             report_type="AccountPerformance",
             columns_and_primary_key_by_aggregation={
-                "Daily": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
-                "Hourly": ACCOUNT_PERFORMANCE_COLUMNS_AND_PK,
+                "Daily": ColumnsAndPrimaryKey(
+                    columns=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns,
+                    primary_key=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.primary_key
+                ),
+                "Hourly": ColumnsAndPrimaryKey(
+                    columns=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.columns,
+                    primary_key=ACCOUNT_PERFORMANCE_COLUMNS_AND_PK.primary_key),
             },
         ),
     "AccountImpressionPerformance":
@@ -353,7 +381,7 @@ PREBUILT_CONFIGS = {
                 "Daily":
                     ColumnsAndPrimaryKey(
                         columns=unique(
-                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES,
                             ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
                             DAILY_RESTRICTING_PERFORMANCE_METRICS,
                             ALL_AVERAGE_METRICS,
@@ -368,7 +396,7 @@ PREBUILT_CONFIGS = {
                 "Hourly":
                     ColumnsAndPrimaryKey(
                         columns=unique(
-                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_PRIMARY_KEY,
+                            ACCOUNT_AND_CAMPAIGN_PERFORMANCE_COLS_WITH_NAMES,
                             ACCOUNT_AND_CAMPAIGN_PERFORMANCE_METRICS,
                             ALL_AVERAGE_METRICS,
                             CONVERSION_METRICS,
@@ -498,7 +526,8 @@ PREBUILT_CONFIGS = {
                 "Daily":
                     ColumnsAndPrimaryKey(
                         columns=[
-                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "AccountId", "AccountName", "CampaignId", "CampaignName", "AdGroupId", "AdGroupName",
+                            "KeywordId", "Keyword", "AdId", "TimePeriod", "CurrencyCode",
                             "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
                             "TopVsOther", "BidMatchType", "KeywordStatus", "Impressions", "Clicks", "Ctr",
                             "CurrentMaxCpc", "AverageCpc", "Spend", "AveragePosition", "Conversions",
@@ -520,7 +549,8 @@ PREBUILT_CONFIGS = {
                 "Hourly":
                     ColumnsAndPrimaryKey(
                         columns=[
-                            "AccountId", "CampaignId", "AdGroupId", "KeywordId", "AdId", "TimePeriod", "CurrencyCode",
+                            "AccountId", "AccountName", "CampaignId", "CampaignName", "AdGroupId", "AdGroupName",
+                            "KeywordId", "Keyword", "AdId", "TimePeriod", "CurrencyCode",
                             "DeliveredMatchType", "AdDistribution", "DeviceType", "Language", "Network", "DeviceOS",
                             "TopVsOther", "BidMatchType", "KeywordStatus", "Impressions", "Clicks", "Ctr",
                             "CurrentMaxCpc", "AverageCpc", "Spend", "AveragePosition", "Conversions", "ConversionRate",
