@@ -8,18 +8,13 @@ This data source component supports extracting either campaign entity data or va
 
 ## Prerequisites
 
-1. First, you must create a Developer Token. To do so, please follow [this guide in the official documentation](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-developer-token).
+1. Find your Bing Ads Account ID and Customer ID. Once again, please follow [this part of the official documentation](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids). Both should be numbers such as `391827251`.
 
-2. Then you must find your Bing Ads Account ID and Customer ID. Once again, please follow [this part of the official documentation](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids). Both should be numbers such as `391827251`.
-
-3. After that, enter the created Developer Token as well as your Account ID and Customer ID into the components global configuration as you can see on the screenshot below. Don't forget to save the configuration. ![Global Configuration](docs/imgs/config_global.png)
-
-4. Finally, you must log into your account using the Authorize Account button in the Keboola interface. ![OAuth Authorization](docs/imgs/config_oauth.png)
+3. Log into your account using the Authorize Account button in the Keboola interface. ![OAuth Authorization](docs/imgs/config_oauth.png)
 
 ## Configuration
 
 ### Global configuraiton
-- Developer Token (#developer_token) - [REQ] Your developer token. (See [Prerequisites](#prerequisites) for info on how to obtain it.)
 - Customer ID (customer_id) - [REQ] Customer identifier. (See [Prerequisites](#prerequisites) for info on how to find it.)
 - Account ID (account_id) - [REQ] Account identifier. (See [Prerequisites](#prerequisites) for info on how to find it.)
 
@@ -63,7 +58,7 @@ This sample configuration will download an AdGroupPerformance report with [the p
 {
     "parameters": {
         "authorization": {
-            "#developer_token": "BBD37VB98",
+            "#developer_token": "THIS IS OPTIONAL USUALLY GET FROM THE PLATFORM IMAGE PARAMETERS",
             "customer_id": 313617589,
             "account_id": 391827251
         },
