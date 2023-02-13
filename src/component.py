@@ -116,8 +116,8 @@ class BingAdsExtractor(ComponentBase):
                                     f" Please make sure provided configuration is valid.") from e
 
         authorization_dict = params[KEY_AUTHORIZATION]
-        authorization_dict['#developer_token'] = self.configuration.image_parameters.get(
-            'developer_token') or authorization_dict.get('#developer_token')
+        authorization_dict['#developer_token'] = authorization_dict.get(
+            '#developer_token') or self.configuration.image_parameters.get('developer_token')
         object_type = ObjectType(params[KEY_OBJECT_TYPE])
         destination: dict = params[KEY_DESTINATION]
         incremental: bool = LoadType(destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL
