@@ -1,17 +1,16 @@
-from datetime import datetime, timezone
-from enum import Enum, unique
+import json
 import logging
 import os
-from typing import Optional
+from datetime import datetime, timezone
+from enum import Enum, unique
 from pathlib import Path
-import json
-import jsonschema
+from typing import Optional
 
+import jsonschema
 from keboola.component.base import ComponentBase
 from keboola.component.exceptions import UserException
 
 from bingads_wrapper.authorization import Authorization
-
 from bingads_wrapper.request import DownloadRequest, ReportDownloadRequest, BulkDownloadRequest
 
 # Global configuration variables
@@ -85,6 +84,7 @@ class BingAdsExtractor(ComponentBase):
 
     If `debug` parameter is present in the `config.json`, the default logger is set to verbose DEBUG mode.
     """
+
     def __init__(self, data_path_override: Optional[str] = None):
         super().__init__(data_path_override)
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
@@ -116,6 +116,8 @@ class BingAdsExtractor(ComponentBase):
                                     f" Please make sure provided configuration is valid.") from e
 
         authorization_dict = params[KEY_AUTHORIZATION]
+        authorization_dict['#developer_token'] = authorization_dict.get(
+            '#developer_token') or self.configuration.image_parameters.get('developer_token')
         object_type = ObjectType(params[KEY_OBJECT_TYPE])
         destination: dict = params[KEY_DESTINATION]
         incremental: bool = LoadType(destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL

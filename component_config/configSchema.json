@@ -11,18 +11,10 @@
       "description": "Parameters used for authorization",
       "format": "table",
       "required": [
-        "#developer_token",
         "customer_id",
         "account_id"
       ],
       "properties": {
-        "#developer_token": {
-          "type": "string",
-          "title": "Developer Token",
-          "description": "Your developer token.",
-          "format": "password",
-          "propertyOrder": 2000
-        },
         "customer_id": {
           "type": "integer",
           "title": "Customer ID",
