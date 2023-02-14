@@ -7,13 +7,15 @@ from pathlib import Path
 from typing import Optional
 
 import jsonschema
-from keboola.component.base import ComponentBase
+from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 
+from bingads_wrapper import metadata_provider
 from bingads_wrapper.authorization import Authorization
 from bingads_wrapper.request import DownloadRequest, ReportDownloadRequest, BulkDownloadRequest
 
 # Global configuration variables
+
 KEY_AUTHORIZATION = "authorization"
 
 # Row configuration variables
@@ -87,16 +89,7 @@ class BingAdsExtractor(ComponentBase):
 
     def __init__(self, data_path_override: Optional[str] = None):
         super().__init__(data_path_override)
-        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
-        self.validate_image_parameters(REQUIRED_IMAGE_PARAMETERS)
-        os.makedirs(self.tables_out_path, exist_ok=True)
-        params: dict = self.configuration.parameters
-        if params.get("debug"):
-            try:
-                jsonschema.validate(params, get_schema())
-            except jsonschema.ValidationError as e:
-                raise UserException(f"Configuration validation error: {e.message}."
-                                    f" Please make sure provided configuration is valid.") from e
+
         self.previous_state = self.get_state_file()
         last_sync_time_in_utc_str: Optional[str] = self.previous_state.get(KEY_LAST_SYNC_TIME_IN_UTC)
         self.last_sync_time_in_utc = (datetime.fromisoformat(last_sync_time_in_utc_str)
@@ -107,7 +100,15 @@ class BingAdsExtractor(ComponentBase):
         """
         Main execution code
         """
+        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        os.makedirs(self.tables_out_path, exist_ok=True)
         params: dict = self.configuration.parameters
+        if params.get("debug"):
+            try:
+                jsonschema.validate(params, get_schema())
+            except jsonschema.ValidationError as e:
+                raise UserException(f"Configuration validation error: {e.message}."
+                                    f" Please make sure provided configuration is valid.") from e
         if params.get("debug"):
             try:
                 jsonschema.validate(params, get_schema())
@@ -158,6 +159,14 @@ class BingAdsExtractor(ComponentBase):
 
         self.sync_time_in_utc_str = new_sync_time_in_utc_str  # Extraction done, updating sync timestamp in state
         self.save_state(authorization.refresh_token)
+
+    @sync_action('get_report_columns')
+    def get_report_columns(self):
+        report_type = self.configuration.parameters.get('report_settings_custom', {}).get('report_type')
+        if not report_type:
+            raise UserException('Report type is not specified!')
+        available_cols = metadata_provider.get_report_available_columns()
+        return [{"value": c, "label": c} for c in available_cols[report_type]]
 
     def save_state(self, refresh_token: str):
         """

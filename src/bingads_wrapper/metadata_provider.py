@@ -1,11 +1,10 @@
-import json
 import pkgutil
 import xml.etree.ElementTree as ET
 
 xml_root_element = ET.fromstring(pkgutil.get_data("bingads.v13", "proxies/production/reporting_service.xml"))
 
 
-def generate_report_request_md_fragment(report_request_subtype_element: ET.Element) -> dict:
+def _generate_report_request_md_fragment(report_request_subtype_element: ET.Element) -> dict:
     subtype_name: str = report_request_subtype_element.attrib["name"].replace("ReportRequest", "")
 
     columns_type_element = xml_root_element.find(".//{http://www.w3.org/2001/XMLSchema}simpleType[@name='" +
@@ -17,19 +16,12 @@ def generate_report_request_md_fragment(report_request_subtype_element: ET.Eleme
     return {subtype_name: column_names}
 
 
-if __name__ == '__main__':
+def get_report_available_columns() -> dict:
     report_request_subtype_defs = xml_root_element.findall(
         ".//{http://www.w3.org/2001/XMLSchema}extension[@base='tns:ReportRequest']../..")
 
     result_dict = {}
     for report_subtype_element in report_request_subtype_defs:
-        result_dict = {**result_dict, **generate_report_request_md_fragment(report_subtype_element)}
+        result_dict = {**result_dict, **_generate_report_request_md_fragment(report_subtype_element)}
 
-    with open("docs/reports_available_columns.json", 'w') as out_f:
-        out_f.write(json.dumps(result_dict))
-
-    all_columns = [f"## {key} Report\n```{', '.join(val)}```" for key, val in result_dict.items()]
-    output_md = ("# Possible columns for each report type\n" + "\n".join(all_columns))
-
-    with open("docs/reports_available_columns.md", 'w') as out_f:
-        out_f.write(output_md)
+    return result_dict
