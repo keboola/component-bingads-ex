@@ -168,6 +168,11 @@ class BingAdsExtractor(ComponentBase):
         available_cols = metadata_provider.get_report_available_columns()
         return [{"value": c, "label": c} for c in available_cols[report_type]]
 
+    @sync_action('get_bulk_entities')
+    def get_bulk_entities(self):
+        available_cols = metadata_provider.get_available_bulk_entities()
+        return [{"value": c, "label": c} for c in available_cols]
+
     def save_state(self, refresh_token: str):
         """
         Save refresh token to state file.

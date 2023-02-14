@@ -40,13 +40,24 @@
       ],
       "properties": {
         "download_entities": {
-          "type": "string",
+          "type": "array",
           "title": "Entities",
-          "format": "textarea",
-          "default": "Campaigns,Ads",
+          "format": "select",
           "options": {
-            "input_height": "100px"
+            "async": {
+              "label": "Re-load available entities",
+              "action": "get_bulk_entities"
+            }
           },
+          "uniqueItems": true,
+          "items": {
+            "enum": [],
+            "type": "string"
+          },
+          "default": [
+            "Campaigns",
+            "Ads"
+          ],
           "description": "Comma separated list of entities to download, find supported entities in the <a href='https://learn.microsoft.com/en-us/advertising/bulk-service/downloadentity?view=bingads-13'>documentation</a>.",
           "propertyOrder": 3000
         },
