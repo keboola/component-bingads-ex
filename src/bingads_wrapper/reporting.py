@@ -1,19 +1,16 @@
+import logging
 from dataclasses import dataclass, field
 from datetime import datetime
-import logging
 from typing import Optional
-
-from suds.sudsobject import Object
 
 from bingads.service_client import ServiceClient, AuthorizationData
 from bingads.v13.reporting import ReportingDownloadParameters
-
 from dateparser import parse
-
 from keboola.component.exceptions import UserException
+from suds.sudsobject import Object
 
-from .utils import comma_separated_str_to_list
 from .prebuilt_configs import get_prebuilt_report_config
+from .utils import comma_separated_str_to_list
 
 KEY_PRESET_NAME = "preset_name"
 KEY_AGGREGATION = "aggregation"
@@ -23,6 +20,8 @@ KEY_RETURN_ONLY_COMPLETE_DATA = "return_only_complete_data"
 KEY_TIME_RANGE = "time_range"
 KEY_COLUMNS = "columns"
 KEY_PRIMARY_KEY = "primary_key"
+KEY_COLUMNS_ARRAY = "columns_array"
+KEY_PRIMARY_KEY_ARRAY = "primary_key_array"
 
 # Time range keys:
 KEY_TIME_ZONE = "time_zone"
@@ -57,11 +56,22 @@ class ReportingDownloadParametersFactory:
 
     def __post_init__(self):
         self._authorization_data = self.reporting_service.authorization_data
-        missing_config_dict_keys = set((KEY_REPORT_TYPE, KEY_COLUMNS, KEY_PRIMARY_KEY)) - set(self.config_dict.keys())
+        config_keys = set(self.config_dict.keys())
+        missing_config_dict_keys = {KEY_REPORT_TYPE, KEY_COLUMNS_ARRAY, KEY_PRIMARY_KEY_ARRAY} - config_keys
+
+        # for backward compatibility
+        try:
+            if KEY_COLUMNS in config_keys and KEY_PRIMARY_KEY in config_keys:
+                missing_config_dict_keys.remove(KEY_COLUMNS_ARRAY)
+                missing_config_dict_keys.remove(KEY_PRIMARY_KEY_ARRAY)
+        except KeyError:
+            pass
+
         if missing_config_dict_keys:
             if KEY_PRESET_NAME not in self.config_dict:
                 raise UserException(
-                    f"Preset name must be specified if {KEY_REPORT_TYPE}, {KEY_COLUMNS} or {KEY_PRIMARY_KEY}"
+                    f"Preset name must be specified if {KEY_REPORT_TYPE}, {KEY_COLUMNS_ARRAY} "
+                    f"or {KEY_PRIMARY_KEY_ARRAY}"
                     f" is not present in report settings.")
             missing_config_dict_keys_str = ", ".join(missing_config_dict_keys)
             logging.info(
@@ -150,13 +160,13 @@ class ReportingDownloadParametersFactory:
     def _set_report_request_columns_parameter_and_primary_key(self):
         report_columns = self._report_request.Columns
         column_array: list[str] = getattr(report_columns, self._report_type + "ReportColumn")
-        column_spec = self.config_dict[KEY_COLUMNS]
+        column_spec = self.config_dict.get(KEY_COLUMNS) or self.config_dict[KEY_COLUMNS_ARRAY]
         if isinstance(column_spec, str):
             column_names = comma_separated_str_to_list(column_spec)
         elif isinstance(column_spec, list):
             column_names = column_spec
         column_array.extend(column_names)
-        primary_key_spec = self.config_dict[KEY_PRIMARY_KEY]
+        primary_key_spec = self.config_dict.get(KEY_PRIMARY_KEY) or self.config_dict[KEY_PRIMARY_KEY_ARRAY]
         if isinstance(primary_key_spec, str):
             self.primary_key = comma_separated_str_to_list(primary_key_spec)
         elif isinstance(primary_key_spec, list):
