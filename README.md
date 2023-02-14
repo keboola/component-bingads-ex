@@ -1,6 +1,8 @@
 # Bing Ads Extractor
 
-This data source component supports extracting either campaign entity data or various types of reports available. In case of reports you can specify your own set of columns and primary key to use in Keboola Storage, but there are also presets of columns and appropriate primary keys available.
+This data source component supports extracting either campaign entity data or various types of reports available. In
+case of reports you can specify your own set of columns and primary key to use in Keboola Storage, but there are also
+presets of columns and appropriate primary keys available.
 
 **Table of contents:**
 
@@ -8,13 +10,16 @@ This data source component supports extracting either campaign entity data or va
 
 ## Prerequisites
 
-1. Find your Bing Ads Account ID and Customer ID. Once again, please follow [this part of the official documentation](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids). Both should be numbers such as `391827251`.
+1. Find your Bing Ads Account ID and Customer ID. Follow [this part of the official documentation](https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids). Both should be numbers such as `391827251`.
 
-3. Log into your account using the Authorize Account button in the Keboola interface. ![OAuth Authorization](docs/imgs/config_oauth.png)
+2. Log into your account using the Authorize Account button in the Keboola interface. 
+
+![OAuth Authorization](docs/imgs/config_oauth.png)
+
 
 ## Configuration
 
-### Global configuraiton
+### Global configuration
 - Customer ID (customer_id) - [REQ] Customer identifier. (See [Prerequisites](#prerequisites) for info on how to find it.)
 - Account ID (account_id) - [REQ] Account identifier. (See [Prerequisites](#prerequisites) for info on how to find it.)
 
