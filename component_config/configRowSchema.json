@@ -149,25 +149,38 @@
           "$ref": "#/definitions/return_only_complete_data",
           "propertyOrder": 40
         },
-        "columns": {
-          "type": "string",
+        "columns_array": {
+          "type": "array",
           "title": "Columns",
-          "format": "textarea",
-          "options": {
-            "input_height": "100px"
+          "items": {
+            "enum": [],
+            "type": "string"
           },
-          "description": "Comma separated list of columns to use for the report. For your convenience, available columns for each report type are listed in the appropriate format in <a href='https://bitbucket.org/kds_consulting_team/kds-team.ex-bingads/src/master/docs/reports_available_columns.md'>this markdown file</a>.",
+          "format": "select",
+          "options": {
+            "async": {
+              "label": "Re-load available columns",
+              "action": "get_report_columns"
+            }
+          },
+          "uniqueItems": true,
+          "description": "Comma separated list of columns to use for the report. ",
           "propertyOrder": 50
         },
         "primary_key": {
-          "type": "string",
-          "title": "Primary Key Columns",
-          "format": "textarea",
-          "options": {
-            "input_height": "100px"
-          },
-          "description": "Comma separated list of columns to be used as primary key. For your convenience, available columns for each report type are listed in the appropriate format in <a href='https://bitbucket.org/kds_consulting_team/kds-team.ex-bingads/src/master/docs/reports_available_columns.md'>this markdown file</a>.",
-          "propertyOrder": 60
+          "type": "array",
+          "title": "Primary Key",
+          "description": "List of columns (from selected dimensions) to be used as primary key of the resulting table. We recommend using ID columns where possible, to avoid ambiguity in case the dimension name is changed.",
+          "propertyOrder": 60,
+          "format": "select",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "watch": {
+              "dim": "columns_array"
+            },
+            "enumSource": "dim"
+          }
         }
       }
     },
