@@ -69,8 +69,8 @@
         "aggregation",
         "time_range",
         "return_only_complete_data",
-        "columns",
-        "primary_key"
+        "columns_array",
+        "primary_key_array"
       ],
       "options": {
         "dependencies": {
@@ -167,7 +167,7 @@
           "description": "Comma separated list of columns to use for the report. ",
           "propertyOrder": 50
         },
-        "primary_key": {
+        "primary_key_array": {
           "type": "array",
           "title": "Primary Key",
           "description": "List of columns (from selected dimensions) to be used as primary key of the resulting table. We recommend using ID columns where possible, to avoid ambiguity in case the dimension name is changed.",
@@ -177,7 +177,7 @@
           "items": {
             "type": "string",
             "watch": {
-              "dim": "columns_array"
+              "dim": "report_settings_custom.columns_array"
             },
             "enumSource": "dim"
           }
