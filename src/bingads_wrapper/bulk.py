@@ -1,5 +1,5 @@
-from datetime import datetime, timedelta, timezone
 import logging
+from datetime import datetime, timedelta, timezone
 from typing import List, Optional
 
 from bingads.v13.bulk import DownloadParameters
@@ -39,15 +39,21 @@ def _get_last_sync_time_argument(config_dict: dict, data_scope: List[str],
 
 
 def create_download_parameters(
-    config_dict: dict,
-    last_sync_time_in_utc: Optional[datetime],
-    result_file_directory: str,
-    result_file_name: str,
-    report_file_format: str,
+        config_dict: dict,
+        last_sync_time_in_utc: Optional[datetime],
+        result_file_directory: str,
+        result_file_name: str,
+        report_file_format: str,
 ) -> DownloadParameters:
     data_scope: List[str] = (comma_separated_str_to_list(config_dict[KEY_DATA_SCOPE])
                              if config_dict.get(KEY_DATA_SCOPE) else DEFAULT_DATA_SCOPE)
-    download_entities: List[str] = comma_separated_str_to_list(config_dict[KEY_DOWNLOAD_ENTITIES])
+
+    # backward compatibility with first ui version
+    if isinstance(config_dict[KEY_DOWNLOAD_ENTITIES], str):
+        download_entities: List[str] = comma_separated_str_to_list(config_dict[KEY_DOWNLOAD_ENTITIES])
+    elif isinstance(config_dict[KEY_DOWNLOAD_ENTITIES], list):
+        download_entities: List[str] = config_dict[KEY_DOWNLOAD_ENTITIES]
+
     return DownloadParameters(
         campaign_ids=None,
         data_scope=data_scope,
