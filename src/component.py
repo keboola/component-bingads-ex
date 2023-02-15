@@ -1,7 +1,6 @@
 import json
 import logging
 import os
-import ssl
 from datetime import datetime, timezone
 from enum import Enum, unique
 from pathlib import Path
@@ -96,12 +95,13 @@ class BingAdsExtractor(ComponentBase):
                                       if last_sync_time_in_utc_str else None)
         self.sync_time_in_utc_str = last_sync_time_in_utc_str  # Saving the old timestamp until new sync is done
 
-        try:
-            _create_unverified_https_context = ssl._create_unverified_context
-        except AttributeError:
-            pass
-        else:
-            ssl._create_default_https_context = _create_unverified_https_context
+        # May have to be uncommented for local testing
+        # try:
+        #     _create_unverified_https_context = ssl._create_unverified_context
+        # except AttributeError:
+        #     pass
+        # else:
+        #     ssl._create_default_https_context = _create_unverified_https_context
 
     def run(self):
         """
