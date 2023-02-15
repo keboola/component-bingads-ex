@@ -161,8 +161,8 @@ class BingAdsExtractor(ComponentBase):
         errors = []
         if not params.get(KEY_AUTHORIZATION, {}).get("account_id"):
             errors.append("Required parameter Account ID is missing!")
-        if not params.get(KEY_AUTHORIZATION, {}).get("client_id"):
-            errors.append("Required parameter Client ID is missing!")
+        if not params.get(KEY_AUTHORIZATION, {}).get("customer_id"):
+            errors.append("Required parameter Customer ID is missing!")
 
         if not (object_type := params.get(KEY_OBJECT_TYPE, '')):
             errors.append("Required parameter Object Type is missing!")
