@@ -160,13 +160,13 @@ class ReportingDownloadParametersFactory:
     def _set_report_request_columns_parameter_and_primary_key(self):
         report_columns = self._report_request.Columns
         column_array: list[str] = getattr(report_columns, self._report_type + "ReportColumn")
-        column_spec = self.config_dict.get(KEY_COLUMNS) or self.config_dict[KEY_COLUMNS_ARRAY]
+        column_spec = self.config_dict.get(KEY_COLUMNS) or self.config_dict.get(KEY_COLUMNS_ARRAY, [])
         if isinstance(column_spec, str):
             column_names = comma_separated_str_to_list(column_spec)
         elif isinstance(column_spec, list):
             column_names = column_spec
         column_array.extend(column_names)
-        primary_key_spec = self.config_dict.get(KEY_PRIMARY_KEY) or self.config_dict[KEY_PRIMARY_KEY_ARRAY]
+        primary_key_spec = self.config_dict.get(KEY_PRIMARY_KEY) or self.config_dict.get(KEY_PRIMARY_KEY_ARRAY, [])
         if isinstance(primary_key_spec, str):
             self.primary_key = comma_separated_str_to_list(primary_key_spec)
         elif isinstance(primary_key_spec, list):

@@ -1,22 +1,18 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
 from datetime import datetime
-from abc import ABC, abstractmethod
 from typing import Optional
-
-from suds import WebFault
 
 from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.bulk import DownloadParameters as BulkDownloadParameters
 from bingads.v13.reporting import ReportingServiceManager, ReportingDownloadParameters
+from suds import WebFault
 
 from .authorization import Authorization
-from .error_handling import output_webfault_errors
-
 from .bulk import create_download_parameters as create_bulk_download_parameters
 from .bulk import create_primary_key as create_bulk_primary_key
+from .error_handling import process_webfault_errors
 from .reporting import ReportingDownloadParametersFactory
-
-from keboola.component.exceptions import UserException
 
 REPORT_FILE_FORMAT = "Csv"
 
@@ -43,9 +39,7 @@ class DownloadRequest(ABC):
         try:
             self._service_manager.download_file(self._download_parameters)
         except WebFault as ex:
-            output_webfault_errors(ex)
-            raise UserException("Bing Ads API could not process the produced request."
-                                " For more information see the previous log messages.")
+            process_webfault_errors(ex)
 
 
 class BulkDownloadRequest(DownloadRequest):

@@ -5,7 +5,7 @@ from suds import WebFault
 from bingads.service_client import ServiceClient
 
 from .authorization import Authorization
-from .error_handling import output_webfault_errors
+from .error_handling import process_webfault_errors
 
 
 @dataclass(slots=True)
@@ -26,8 +26,8 @@ class CustomerManagementServiceClient:
         try:
             get_user_response = customer_service.GetUser(UserId=None)
             user = get_user_response.User
+            return user
         except WebFault as ex:
-            output_webfault_errors(ex)
-            raise
+            process_webfault_errors(ex)
 
-        return user
+

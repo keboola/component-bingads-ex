@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import ssl
 from datetime import datetime, timezone
 from enum import Enum, unique
 from pathlib import Path
@@ -96,6 +97,14 @@ class BingAdsExtractor(ComponentBase):
                                       if last_sync_time_in_utc_str else None)
         self.sync_time_in_utc_str = last_sync_time_in_utc_str  # Saving the old timestamp until new sync is done
 
+        try:
+            _create_unverified_https_context = ssl._create_unverified_context
+        except AttributeError:
+            pass
+        else:
+            ssl._create_default_https_context = _create_unverified_https_context
+
+
     def run(self):
         """
         Main execution code
@@ -103,18 +112,8 @@ class BingAdsExtractor(ComponentBase):
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         os.makedirs(self.tables_out_path, exist_ok=True)
         params: dict = self.configuration.parameters
-        if params.get("debug"):
-            try:
-                jsonschema.validate(params, get_schema())
-            except jsonschema.ValidationError as e:
-                raise UserException(f"Configuration validation error: {e.message}."
-                                    f" Please make sure provided configuration is valid.") from e
-        if params.get("debug"):
-            try:
-                jsonschema.validate(params, get_schema())
-            except jsonschema.ValidationError as e:
-                raise UserException(f"Configuration validation error: {e.message}."
-                                    f" Please make sure provided configuration is valid.") from e
+
+
 
         authorization_dict = params[KEY_AUTHORIZATION]
         authorization_dict['#developer_token'] = authorization_dict.get(
@@ -159,6 +158,13 @@ class BingAdsExtractor(ComponentBase):
 
         self.sync_time_in_utc_str = new_sync_time_in_utc_str  # Extraction done, updating sync timestamp in state
         self.save_state(authorization.refresh_token)
+
+    def _validate_configuration(self):
+        params: dict = self.configuration.parameters
+        errors = []
+        if not params.get(KEY_AUTHORIZATION, {}.get("account_id")):
+            errors.append("Required parameter Account ID is missing!")
+
 
     @sync_action('get_report_columns')
     def get_report_columns(self):
