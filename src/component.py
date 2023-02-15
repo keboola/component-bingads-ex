@@ -122,10 +122,13 @@ class BingAdsExtractor(ComponentBase):
 
         refresh_token_from_state: str = self.previous_state.get(KEY_REFRESH_TOKEN)
 
-        authorization = Authorization(config_dict=authorization_dict,
-                                      oauth_credentials=self.get_oauth_credentials(),
-                                      save_refresh_token_function=self.save_state,
-                                      refresh_token_from_state=refresh_token_from_state)
+        try:
+            authorization = Authorization(config_dict=authorization_dict,
+                                          oauth_credentials=self.get_oauth_credentials(),
+                                          save_refresh_token_function=self.save_state,
+                                          refresh_token_from_state=refresh_token_from_state)
+        except Exception as e:
+            raise UserException("Authorization failed, please try to reauthorize the configuration!") from e
 
         if object_type is ObjectType.ENTITY:
             download_request_config_dict: dict = params[KEY_BULK_SETTINGS]
@@ -175,7 +178,9 @@ class BingAdsExtractor(ComponentBase):
                 errors.append("You must select at least one column!")
             if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('aggregation'):
                 errors.append("You must select aggregation type!")
-        raise UserException("\n".join(errors))
+
+        if errors:
+            raise UserException("\n".join(errors))
 
     @sync_action('get_report_columns')
     def get_report_columns(self):
