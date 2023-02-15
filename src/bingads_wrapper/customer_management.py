@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 
-from suds import WebFault
-
 from bingads.service_client import ServiceClient
+from suds import WebFault
 
 from .authorization import Authorization
 from .error_handling import process_webfault_errors
@@ -29,5 +28,3 @@ class CustomerManagementServiceClient:
             return user
         except WebFault as ex:
             process_webfault_errors(ex)
-
-

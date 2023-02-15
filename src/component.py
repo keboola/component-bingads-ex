@@ -7,7 +7,6 @@ from enum import Enum, unique
 from pathlib import Path
 from typing import Optional
 
-import jsonschema
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 
@@ -104,16 +103,14 @@ class BingAdsExtractor(ComponentBase):
         else:
             ssl._create_default_https_context = _create_unverified_https_context
 
-
     def run(self):
         """
         Main execution code
         """
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        self._validate_configuration()
         os.makedirs(self.tables_out_path, exist_ok=True)
         params: dict = self.configuration.parameters
-
-
 
         authorization_dict = params[KEY_AUTHORIZATION]
         authorization_dict['#developer_token'] = authorization_dict.get(
@@ -162,9 +159,23 @@ class BingAdsExtractor(ComponentBase):
     def _validate_configuration(self):
         params: dict = self.configuration.parameters
         errors = []
-        if not params.get(KEY_AUTHORIZATION, {}.get("account_id")):
+        if not params.get(KEY_AUTHORIZATION, {}).get("account_id"):
             errors.append("Required parameter Account ID is missing!")
+        if not params.get(KEY_AUTHORIZATION, {}).get("client_id"):
+            errors.append("Required parameter Client ID is missing!")
 
+        if not (object_type := params.get(KEY_OBJECT_TYPE, '')):
+            errors.append("Required parameter Object Type is missing!")
+        if object_type == 'entity':
+            if not params.get(KEY_BULK_SETTINGS, {}).get('download_entities'):
+                errors.append("You must select at least one Entity!")
+
+        if object_type == 'report_custom':
+            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns'):
+                errors.append("You must select at least one column!")
+            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('aggregation'):
+                errors.append("You must select aggregation type!")
+        raise UserException("\n".join(errors))
 
     @sync_action('get_report_columns')
     def get_report_columns(self):
