@@ -1,12 +1,12 @@
 import json
 import logging
 import os
+import ssl
 from datetime import datetime, timezone
 from enum import Enum, unique
 from pathlib import Path
 from typing import Optional
 
-import jsonschema
 from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 
@@ -96,25 +96,21 @@ class BingAdsExtractor(ComponentBase):
                                       if last_sync_time_in_utc_str else None)
         self.sync_time_in_utc_str = last_sync_time_in_utc_str  # Saving the old timestamp until new sync is done
 
+        try:
+            _create_unverified_https_context = ssl._create_unverified_context
+        except AttributeError:
+            pass
+        else:
+            ssl._create_default_https_context = _create_unverified_https_context
+
     def run(self):
         """
         Main execution code
         """
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        self._validate_configuration()
         os.makedirs(self.tables_out_path, exist_ok=True)
         params: dict = self.configuration.parameters
-        if params.get("debug"):
-            try:
-                jsonschema.validate(params, get_schema())
-            except jsonschema.ValidationError as e:
-                raise UserException(f"Configuration validation error: {e.message}."
-                                    f" Please make sure provided configuration is valid.") from e
-        if params.get("debug"):
-            try:
-                jsonschema.validate(params, get_schema())
-            except jsonschema.ValidationError as e:
-                raise UserException(f"Configuration validation error: {e.message}."
-                                    f" Please make sure provided configuration is valid.") from e
 
         authorization_dict = params[KEY_AUTHORIZATION]
         authorization_dict['#developer_token'] = authorization_dict.get(
@@ -126,10 +122,13 @@ class BingAdsExtractor(ComponentBase):
 
         refresh_token_from_state: str = self.previous_state.get(KEY_REFRESH_TOKEN)
 
-        authorization = Authorization(config_dict=authorization_dict,
-                                      oauth_credentials=self.get_oauth_credentials(),
-                                      save_refresh_token_function=self.save_state,
-                                      refresh_token_from_state=refresh_token_from_state)
+        try:
+            authorization = Authorization(config_dict=authorization_dict,
+                                          oauth_credentials=self.get_oauth_credentials(),
+                                          save_refresh_token_function=self.save_state,
+                                          refresh_token_from_state=refresh_token_from_state)
+        except Exception as e:
+            raise UserException("Authorization failed, please try to reauthorize the configuration!") from e
 
         if object_type is ObjectType.ENTITY:
             download_request_config_dict: dict = params[KEY_BULK_SETTINGS]
@@ -159,6 +158,29 @@ class BingAdsExtractor(ComponentBase):
 
         self.sync_time_in_utc_str = new_sync_time_in_utc_str  # Extraction done, updating sync timestamp in state
         self.save_state(authorization.refresh_token)
+
+    def _validate_configuration(self):
+        params: dict = self.configuration.parameters
+        errors = []
+        if not params.get(KEY_AUTHORIZATION, {}).get("account_id"):
+            errors.append("Required parameter Account ID is missing!")
+        if not params.get(KEY_AUTHORIZATION, {}).get("customer_id"):
+            errors.append("Required parameter Customer ID is missing!")
+
+        if not (object_type := params.get(KEY_OBJECT_TYPE, '')):
+            errors.append("Required parameter Object Type is missing!")
+        if object_type == 'entity':
+            if not params.get(KEY_BULK_SETTINGS, {}).get('download_entities'):
+                errors.append("You must select at least one Entity!")
+
+        if object_type == 'report_custom':
+            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns'):
+                errors.append("You must select at least one column!")
+            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('aggregation'):
+                errors.append("You must select aggregation type!")
+
+        if errors:
+            raise UserException("\n".join(errors))
 
     @sync_action('get_report_columns')
     def get_report_columns(self):
