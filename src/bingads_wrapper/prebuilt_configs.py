@@ -1,6 +1,6 @@
+from dataclasses import dataclass
 from itertools import chain
 from typing import Iterable, Literal, TypeVar
-from dataclasses import dataclass
 
 from keboola.component.exceptions import UserException
 
@@ -319,7 +319,7 @@ PRODUCT_DIMENSION_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
         ASSISTED_METRICS,
         AVERAGE_COST_METRICS,
     ),
-    primary_key=unique(PRODUCT_DIMENSION_PRIMARY_KEY,),
+    primary_key=unique(PRODUCT_DIMENSION_PRIMARY_KEY, ),
 )
 
 GEOGRAPHIC_PERFORMANCE_COLUMNS_AND_PK = ColumnsAndPrimaryKey(
@@ -453,7 +453,7 @@ PREBUILT_CONFIGS = {
                     ),
                 "Hourly":
                     ColumnsAndPrimaryKey(
-                        columns=unique(AD_GROUP_PERFORMANCE_COMMON_COLUMNS,),
+                        columns=unique(AD_GROUP_PERFORMANCE_COMMON_COLUMNS, ),
                         primary_key=AD_GROUP_PERFORMANCE_COMMON_PRIMARY_KEY,
                     )
             },
@@ -506,7 +506,7 @@ PREBUILT_CONFIGS = {
                     ),
                 "Hourly":
                     ColumnsAndPrimaryKey(
-                        columns=unique(CAMPAIGN_PERFORMANCE_COMMON_COLUMNS,),
+                        columns=unique(CAMPAIGN_PERFORMANCE_COMMON_COLUMNS, ),
                         primary_key=CAMPAIGN_PERFORMANCE_COMMON_PRIMARY_KEY,
                     ),
             },
@@ -616,6 +616,7 @@ def __find_columns_containing_string_in_preset(preset_name: str,
 if __name__ == "__main__":
     import json
     from pathlib import Path
+
     with open("data/prebuilt_config_preset_names.json", 'w') as out_f:
         json.dump(list(PREBUILT_CONFIGS.keys()), out_f)
 
@@ -656,7 +657,7 @@ if __name__ == "__main__":
         json.dump(reference_comparison_report, out_f)
 
     def create_prebuilt_config_markdown_fragment(config_name: str, config: PrebuiltReportConfig):
-        fragment = f"**Table of contents:** \n\n[TOC] \n\n## {config_name} Report Presets"
+        fragment = f"## {config_name} Report Presets"
         for aggregation, columns_and_pk in config.columns_and_primary_key_by_aggregation.items():
             column_str = ", ".join(columns_and_pk.columns)
             pk_str = ", ".join(columns_and_pk.primary_key)
@@ -665,7 +666,8 @@ if __name__ == "__main__":
             fragment += agg_fragment
         return fragment
 
-    report_presets_markdown = ("# Columns and primary key of report configuration presets\n\n" + "\n\n".join(
+    header_section = "# Columns and primary key of report configuration presets\n\n **Table of contents:** \n\n[TOC] \n"
+    report_presets_markdown = (header_section + "\n\n".join(
         create_prebuilt_config_markdown_fragment(config_name, config)
         for config_name, config in PREBUILT_CONFIGS.items()))
     with open("docs/report_presets_columns_and_pk.md", 'w') as out_f:

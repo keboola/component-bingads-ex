@@ -1,9 +1,8 @@
 # Columns and primary key of report configuration presets
 
-**Table of contents:** 
+ **Table of contents:** 
 
 [TOC] 
-
 ## AccountPerformance Report Presets
 ### Daily aggregation
 
@@ -19,10 +18,6 @@
 
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther```
-
-**Table of contents:** 
-
-[TOC] 
 
 ## AccountImpressionPerformance Report Presets
 ### Daily aggregation
@@ -40,10 +35,6 @@
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType```
 
-**Table of contents:** 
-
-[TOC] 
-
 ## AdGroupPerformance Report Presets
 ### Daily aggregation
 
@@ -59,10 +50,6 @@
 
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, AdGroupId, Language, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther```
-
-**Table of contents:** 
-
-[TOC] 
 
 ## AdGroupImpressionPerformance Report Presets
 ### Daily aggregation
@@ -80,10 +67,6 @@
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, AdGroupId, Language```
 
-**Table of contents:** 
-
-[TOC] 
-
 ## CampaignPerformance Report Presets
 ### Daily aggregation
 
@@ -99,10 +82,6 @@
 
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther```
-
-**Table of contents:** 
-
-[TOC] 
 
 ## CampaignImpressionPerformance Report Presets
 ### Daily aggregation
@@ -120,10 +99,6 @@
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId```
 
-**Table of contents:** 
-
-[TOC] 
-
 ## ProductDimensionPerformance Report Presets
 ### Daily aggregation
 
@@ -140,10 +115,6 @@
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, CampaignId, AdGroupId, AdId, Language, TopVsOther, MerchantProductId, Condition, Price, ClickTypeId, BidStrategyType, StoreId```
 
-**Table of contents:** 
-
-[TOC] 
-
 ## KeywordPerformance Report Presets
 ### Daily aggregation
 
@@ -159,10 +130,6 @@
 
 #### Primary key
 ```AccountId, CampaignId, AdGroupId, KeywordId, AdId, TimePeriod, CurrencyCode, DeliveredMatchType, AdDistribution, DeviceType, Language, Network, DeviceOS, TopVsOther, BidMatchType```
-
-**Table of contents:** 
-
-[TOC] 
 
 ## GeographicPerformance Report Presets
 ### Daily aggregation
