@@ -45,7 +45,7 @@ class DownloadRequest(ABC):
 class BulkDownloadRequest(DownloadRequest):
     def __post_init__(self):
         if not self.table_name:
-            self.table_name = "entities"
+            self.table_name = "Entities"
         self.result_file_name = f"{self.table_name}.csv"
         self._service_manager = BulkServiceManager(
             authorization_data=self.authorization.authorization_data,
