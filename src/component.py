@@ -174,7 +174,8 @@ class BingAdsExtractor(ComponentBase):
                 errors.append("You must select at least one Entity!")
 
         if object_type == 'report_custom':
-            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns'):
+            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns') and not params.get(
+                    KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns_array'):
                 errors.append("You must select at least one column!")
             if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('aggregation'):
                 errors.append("You must select aggregation type!")
