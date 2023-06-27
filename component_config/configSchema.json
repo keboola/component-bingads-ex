@@ -18,13 +18,13 @@
         "customer_id": {
           "type": "integer",
           "title": "Customer ID",
-          "description": "Customer identifier.",
+          "description": "Customer identifier. See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
           "propertyOrder": 4000
         },
         "account_id": {
           "type": "integer",
           "title": "Account ID",
-          "description": "Account identifier.",
+          "description": "Account identifier.See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
           "propertyOrder": 5000
         }
       }
