@@ -16,21 +16,23 @@
       ],
       "properties": {
         "customer_id": {
-          "type": "arrray",
+          "type": "array",
           "title": "Customer ID",
           "description": "Customer identifier. See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
           "propertyOrder": 4000,
+          "items": {
+            "enum": [],
+            "type": "integer",
+            "title": "CustomerId"
+          },
+          "format": "select",
           "options": {
             "async": {
               "label": "Re-load available customer Id",
               "action": "get_customer_id"
             }
           },
-          "uniqueItems": true,
-          "items": {
-            "enum": [],
-            "type": "integer"
-          }
+          "uniqueItems": true
         },
         "account_id": {
           "type": "array",
@@ -44,9 +46,11 @@
             }
           },
           "uniqueItems": true,
+          "format": "select",
           "items": {
             "enum": [],
-            "type": "integer"
+            "type": "integer",
+            "title": "AccountId"
           }
         }
       }

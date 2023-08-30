@@ -1,4 +1,5 @@
 import json
+import inspect
 import logging
 import os
 import csv
@@ -33,7 +34,7 @@ KEY_LOAD_TYPE = "load_type"
 
 # list of mandatory parameters => if some is missing,
 # component will fail with readable message on initialization.
-REQUIRED_PARAMETERS = (KEY_AUTHORIZATION, KEY_OBJECT_TYPE, KEY_DESTINATION)
+REQUIRED_PARAMETERS = [KEY_AUTHORIZATION]
 REQUIRED_IMAGE_PARAMETERS = ()
 
 # State variables
@@ -157,9 +158,9 @@ class BingAdsExtractor(ComponentBase):
         # else:
         #     ssl._create_default_https_context = _create_unverified_https_context
 
-    def _init_configuration(self):
+    def _init_configuration(self, from_sync_action: bool = False):
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
-        self._validate_configuration()
+        self._validate_configuration(from_sync_action)
 
     def _init_authorization(self, account_id=None):
         authorization_dict = self.configuration.parameters[KEY_AUTHORIZATION]
@@ -240,26 +241,26 @@ class BingAdsExtractor(ComponentBase):
         self.sync_time_in_utc_str = self.new_sync_time_in_utc_str
         self.save_state(self.authorization.refresh_token)  # type: ignore
 
-    def _validate_configuration(self):
+    def _validate_configuration(self, from_sync_action: bool = False):
         params: dict = self.configuration.parameters
         errors = []
         if not params.get(KEY_AUTHORIZATION, {}).get("account_id"):
             errors.append("Required parameter Account ID is missing!")
         if not params.get(KEY_AUTHORIZATION, {}).get("customer_id"):
             errors.append("Required parameter Customer ID is missing!")
+        if not from_sync_action:
+            if not (object_type := params.get(KEY_OBJECT_TYPE, '')):
+                errors.append("Required parameter Object Type is missing!")
+            if object_type == 'entity':
+                if not params.get(KEY_BULK_SETTINGS, {}).get('download_entities'):
+                    errors.append("You must select at least one Entity!")
 
-        if not (object_type := params.get(KEY_OBJECT_TYPE, '')):
-            errors.append("Required parameter Object Type is missing!")
-        if object_type == 'entity':
-            if not params.get(KEY_BULK_SETTINGS, {}).get('download_entities'):
-                errors.append("You must select at least one Entity!")
-
-        if object_type == 'report_custom':
-            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns') and not params.get(
-                    KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns_array'):
-                errors.append("You must select at least one column!")
-            if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('aggregation'):
-                errors.append("You must select aggregation type!")
+            if object_type == 'report_custom':
+                if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns') and not params.get(
+                        KEY_REPORT_SETTINGS_CUSTOM, {}).get('columns_array'):
+                    errors.append("You must select at least one column!")
+                if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('aggregation'):
+                    errors.append("You must select aggregation type!")
 
         if errors:
             raise UserException("\n".join(errors))
@@ -280,14 +281,14 @@ class BingAdsExtractor(ComponentBase):
 
     @sync_action('get_accounts')
     def get_accounts(self):
-        self._init_configuration()
+        self._init_configuration(from_sync_action=True)
         self._init_authorization()
         account_info: dict() = CustomerManagementServiceClient.get_accounts(self)  # type: ignore
         return [{"value": c.Id, "label": "AccountId"} for c in account_info]
 
     @sync_action('get_customer_id')
     def get_customer_id(self):
-        self._init_configuration()
+        self._init_configuration(from_sync_action=True)
         self._init_authorization()
         user: dict() = CustomerManagementServiceClient.get_user(self)  # type: ignore
         return [{"value": user.CustomerId, "label": "CustomerId"}]
