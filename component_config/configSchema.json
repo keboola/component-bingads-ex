@@ -11,8 +11,6 @@
       "description": "Parameters used for authorization",
       "format": "table",
       "required": [
-        "customer_id",
-        "account_id"
       ],
       "properties": {
         "customer_id": {

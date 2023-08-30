@@ -21,6 +21,7 @@ KEY_AUTHORIZATION = "authorization"
 
 # Row configuration variables
 KEY_ACCOUNT_ID = "account_id"
+KEY_CUSTOMER_ID = "customer_id"
 KEY_OBJECT_TYPE = "object_type"
 KEY_DESTINATION = "destination"
 KEY_BULK_SETTINGS = "bulk_settings"
@@ -161,7 +162,7 @@ class BingAdsExtractor(ComponentBase):
         self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self._validate_configuration(from_sync_action)
 
-    def _init_authorization(self, account_id=None):
+    def _init_authorization(self, account_id=None, customer_id=None):
         authorization_dict = self.configuration.parameters[KEY_AUTHORIZATION]
         authorization_dict['#developer_token'] = authorization_dict.get(
             '#developer_token') or self.configuration.image_parameters.get('developer_token')
@@ -170,7 +171,7 @@ class BingAdsExtractor(ComponentBase):
                                                oauth_credentials=self.get_oauth_credentials(),
                                                save_refresh_token_function=self.save_state,
                                                refresh_token_from_state=self.refresh_token_from_state,
-                                               account_id=account_id)
+                                               account_id=account_id, customer_id=customer_id)
         except Exception as ex:
             raise UserException(
                 "Authorization failed, please try to reauthorize the configuration!") from ex
@@ -194,10 +195,12 @@ class BingAdsExtractor(ComponentBase):
         # Backward Compatibility
         account_id = self.configuration.parameters[KEY_AUTHORIZATION][KEY_ACCOUNT_ID]
         accounts = account_id if isinstance(account_id, list) else [account_id]
+        customer_id = self.configuration.parameters[KEY_AUTHORIZATION][KEY_CUSTOMER_ID]
 
         results: list[ResultFile] = []
         for account in accounts:
-            self._init_authorization(account_id=account)
+            self._init_authorization(
+                account_id=account, customer_id=customer_id)
             if object_type is ObjectType.ENTITY:
                 download_request_config_dict: dict = self.configuration.parameters[
                     KEY_BULK_SETTINGS]
@@ -243,11 +246,12 @@ class BingAdsExtractor(ComponentBase):
     def _validate_configuration(self, from_sync_action: bool = False):
         params: dict = self.configuration.parameters
         errors = []
-        if not params.get(KEY_AUTHORIZATION, {}).get("account_id"):
-            errors.append("Required parameter Account ID is missing!")
-        if not params.get(KEY_AUTHORIZATION, {}).get("customer_id"):
-            errors.append("Required parameter Customer ID is missing!")
         if not from_sync_action:
+            if not params.get(KEY_AUTHORIZATION, {}).get("account_id"):
+                errors.append("Required parameter Account ID is missing!")
+            if not params.get(KEY_AUTHORIZATION, {}).get("customer_id"):
+                errors.append("Required parameter Customer ID is missing!")
+
             if not (object_type := params.get(KEY_OBJECT_TYPE, '')):
                 errors.append("Required parameter Object Type is missing!")
             if object_type == 'entity':
