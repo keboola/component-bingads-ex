@@ -1,6 +1,8 @@
 import json
 import logging
 import os
+import csv
+import shutil
 from datetime import datetime, timezone
 from enum import Enum, unique
 from pathlib import Path
@@ -59,6 +61,49 @@ class ObjectType(Enum):
 class LoadType(Enum):
     FULL = "full_load"
     INCREMENTAL = "incremental_load"
+
+
+class ResultFile():
+
+    def __init__(self, download_request: DownloadRequest, account: str):
+        self.result_file_name = download_request.result_file_name
+        self.result_file_directory = download_request.result_file_directory
+        self.result_file_full_path = os.path.join(
+            self.result_file_directory, self.result_file_name)
+        self.columns = self._remove_header()
+        self.account = account
+        self.primary_key = download_request.primary_key
+        self.slice_file_name = f"{self.account}{os.path.splitext(self.result_file_name)[1]}"
+        self.slice_folder = self.result_file_full_path
+        self.tmp_slice_file_name_path = os.path.join(
+            self.result_file_directory, self.slice_file_name)
+        self.slice_file_full_path = os.path.join(
+            self.slice_folder, self.slice_file_name)
+
+    def _remove_header(self):
+        headers = []
+        file = os.path.join(self.result_file_directory,
+                            self.result_file_name)
+        tmp_file = os.path.join(
+            self.result_file_directory, f"tmp_{self.result_file_name}")
+        os.rename(file, tmp_file)
+        # remove header from csv and return header for manifest
+        with open(tmp_file, 'r', encoding='utf-8-sig') as src_f, open(file, 'w', encoding='utf-8') as dst_f:
+            reader = csv.reader(src_f)
+            writer = csv.writer(dst_f)
+            headers = next(reader)
+
+            for row in reader:
+                writer.writerow(row)
+        os.remove(tmp_file)
+        return headers
+
+    def slice_result(self):
+        os.rename(self.result_file_full_path,
+                  self.tmp_slice_file_name_path)
+        os.makedirs(self.slice_folder, exist_ok=True)
+        os.rename(self.tmp_slice_file_name_path,
+                  self.slice_file_full_path)
 
 
 def get_schema():
@@ -144,6 +189,7 @@ class BingAdsExtractor(ComponentBase):
         table_name: str = destination[KEY_OUTPUT_TABLE_NAME]
 
         os.makedirs(self.tables_out_path, exist_ok=True)
+        
 
         object_type = ObjectType(
             self.configuration.parameters[KEY_OBJECT_TYPE])
@@ -151,6 +197,7 @@ class BingAdsExtractor(ComponentBase):
         account_id = self.configuration.parameters[KEY_AUTHORIZATION][KEY_ACCOUNT_ID]
         accounts = account_id if isinstance(account_id, list) else [account_id]
 
+        results: list[ResultFile] = []
         for account in accounts:
             self._init_authorization(account_id=account)
             if object_type is ObjectType.ENTITY:
@@ -174,29 +221,26 @@ class BingAdsExtractor(ComponentBase):
 
             download_request.process()
 
-            self._slice_result(download_request.result_file_directory,
-                               download_request.result_file_name, account)
+            results.append(ResultFile(download_request=download_request, account=account))
 
-            table_def = self.create_out_table_definition(
-                download_request.result_file_name, incremental=incremental, is_sliced=True)
-            table_def.primary_key = download_request.primary_key
 
-            # Checking whether a CSV file was created
-            if os.path.exists(table_def.full_path):
-                self.write_manifest(table_def)
+        for result in results:
+            result.slice_result()
+
+        # tricky 
+        last_result = results[-1]
+
+        table_def = self.create_out_table_definition(
+            last_result.result_file_name, incremental=incremental, is_sliced=True, columns=last_result.columns)
+        table_def.primary_key = last_result.primary_key
+
+        # Checking whether a CSV file was created
+        if os.path.exists(table_def.full_path):
+            self.write_manifest(table_def)
 
         # Extraction done, updating sync timestamp in state
         self.sync_time_in_utc_str = self.new_sync_time_in_utc_str
         self.save_state(self.authorization.refresh_token)  # type: ignore
-
-    def _slice_result(self, full_path, file_name, account):
-        slice_file_name = f"{account}{os.path.splitext(file_name)[1]}"
-        slice_folder = f"{full_path}/{file_name}"
-        os.rename(os.path.join(full_path, file_name),
-                  os.path.join(full_path, slice_file_name))
-        os.makedirs(slice_folder, exist_ok=True)
-        os.rename(os.path.join(full_path, slice_file_name),
-                  os.path.join(slice_folder, slice_file_name))
 
     def _validate_configuration(self):
         params: dict = self.configuration.parameters
