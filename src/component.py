@@ -108,9 +108,12 @@ class ResultFile():
         os.rename(tmp_slice_file_name_path,
                   slice_file_full_path)
         return (f"slice_file_name: {slice_file_name}, \
-                slice_folder: {slice_folder},\
-                tmp_slice_file_name_path: {tmp_slice_file_name_path}\
-                slice_file_full_path: {slice_file_full_path}")
+                slice_folder: {slice_folder}, \
+                tmp_slice_file_name_path: {tmp_slice_file_name_path}, \
+                slice_file_full_path: {slice_file_full_path}, \
+                self.result_file_full_path: {self.result_file_full_path}, \
+                self.result_file_name: {self.result_file_name}, \
+                self.result_file_directory:{self.result_file_directory}")
 
 
 def get_schema():
