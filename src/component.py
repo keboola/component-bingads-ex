@@ -287,14 +287,14 @@ class BingAdsExtractor(ComponentBase):
         self._init_configuration(from_sync_action=True)
         self._init_authorization()
         account_info: dict() = CustomerManagementServiceClient.get_accounts(self)  # type: ignore
-        return [{"value": c.Id, "label": "AccountId"} for c in account_info]
+        return [{"value": c.Id, "label": c.Id} for c in account_info]
 
     @sync_action('get_customer_id')
     def get_customer_id(self):
         self._init_configuration(from_sync_action=True)
         self._init_authorization()
         user: dict() = CustomerManagementServiceClient.get_user(self)  # type: ignore
-        return [{"value": user.CustomerId, "label": "CustomerId"}]
+        return [{"value": user.CustomerId, "label": user.CustomerId}]
 
     def save_state(self, refresh_token: str):
         """
