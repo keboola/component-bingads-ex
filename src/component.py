@@ -189,7 +189,6 @@ class BingAdsExtractor(ComponentBase):
         table_name: str = destination[KEY_OUTPUT_TABLE_NAME]
 
         os.makedirs(self.tables_out_path, exist_ok=True)
-        
 
         object_type = ObjectType(
             self.configuration.parameters[KEY_OBJECT_TYPE])
@@ -221,13 +220,13 @@ class BingAdsExtractor(ComponentBase):
 
             download_request.process()
 
-            results.append(ResultFile(download_request=download_request, account=account))
-
+            results.append(ResultFile(
+                download_request=download_request, account=account))
 
         for result in results:
             result.slice_result()
 
-        # tricky 
+        # tricky
         last_result = results[-1]
 
         table_def = self.create_out_table_definition(
