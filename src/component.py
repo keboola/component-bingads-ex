@@ -74,6 +74,9 @@ class ResultFile():
         self.account = account
         self.primary_key = download_request.primary_key
 
+    def __str__(self):
+        return f'result: {self.result_file_name}, account: {self.account}, account: {self.result_file_full_path}'
+
     def _remove_header(self):
         headers = []
         file = os.path.join(self.result_file_directory,
@@ -104,6 +107,10 @@ class ResultFile():
         os.makedirs(slice_folder, exist_ok=True)
         os.rename(tmp_slice_file_name_path,
                   slice_file_full_path)
+        return (f"slice_file_name: {slice_file_name}, \
+                slice_folder: {slice_folder},\
+                tmp_slice_file_name_path: {tmp_slice_file_name_path}\
+                slice_file_full_path: {slice_file_full_path}")
 
 
 def get_schema():
@@ -226,8 +233,8 @@ class BingAdsExtractor(ComponentBase):
                 download_request=download_request, account=account))
 
         for result in results:
-            logging.info(result.result_file_full_path)
-            result.slice_result()
+            logging.info(result)
+            logging.info(result.slice_result())
 
         # tricky
         last_result = results[-1]
