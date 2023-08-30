@@ -10,6 +10,7 @@ from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 
 from bingads_wrapper import metadata_provider
+from bingads_wrapper.customer_management import CustomerManagementServiceClient
 from bingads_wrapper.authorization import Authorization
 from bingads_wrapper.request import DownloadRequest, ReportDownloadRequest, BulkDownloadRequest
 
@@ -18,6 +19,7 @@ from bingads_wrapper.request import DownloadRequest, ReportDownloadRequest, Bulk
 KEY_AUTHORIZATION = "authorization"
 
 # Row configuration variables
+KEY_ACCOUNT_ID = "account_id"
 KEY_OBJECT_TYPE = "object_type"
 KEY_DESTINATION = "destination"
 KEY_BULK_SETTINGS = "bulk_settings"
@@ -90,10 +92,18 @@ class BingAdsExtractor(ComponentBase):
         super().__init__(data_path_override)
 
         self.previous_state = self.get_state_file()
-        last_sync_time_in_utc_str: Optional[str] = self.previous_state.get(KEY_LAST_SYNC_TIME_IN_UTC)
+        last_sync_time_in_utc_str: Optional[str] = self.previous_state.get(
+            KEY_LAST_SYNC_TIME_IN_UTC)
         self.last_sync_time_in_utc = (datetime.fromisoformat(last_sync_time_in_utc_str)
                                       if last_sync_time_in_utc_str else None)
-        self.sync_time_in_utc_str = last_sync_time_in_utc_str  # Saving the old timestamp until new sync is done
+        # Saving the old timestamp until new sync is done
+        self.sync_time_in_utc_str = last_sync_time_in_utc_str
+
+        self.new_sync_time_in_utc_str = datetime.now(
+            tz=timezone.utc).isoformat(timespec="seconds")
+        self.authorization: Authorization
+        self.refresh_token_from_state: str = self.previous_state.get(
+            KEY_REFRESH_TOKEN)
 
         # May have to be uncommented for local testing
         # try:
@@ -103,61 +113,90 @@ class BingAdsExtractor(ComponentBase):
         # else:
         #     ssl._create_default_https_context = _create_unverified_https_context
 
+    def _init_configuration(self):
+        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        self._validate_configuration()
+
+    def _init_authorization(self, account_id=None):
+        authorization_dict = self.configuration.parameters[KEY_AUTHORIZATION]
+        authorization_dict['#developer_token'] = authorization_dict.get(
+            '#developer_token') or self.configuration.image_parameters.get('developer_token')
+        try:
+            self.authorization = Authorization(config_dict=authorization_dict,
+                                               oauth_credentials=self.get_oauth_credentials(),
+                                               save_refresh_token_function=self.save_state,
+                                               refresh_token_from_state=self.refresh_token_from_state,
+                                               account_id=account_id)
+        except Exception as ex:
+            raise UserException(
+                "Authorization failed, please try to reauthorize the configuration!") from ex
+
     def run(self):
         """
         Main execution code
         """
-        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
-        self._validate_configuration()
-        os.makedirs(self.tables_out_path, exist_ok=True)
-        params: dict = self.configuration.parameters
 
-        authorization_dict = params[KEY_AUTHORIZATION]
-        authorization_dict['#developer_token'] = authorization_dict.get(
-            '#developer_token') or self.configuration.image_parameters.get('developer_token')
-        object_type = ObjectType(params[KEY_OBJECT_TYPE])
-        destination: dict = params[KEY_DESTINATION]
-        incremental: bool = LoadType(destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL
+        self._init_configuration()
+
+        destination: dict = self.configuration.parameters[KEY_DESTINATION]
+        incremental: bool = LoadType(
+            destination[KEY_LOAD_TYPE]) is LoadType.INCREMENTAL
         table_name: str = destination[KEY_OUTPUT_TABLE_NAME]
 
-        refresh_token_from_state: str = self.previous_state.get(KEY_REFRESH_TOKEN)
+        os.makedirs(self.tables_out_path, exist_ok=True)
 
-        try:
-            authorization = Authorization(config_dict=authorization_dict,
-                                          oauth_credentials=self.get_oauth_credentials(),
-                                          save_refresh_token_function=self.save_state,
-                                          refresh_token_from_state=refresh_token_from_state)
-        except Exception as e:
-            raise UserException("Authorization failed, please try to reauthorize the configuration!") from e
+        object_type = ObjectType(
+            self.configuration.parameters[KEY_OBJECT_TYPE])
+        # Backward Compatibility
+        account_id = self.configuration.parameters[KEY_AUTHORIZATION][KEY_ACCOUNT_ID]
+        accounts = account_id if isinstance(account_id, list) else [account_id]
 
-        if object_type is ObjectType.ENTITY:
-            download_request_config_dict: dict = params[KEY_BULK_SETTINGS]
-            download_request_class = BulkDownloadRequest
-        elif object_type in (ObjectType.REPORT_CUSTOM, ObjectType.REPORT_PREBUILT):
-            download_request_config_dict: dict = (params[KEY_REPORT_SETTINGS_CUSTOM]
-                                                  if object_type is ObjectType.REPORT_CUSTOM else
-                                                  params[KEY_REPORT_SETTINGS_PREBUILT])
-            download_request_class = ReportDownloadRequest
-        else:
-            raise RuntimeError("Unexpected execution branch.")
-        download_request: DownloadRequest = download_request_class(
-            authorization=authorization,
-            config_dict=download_request_config_dict,
-            result_file_directory=self.tables_out_path,
-            table_name=table_name,
-            last_sync_time_in_utc=self.last_sync_time_in_utc,
-        )
-        new_sync_time_in_utc_str = datetime.now(tz=timezone.utc).isoformat(timespec="seconds")
-        download_request.process()
+        for account in accounts:
+            self._init_authorization(account_id=account)
+            if object_type is ObjectType.ENTITY:
+                download_request_config_dict: dict = self.configuration.parameters[
+                    KEY_BULK_SETTINGS]
+                download_request_class = BulkDownloadRequest
+            elif object_type in (ObjectType.REPORT_CUSTOM, ObjectType.REPORT_PREBUILT):
+                download_request_config_dict: dict = (self.configuration.parameters[KEY_REPORT_SETTINGS_CUSTOM]
+                                                      if object_type is ObjectType.REPORT_CUSTOM else
+                                                      self.configuration.parameters[KEY_REPORT_SETTINGS_PREBUILT])
+                download_request_class = ReportDownloadRequest
+            else:
+                raise RuntimeError("Unexpected execution branch.")
+            download_request: DownloadRequest = download_request_class(
+                authorization=self.authorization,
+                config_dict=download_request_config_dict,
+                result_file_directory=self.tables_out_path,
+                table_name=table_name,
+                last_sync_time_in_utc=self.last_sync_time_in_utc,
+            )
 
-        table_def = self.create_out_table_definition(download_request.result_file_name, incremental=incremental)
-        table_def.primary_key = download_request.primary_key
+            download_request.process()
 
-        if os.path.exists(table_def.full_path):  # Checking whether a CSV file was created
-            self.write_manifest(table_def)
+            self._slice_result(download_request.result_file_directory,
+                               download_request.result_file_name, account)
 
-        self.sync_time_in_utc_str = new_sync_time_in_utc_str  # Extraction done, updating sync timestamp in state
-        self.save_state(authorization.refresh_token)
+            table_def = self.create_out_table_definition(
+                download_request.result_file_name, incremental=incremental, is_sliced=True)
+            table_def.primary_key = download_request.primary_key
+
+            # Checking whether a CSV file was created
+            if os.path.exists(table_def.full_path):
+                self.write_manifest(table_def)
+
+        # Extraction done, updating sync timestamp in state
+        self.sync_time_in_utc_str = self.new_sync_time_in_utc_str
+        self.save_state(self.authorization.refresh_token)  # type: ignore
+
+    def _slice_result(self, full_path, file_name, account):
+        slice_file_name = f"{account}{os.path.splitext(file_name)[1]}"
+        slice_folder = f"{full_path}/{file_name}"
+        os.rename(os.path.join(full_path, file_name),
+                  os.path.join(full_path, slice_file_name))
+        os.makedirs(slice_folder, exist_ok=True)
+        os.rename(os.path.join(full_path, slice_file_name),
+                  os.path.join(slice_folder, slice_file_name))
 
     def _validate_configuration(self):
         params: dict = self.configuration.parameters
@@ -185,7 +224,8 @@ class BingAdsExtractor(ComponentBase):
 
     @sync_action('get_report_columns')
     def get_report_columns(self):
-        report_type = self.configuration.parameters.get('report_settings_custom', {}).get('report_type')
+        report_type = self.configuration.parameters.get(
+            'report_settings_custom', {}).get('report_type')
         if not report_type:
             raise UserException('Report type is not specified!')
         available_cols = metadata_provider.get_report_available_columns()
@@ -195,6 +235,20 @@ class BingAdsExtractor(ComponentBase):
     def get_bulk_entities(self):
         available_cols = metadata_provider.get_available_bulk_entities()
         return [{"value": c, "label": c} for c in available_cols]
+
+    @sync_action('get_accounts')
+    def get_accounts(self):
+        self._init_configuration()
+        self._init_authorization()
+        account_info: dict() = CustomerManagementServiceClient.get_accounts(self)  # type: ignore
+        return [{"value": c.Id, "label": "AccountId"} for c in account_info]
+
+    @sync_action('get_customer_id')
+    def get_customer_id(self):
+        self._init_configuration()
+        self._init_authorization()
+        user: dict() = CustomerManagementServiceClient.get_user(self)  # type: ignore
+        return [{"value": user.CustomerId, "label": "CustomerId"}]
 
     def save_state(self, refresh_token: str):
         """
@@ -206,7 +260,7 @@ class BingAdsExtractor(ComponentBase):
         })
 
     def get_oauth_credentials(self) -> dict:
-        return self.configuration.oauth_credentials
+        return self.configuration.oauth_credentials  # type: ignore
 
 
 """
