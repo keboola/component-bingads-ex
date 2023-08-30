@@ -70,7 +70,7 @@ class ResultFile():
         self.result_file_directory = download_request.result_file_directory
         self.result_file_full_path = os.path.join(
             self.result_file_directory, self.result_file_name)
-        self.columns = self._remove_header()
+        self.columns, self.new_result_file_name, self.new_result_full_path = self._remove_header()
         self.account = account
         self.primary_key = download_request.primary_key
 
@@ -81,39 +81,31 @@ class ResultFile():
         headers = []
         file = os.path.join(self.result_file_directory,
                             self.result_file_name)
-        tmp_file = os.path.join(
-            self.result_file_directory, f"tmp_{self.result_file_name}")
-        os.rename(file, tmp_file)
+        new_file_name = f"{str(self.account)}_{self.result_file_name}"
+        new_file_full_path = os.path.join(
+            self.result_file_directory, new_file_name)
         # remove header from csv and return header for manifest
-        with open(tmp_file, 'r', encoding='utf-8-sig') as src_f, open(file, 'w', encoding='utf-8') as dst_f:
+        with open(file, 'r', encoding='utf-8-sig') as src_f, open(new_file_full_path, 'w', encoding='utf-8') as dst_f:
             reader = csv.reader(src_f)
             writer = csv.writer(dst_f)
             headers = next(reader)
 
             for row in reader:
                 writer.writerow(row)
-        os.remove(tmp_file)
-        return headers
+        os.remove(file)
+        return headers, new_file_name, new_file_full_path
 
     def slice_result(self):
-        slice_file_name = f"{self.account}{os.path.splitext(self.result_file_name)[1]}"
-        slice_folder = self.result_file_full_path
-        tmp_slice_file_name_path = os.path.join(
-            self.result_file_directory, slice_file_name)
+        # create slice folder as original output file
+        os.makedirs(self.result_file_name, exist_ok=True)
+        # move file to new folder as slice
         slice_file_full_path = os.path.join(
-            slice_folder, slice_file_name)
-        os.rename(self.result_file_full_path,
-                  tmp_slice_file_name_path)
-        os.makedirs(slice_folder, exist_ok=True)
-        os.rename(tmp_slice_file_name_path,
+            self.result_file_name, self.new_result_file_name)
+        os.rename(self.new_result_full_path,
                   slice_file_full_path)
-        return (f"slice_file_name: {slice_file_name}, \
-                slice_folder: {slice_folder}, \
-                tmp_slice_file_name_path: {tmp_slice_file_name_path}, \
-                slice_file_full_path: {slice_file_full_path}, \
-                self.result_file_full_path: {self.result_file_full_path}, \
+        return (f"slice_file_full_path: {slice_file_full_path}, \
                 self.result_file_name: {self.result_file_name}, \
-                self.result_file_directory:{self.result_file_directory}")
+                self.new_result_full_path:{self.new_result_full_path}")
 
 
 def get_schema():
@@ -235,11 +227,11 @@ class BingAdsExtractor(ComponentBase):
             results.append(ResultFile(
                 download_request=download_request, account=account))
 
+        # after all file created i can create sliced forlder and move files to it
         for result in results:
-            logging.info(result)
-            logging.info(result.slice_result())
+            result.slice_result()
 
-        # tricky
+        # this is not ideal,but no other way on my mind
         last_result = results[-1]
 
         table_def = self.create_out_table_definition(
