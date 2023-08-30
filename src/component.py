@@ -2,7 +2,6 @@ import json
 import logging
 import os
 import csv
-import shutil
 from datetime import datetime, timezone
 from enum import Enum, unique
 from pathlib import Path
