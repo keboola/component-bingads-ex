@@ -70,9 +70,9 @@ class ResultFile():
         self.result_file_directory = download_request.result_file_directory
         self.result_file_full_path = os.path.join(
             self.result_file_directory, self.result_file_name)
-        self.columns, self.new_result_file_name, self.new_result_full_path = self._remove_header()
         self.account = account
         self.primary_key = download_request.primary_key
+        self.columns, self.new_result_file_name, self.new_result_full_path = self._remove_header()
 
     def __str__(self):
         return f'result: {self.result_file_name}, account: {self.account}, account: {self.result_file_full_path}'
@@ -97,10 +97,10 @@ class ResultFile():
 
     def slice_result(self):
         # create slice folder as original output file
-        os.makedirs(self.result_file_name, exist_ok=True)
+        os.makedirs(self.result_file_full_path, exist_ok=True)
         # move file to new folder as slice
         slice_file_full_path = os.path.join(
-            self.result_file_name, self.new_result_file_name)
+            self.result_file_full_path, self.new_result_file_name)
         os.rename(self.new_result_full_path,
                   slice_file_full_path)
         return (f"slice_file_full_path: {slice_file_full_path}, \
