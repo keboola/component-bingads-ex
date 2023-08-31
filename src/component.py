@@ -74,11 +74,7 @@ class ResultFile():
         self.primary_key = download_request.primary_key
         self.columns, self.new_result_file_name, self.new_result_full_path = self._remove_header()
 
-    def __str__(self):
-        return f'result: {self.result_file_name}, account: {self.account}, account: {self.result_file_full_path}'
-
     def _remove_header(self):
-        logging.debug("run _remove_header")
         headers = []
         file = os.path.join(self.result_file_directory,
                             self.result_file_name)
@@ -99,18 +95,15 @@ class ResultFile():
         return headers, new_file_name, new_file_full_path
 
     def slice_result(self):
-        logging.debug("run slice_result")
-        # create slice folder as original output file
+        """
+        create slice folder as original output file
+        and move file to new folder as slice
+        """
         os.makedirs(self.result_file_full_path, exist_ok=True)
-        # move file to new folder as slice
         slice_file_full_path = os.path.join(
             self.result_file_full_path, self.new_result_file_name)
         os.rename(self.new_result_full_path,
                   slice_file_full_path)
-        logging.debug(f"self.result_file_full_path: {self.result_file_full_path} \
-            slice_file_full_path: {slice_file_full_path}, \
-            self.result_file_name: {self.result_file_name}, \
-            self.new_result_full_path:{self.new_result_full_path}")
 
 
 def get_schema():
@@ -242,12 +235,10 @@ class BingAdsExtractor(ComponentBase):
         # after all file created i can create sliced forlder and move files to it
         for result in results:
             result.slice_result()
-
-        # this is not ideal,but no other way on my mind
         last_result = results[-1]
 
         table_def = self.create_out_table_definition(
-            last_result.result_file_name, incremental=incremental, is_sliced=True, columns=last_result.columns)
+            last_result.result_file_name, incremental=incremental, columns=last_result.columns)
         table_def.primary_key = last_result.primary_key
 
         # Checking whether a CSV file was created
