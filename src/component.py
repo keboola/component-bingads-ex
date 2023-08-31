@@ -79,6 +79,9 @@ class ResultFile():
 
     def _remove_header(self):
         logging.info("run _remove_header")
+        dir_list = os.listdir(self.result_file_directory)
+
+        logging.info(f"{dir_list}")
         headers = []
         file = os.path.join(self.result_file_directory,
                             self.result_file_name)
