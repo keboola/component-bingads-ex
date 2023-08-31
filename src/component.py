@@ -99,7 +99,7 @@ class ResultFile():
                         writer.writerow(row)
             os.remove(file)
         else:
-            logging.warning(f"File {self.result_file_directory} not exists!")
+            logging.warning(f"File {file} not exists!")
         return headers, new_file_name, new_file_full_path
 
     def slice_result(self):
