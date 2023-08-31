@@ -89,13 +89,14 @@ class ResultFile():
             new_file_full_path = os.path.join(
                 self.result_file_directory, new_file_name)
             # remove header from csv and return header for manifest
-            with open(file, 'r', encoding='utf-8-sig') as src_f, open(new_file_full_path, 'w', encoding='utf-8') as dst_f:
-                reader = csv.reader(src_f)
-                writer = csv.writer(dst_f)
-                headers = next(reader)
+            with open(file, 'r', encoding='utf-8-sig') as src_f:
+                with open(new_file_full_path, 'w', encoding='utf-8') as dst_f:
+                    reader = csv.reader(src_f)
+                    writer = csv.writer(dst_f)
+                    headers = next(reader)
 
-                for row in reader:
-                    writer.writerow(row)
+                    for row in reader:
+                        writer.writerow(row)
             os.remove(file)
         else:
             logging.warning(f"File {self.result_file_directory} not exists!")
@@ -240,7 +241,6 @@ class BingAdsExtractor(ComponentBase):
 
         # after all file created i can create sliced forlder and move files to it
         for result in results:
-            print(result)
             result.slice_result()
 
         # this is not ideal,but no other way on my mind
