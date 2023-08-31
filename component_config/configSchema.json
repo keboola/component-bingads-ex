@@ -10,19 +10,14 @@
       "title": "Authorization",
       "description": "Parameters used for authorization",
       "format": "table",
-      "required": [
-      ],
+      "required": [],
       "properties": {
         "customer_id": {
           "type": "string",
           "title": "Customer ID",
           "description": "Customer identifier. See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
           "propertyOrder": 4000,
-          "items": {
-            "enum": [],
-            "type": "string",
-            "title": "CustomerId"
-          },
+          "enum": [],
           "format": "select",
           "options": {
             "async": {
