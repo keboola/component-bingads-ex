@@ -100,7 +100,8 @@ class ResultFile():
             self.result_file_full_path, self.new_result_file_name)
         os.rename(self.new_result_full_path,
                   slice_file_full_path)
-        logging.info(f"slice_file_full_path: {slice_file_full_path}, \
+        logging.info(f"self.result_file_full_path: {self.result_file_full_path} \
+            slice_file_full_path: {slice_file_full_path}, \
             self.result_file_name: {self.result_file_name}, \
             self.new_result_full_path:{self.new_result_full_path}")
 
@@ -234,7 +235,7 @@ class BingAdsExtractor(ComponentBase):
         last_result = results[-1]
 
         table_def = self.create_out_table_definition(
-            last_result.result_file_name, incremental=incremental, columns=last_result.columns)
+            last_result.result_file_name, incremental=incremental, is_sliced=True, columns=last_result.columns)
         table_def.primary_key = last_result.primary_key
 
         # Checking whether a CSV file was created
