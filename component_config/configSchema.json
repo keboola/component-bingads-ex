@@ -14,13 +14,13 @@
       ],
       "properties": {
         "customer_id": {
-          "type": "array",
+          "type": "string",
           "title": "Customer ID",
           "description": "Customer identifier. See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
           "propertyOrder": 4000,
           "items": {
             "enum": [],
-            "type": "integer",
+            "type": "string",
             "title": "CustomerId"
           },
           "format": "select",
@@ -47,7 +47,7 @@
           "format": "select",
           "items": {
             "enum": [],
-            "type": "integer",
+            "type": "string",
             "title": "AccountId"
           }
         }

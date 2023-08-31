@@ -23,6 +23,8 @@ KEY_PRIMARY_KEY = "primary_key"
 KEY_COLUMNS_ARRAY = "columns_array"
 KEY_PRIMARY_KEY_ARRAY = "primary_key_array"
 
+KEY_ACCOUNT_ID_COLUMN = "AccountId"
+
 # Time range keys:
 KEY_TIME_ZONE = "time_zone"
 KEY_PERIOD = "period"
@@ -30,7 +32,8 @@ KEY_DATE_RANGE_START = "date_from"
 KEY_DATE_RANGE_END = "date_to"
 
 MAX_COMPONENT_RUNTIME_SECONDS = 14400
-DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = (MAX_COMPONENT_RUNTIME_SECONDS - 400) * 1000
+DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = (
+    MAX_COMPONENT_RUNTIME_SECONDS - 400) * 1000
 OVERWRITE_RESULT_FILE = True
 
 EXCLUDE_COLUMNS_HEADERS = False
@@ -58,7 +61,8 @@ class ReportingDownloadParametersFactory:
     def __post_init__(self):
         self._authorization_data = self.reporting_service.authorization_data
         config_keys = set(self.config_dict.keys())
-        missing_config_dict_keys = {KEY_REPORT_TYPE, KEY_COLUMNS_ARRAY, KEY_PRIMARY_KEY_ARRAY} - config_keys
+        missing_config_dict_keys = {
+            KEY_REPORT_TYPE, KEY_COLUMNS_ARRAY, KEY_PRIMARY_KEY_ARRAY} - config_keys
 
         # for backward compatibility
         try:
@@ -86,8 +90,10 @@ class ReportingDownloadParametersFactory:
                                          f"{self.config_dict[KEY_AGGREGATION]}_Report.csv")
             else:
                 self.result_file_name = f"{self.config_dict[KEY_REPORT_TYPE]}_Report.csv"
+
         self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
-        self._report_request = self.reporting_service.factory.create(self._report_type + "ReportRequest")
+        self._report_request = self.reporting_service.factory.create(
+            self._report_type + "ReportRequest")
         self._create_report_request()
 
     def create(self) -> ReportingDownloadParameters:
@@ -115,8 +121,10 @@ class ReportingDownloadParametersFactory:
         self._report_request.ExcludeReportFooter = EXCLUDE_REPORT_FOOTER
         self._report_request.ExcludeReportHeader = EXCLUDE_REPORT_HEADER
         self._report_request.Format.set(self.report_file_format)
-        self._report_request.FormatVersion = self.config_dict.get(KEY_FORMAT_VERSION, DEFAULT_FORMAT_VERSION)
-        self._report_request.ReturnOnlyCompleteData: bool = self.config_dict[KEY_RETURN_ONLY_COMPLETE_DATA]
+        self._report_request.FormatVersion = self.config_dict.get(
+            KEY_FORMAT_VERSION, DEFAULT_FORMAT_VERSION)
+        self._report_request.ReturnOnlyCompleteData: bool = self.config_dict[
+            KEY_RETURN_ONLY_COMPLETE_DATA]
 
     def _set_report_request_aggregation_parameter(self):
         self._report_request.Aggregation.set(self.config_dict[KEY_AGGREGATION])
@@ -160,23 +168,43 @@ class ReportingDownloadParametersFactory:
 
     def _set_report_request_columns_parameter_and_primary_key(self):
         report_columns = self._report_request.Columns
-        column_array: list[str] = getattr(report_columns, self._report_type + "ReportColumn")
-        column_spec = self.config_dict.get(KEY_COLUMNS) or self.config_dict.get(KEY_COLUMNS_ARRAY, [])
+        column_array: list[str] = getattr(
+            report_columns, self._report_type + "ReportColumn")
+        column_spec = self.config_dict.get(
+            KEY_COLUMNS) or self.config_dict.get(KEY_COLUMNS_ARRAY, [])
+        column_names: list[str] = []
         if isinstance(column_spec, str):
             column_names = comma_separated_str_to_list(column_spec)
         elif isinstance(column_spec, list):
             column_names = column_spec
+
+        # column accoutId must be always
+        if KEY_ACCOUNT_ID_COLUMN not in column_names:
+            logging.warning(
+                f"Column {KEY_ACCOUNT_ID_COLUMN} not in columns configuration will be added!")
+            column_names.append(KEY_ACCOUNT_ID_COLUMN)
         column_array.extend(column_names)
-        primary_key_spec = self.config_dict.get(KEY_PRIMARY_KEY) or self.config_dict.get(KEY_PRIMARY_KEY_ARRAY, [])
+
+        primary_key_spec = self.config_dict.get(
+            KEY_PRIMARY_KEY) or self.config_dict.get(KEY_PRIMARY_KEY_ARRAY, [])
         if isinstance(primary_key_spec, str):
             self.primary_key = comma_separated_str_to_list(primary_key_spec)
         elif isinstance(primary_key_spec, list):
             self.primary_key = primary_key_spec
-        primary_key_columns_not_in_columns = set(self.primary_key) - set(column_names)
+
+        # column accoutId must be always
+        if KEY_ACCOUNT_ID_COLUMN not in self.primary_key:
+            logging.warning(
+                f"Column {KEY_ACCOUNT_ID_COLUMN} not in primary_key configuration will be added!")
+            self.primary_key.append(KEY_ACCOUNT_ID_COLUMN)
+
+        primary_key_columns_not_in_columns = set(
+            self.primary_key) - set(column_names)
         if primary_key_columns_not_in_columns:
             raise UserException(
                 f"Some primary key columns are not in columns: {', '.join(primary_key_columns_not_in_columns)}."
                 f" Primary key columns must be a subset of columns.")
 
     def _set_report_request_scope_parameter(self):
-        self._report_request.Scope.AccountIds = {"long": [self._authorization_data.account_id]}
+        self._report_request.Scope.AccountIds = {
+            "long": [self._authorization_data.account_id]}

@@ -195,6 +195,8 @@ class BingAdsExtractor(ComponentBase):
 
         results: list[ResultFile] = []
         for account in accounts:
+            logging.info(
+                f"Downloading data for accountId: {account} and customerId: {customer_id}")
             self._init_authorization(
                 account_id=account, customer_id=customer_id)
             if object_type is ObjectType.ENTITY:
@@ -229,7 +231,7 @@ class BingAdsExtractor(ComponentBase):
         last_result = results[-1]
 
         table_def = self.create_out_table_definition(
-            last_result.result_file_name, incremental=incremental, is_sliced=True, columns=last_result.columns)
+            last_result.result_file_name, incremental=incremental, columns=last_result.columns)
         table_def.primary_key = last_result.primary_key
 
         # Checking whether a CSV file was created
