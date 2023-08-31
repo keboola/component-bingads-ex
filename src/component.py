@@ -76,7 +76,7 @@ class ResultFile():
 
     def __str__(self):
         return f'result: {self.result_file_name}, account: {self.account}, account: {self.result_file_full_path}'
-    
+
     def _remove_header(self):
         logging.info("run _remove_header")
         headers = []
