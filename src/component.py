@@ -237,7 +237,7 @@ class BingAdsExtractor(ComponentBase):
                 results.append(ResultFile(
                     download_request=download_request, account=account))
             else:
-                logging.warning(f"File {file} not exists!")
+                logging.warning(f"Report for account:{account} is empty!")
 
         # after all file created i can create sliced forlder and move files to it
         for result in results:
