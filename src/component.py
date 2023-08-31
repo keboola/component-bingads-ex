@@ -78,40 +78,43 @@ class ResultFile():
         return f'result: {self.result_file_name}, account: {self.account}, account: {self.result_file_full_path}'
 
     def _remove_header(self):
-        logging.info("run _remove_header")
-        dir_list = os.listdir(self.result_file_directory)
-
-        logging.info(f"{dir_list}")
+        logging.debug("run _remove_header")
         headers = []
+        new_file_name = None
+        new_file_full_path = None
         file = os.path.join(self.result_file_directory,
                             self.result_file_name)
-        new_file_name = f"{str(self.account)}_{self.result_file_name}"
-        new_file_full_path = os.path.join(
-            self.result_file_directory, new_file_name)
-        # remove header from csv and return header for manifest
-        with open(file, 'r', encoding='utf-8-sig') as src_f, open(new_file_full_path, 'w', encoding='utf-8') as dst_f:
-            reader = csv.reader(src_f)
-            writer = csv.writer(dst_f)
-            headers = next(reader)
+        if os.path.exists(file):
+            new_file_name = f"{str(self.account)}_{self.result_file_name}"
+            new_file_full_path = os.path.join(
+                self.result_file_directory, new_file_name)
+            # remove header from csv and return header for manifest
+            with open(file, 'r', encoding='utf-8-sig') as src_f, open(new_file_full_path, 'w', encoding='utf-8') as dst_f:
+                reader = csv.reader(src_f)
+                writer = csv.writer(dst_f)
+                headers = next(reader)
 
-            for row in reader:
-                writer.writerow(row)
-        os.remove(file)
+                for row in reader:
+                    writer.writerow(row)
+            os.remove(file)
+        else:
+            logging.warning(f"File {self.result_file_directory} not exists!")
         return headers, new_file_name, new_file_full_path
 
     def slice_result(self):
-        logging.info("run slice_result")
-        # create slice folder as original output file
-        os.makedirs(self.result_file_full_path, exist_ok=True)
-        # move file to new folder as slice
-        slice_file_full_path = os.path.join(
-            self.result_file_full_path, self.new_result_file_name)
-        os.rename(self.new_result_full_path,
-                  slice_file_full_path)
-        logging.info(f"self.result_file_full_path: {self.result_file_full_path} \
-            slice_file_full_path: {slice_file_full_path}, \
-            self.result_file_name: {self.result_file_name}, \
-            self.new_result_full_path:{self.new_result_full_path}")
+        if self.new_result_file_name and self.new_result_full_path:
+            logging.debug("run slice_result")
+            # create slice folder as original output file
+            os.makedirs(self.result_file_full_path, exist_ok=True)
+            # move file to new folder as slice
+            slice_file_full_path = os.path.join(
+                self.result_file_full_path, self.new_result_file_name)
+            os.rename(self.new_result_full_path,
+                      slice_file_full_path)
+            logging.debug(f"self.result_file_full_path: {self.result_file_full_path} \
+                slice_file_full_path: {slice_file_full_path}, \
+                self.result_file_name: {self.result_file_name}, \
+                self.new_result_full_path:{self.new_result_full_path}")
 
 
 def get_schema():
