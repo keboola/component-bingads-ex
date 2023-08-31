@@ -10,22 +10,41 @@
       "title": "Authorization",
       "description": "Parameters used for authorization",
       "format": "table",
-      "required": [
-        "customer_id",
-        "account_id"
-      ],
+      "required": [],
       "properties": {
         "customer_id": {
-          "type": "integer",
+          "type": "string",
           "title": "Customer ID",
           "description": "Customer identifier. See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
-          "propertyOrder": 4000
+          "propertyOrder": 4000,
+          "enum": [],
+          "format": "select",
+          "options": {
+            "async": {
+              "label": "Re-load available customer Id",
+              "action": "get_customer_id"
+            }
+          },
+          "uniqueItems": true
         },
         "account_id": {
-          "type": "integer",
+          "type": "array",
           "title": "Account ID",
           "description": "Account identifier.See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
-          "propertyOrder": 5000
+          "propertyOrder": 5000,
+          "options": {
+            "async": {
+              "label": "Re-load available accounts",
+              "action": "get_accounts"
+            }
+          },
+          "uniqueItems": true,
+          "format": "select",
+          "items": {
+            "enum": [],
+            "type": "string",
+            "title": "AccountId"
+          }
         }
       }
     }
