@@ -100,6 +100,9 @@ class ResultFile():
             self.result_file_full_path, self.new_result_file_name)
         os.rename(self.new_result_full_path,
                   slice_file_full_path)
+        logging.info(f"slice_file_full_path: {slice_file_full_path}, \
+            self.result_file_name: {self.result_file_name}, \
+            self.new_result_full_path:{self.new_result_full_path}")
 
 
 def get_schema():
