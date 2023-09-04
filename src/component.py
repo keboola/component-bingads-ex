@@ -1,7 +1,7 @@
+import csv
 import json
 import logging
 import os
-import csv
 from datetime import datetime, timezone
 from enum import Enum, unique
 from pathlib import Path
@@ -11,8 +11,8 @@ from keboola.component.base import ComponentBase, sync_action
 from keboola.component.exceptions import UserException
 
 from bingads_wrapper import metadata_provider
-from bingads_wrapper.customer_management import CustomerManagementServiceClient
 from bingads_wrapper.authorization import Authorization
+from bingads_wrapper.customer_management import CustomerManagementServiceClient
 from bingads_wrapper.request import DownloadRequest, ReportDownloadRequest, BulkDownloadRequest
 
 # Global configuration variables
@@ -232,18 +232,22 @@ class BingAdsExtractor(ComponentBase):
             else:
                 logging.warning(f"Report for account:{account} is empty!")
 
-        # after all file created i can create sliced forlder and move files to it
+        # after all file created we can create sliced folder and move files to it
         for result in results:
             result.slice_result()
-        last_result = results[-1]
 
-        table_def = self.create_out_table_definition(
-            last_result.result_file_name, incremental=incremental, columns=last_result.columns)
-        table_def.primary_key = last_result.primary_key
+        if results:
+            last_result = results[-1]
 
-        # Checking whether a CSV file was created
-        if os.path.exists(table_def.full_path):
-            self.write_manifest(table_def)
+            table_def = self.create_out_table_definition(
+                last_result.result_file_name, incremental=incremental, columns=last_result.columns)
+            table_def.primary_key = last_result.primary_key
+
+            # Checking whether a CSV file was created
+            if os.path.exists(table_def.full_path):
+                self.write_manifest(table_def)
+        else:
+            logging.warning("Extraction finished with no results.")
 
         # Extraction done, updating sync timestamp in state
         self.sync_time_in_utc_str = self.new_sync_time_in_utc_str
