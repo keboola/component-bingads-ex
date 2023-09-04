@@ -23,8 +23,6 @@ KEY_PRIMARY_KEY = "primary_key"
 KEY_COLUMNS_ARRAY = "columns_array"
 KEY_PRIMARY_KEY_ARRAY = "primary_key_array"
 
-KEY_ACCOUNT_ID_COLUMN = "AccountId"
-
 # Time range keys:
 KEY_TIME_ZONE = "time_zone"
 KEY_PERIOD = "period"
@@ -32,14 +30,29 @@ KEY_DATE_RANGE_START = "date_from"
 KEY_DATE_RANGE_END = "date_to"
 
 MAX_COMPONENT_RUNTIME_SECONDS = 14400
-DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = (
-    MAX_COMPONENT_RUNTIME_SECONDS - 400) * 1000
+DOWNLOAD_REQUEST_TIMEOUT_PERIOD_MILLISECONDS = (MAX_COMPONENT_RUNTIME_SECONDS - 400) * 1000
 OVERWRITE_RESULT_FILE = True
 
 EXCLUDE_COLUMNS_HEADERS = False
 EXCLUDE_REPORT_FOOTER = True
 EXCLUDE_REPORT_HEADER = True
 DEFAULT_FORMAT_VERSION = "2.0"
+
+# this is only because ProductDimensionPerformance does not allow AccountId only AccountNumber
+# https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportcolumn?view=bingads-13
+KEY_ACCOUNT_ID_COLUMNS = ["AccountId", "AccountNumber"]
+
+
+def get_account_column(report_type: str):
+    """
+    this is only because ProductDimensionPerformance does not allow AccountId only AccountNumber
+    https://learn.microsoft.com/en-us/advertising/reporting-service/productdimensionperformancereportcolumn
+    ?view=bingads-13
+    """
+    if report_type == 'ProductDimensionPerformance':
+        return "AccountNumber"
+    else:
+        return "AccountId"
 
 
 @dataclass(slots=True)
@@ -62,7 +75,7 @@ class ReportingDownloadParametersFactory:
         self._authorization_data = self.reporting_service.authorization_data
         config_keys = set(self.config_dict.keys())
         missing_config_dict_keys = {
-            KEY_REPORT_TYPE, KEY_COLUMNS_ARRAY, KEY_PRIMARY_KEY_ARRAY} - config_keys
+                                       KEY_REPORT_TYPE, KEY_COLUMNS_ARRAY, KEY_PRIMARY_KEY_ARRAY} - config_keys
 
         # for backward compatibility
         try:
@@ -178,11 +191,12 @@ class ReportingDownloadParametersFactory:
         elif isinstance(column_spec, list):
             column_names = column_spec
 
-        # column accoutId must be always
-        if KEY_ACCOUNT_ID_COLUMN not in column_names:
+        # column AccountId must be always present
+        if any(c in column_names for c in KEY_ACCOUNT_ID_COLUMNS):
+            account_id_col = get_account_column(self._report_type)
             logging.warning(
-                f"Column {KEY_ACCOUNT_ID_COLUMN} not in columns configuration will be added!")
-            column_names.append(KEY_ACCOUNT_ID_COLUMN)
+                f"Column {account_id_col} not in columns configuration will be added!")
+            column_names.append(account_id_col)
         column_array.extend(column_names)
 
         primary_key_spec = self.config_dict.get(
@@ -192,11 +206,12 @@ class ReportingDownloadParametersFactory:
         elif isinstance(primary_key_spec, list):
             self.primary_key = primary_key_spec
 
-        # column accoutId must be always
-        if KEY_ACCOUNT_ID_COLUMN not in self.primary_key:
+        # column AccountId must be always present
+        if any(c in self.primary_key for c in KEY_ACCOUNT_ID_COLUMNS):
+            account_id_col = get_account_column(self._report_type)
             logging.warning(
-                f"Column {KEY_ACCOUNT_ID_COLUMN} not in primary_key configuration will be added!")
-            self.primary_key.append(KEY_ACCOUNT_ID_COLUMN)
+                f"Column {account_id_col} not in primary_key configuration will be added!")
+            self.primary_key.append(account_id_col)
 
         primary_key_columns_not_in_columns = set(
             self.primary_key) - set(column_names)
