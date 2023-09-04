@@ -192,7 +192,7 @@ class ReportingDownloadParametersFactory:
             column_names = column_spec
 
         # column AccountId must be always present
-        if any(c in column_names for c in KEY_ACCOUNT_ID_COLUMNS):
+        if not any(c in column_names for c in KEY_ACCOUNT_ID_COLUMNS):
             account_id_col = get_account_column(self._report_type)
             logging.warning(
                 f"Column {account_id_col} not in columns configuration will be added!")
@@ -207,7 +207,7 @@ class ReportingDownloadParametersFactory:
             self.primary_key = primary_key_spec
 
         # column AccountId must be always present
-        if any(c in self.primary_key for c in KEY_ACCOUNT_ID_COLUMNS):
+        if not any(c in self.primary_key for c in KEY_ACCOUNT_ID_COLUMNS):
             account_id_col = get_account_column(self._report_type)
             logging.warning(
                 f"Column {account_id_col} not in primary_key configuration will be added!")
