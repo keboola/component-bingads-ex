@@ -194,7 +194,9 @@ class BingAdsExtractor(ComponentBase):
             self.configuration.parameters[KEY_OBJECT_TYPE])
         # Backward Compatibility
         account_id = self.configuration.parameters[KEY_AUTHORIZATION][KEY_ACCOUNT_ID]
-        accounts = account_id if isinstance(account_id, list) else [account_id]
+        # list and set by default deduplicate values
+        accounts = list(set(account_id)) if isinstance(
+            account_id, list) else [account_id]
         customer_id = self.configuration.parameters[KEY_AUTHORIZATION][KEY_CUSTOMER_ID]
 
         results: list[ResultFile] = []
