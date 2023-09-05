@@ -43,7 +43,6 @@ class CustomerManagementServiceClient:
         try:
             get_account_response = customer_service.GetAccountsInfo(
                 CustomerId=None)
-            print(get_account_response)
             account_info = get_account_response.AccountInfo
             return account_info
         except WebFault as ex:
