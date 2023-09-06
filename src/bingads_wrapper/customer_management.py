@@ -26,7 +26,7 @@ class CustomerManagementServiceClient:
         try:
             get_user_response = customer_service.GetUser(UserId=None)
             user = get_user_response.User
-            return user
+            return get_user_response
         except WebFault as ex:
             process_webfault_errors(ex)
 

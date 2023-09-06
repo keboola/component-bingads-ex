@@ -306,7 +306,7 @@ class BingAdsExtractor(ComponentBase):
         self._init_configuration(from_sync_action=True)
         self._init_authorization()
         user: dict() = CustomerManagementServiceClient.get_user(self)  # type: ignore
-        return [{"value": user.CustomerId, "label": user.CustomerId}]
+        return [{"value": "user.CustomerId", "label": f"{user}"}]
 
     def save_state(self, refresh_token: str):
         """
