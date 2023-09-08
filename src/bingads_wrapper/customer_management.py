@@ -64,4 +64,3 @@ class CustomerManagementServiceClient:
                 CustomerId=customer_role.CustomerId)
             response.append(get_customer_response)
         return response
-            
