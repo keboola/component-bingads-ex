@@ -301,7 +301,11 @@ class BingAdsExtractor(ComponentBase):
         account_info: dict() = CustomerManagementServiceClient.get_accounts(self)  # type: ignore
         sorted_account_info = sorted(account_info, key=lambda c: (
             str(c.AccountLifeCycleStatus), int(c.Id)))
-        return [{"value": str(c.Id), "label": f"{c.Id} ({c.Name} - {c.Number}) - {c.AccountLifeCycleStatus}"} for c in sorted_account_info]
+        return [
+            {
+                "value": str(c.Id), "label": f"{c.Id} ({c.Name} - {c.Number}) - {c.AccountLifeCycleStatus}"
+            } for c in sorted_account_info
+        ]
 
     @sync_action('get_customer_id')
     def get_customer_id(self):
@@ -309,7 +313,11 @@ class BingAdsExtractor(ComponentBase):
         self._init_authorization()
         customers: dict() = CustomerManagementServiceClient.get_customers(self)  # type: ignore
         sorted_customers = sorted(customers, key=lambda c: int(c.Id))
-        return [{"value": str(c.Id), "label": f"{c.Id} ({c.Name} - {c.Number})"} for c in sorted_customers]
+        return [
+            {
+                "value": str(c.Id), "label": f"{c.Id} ({c.Name} - {c.Number})"
+            } for c in sorted_customers
+        ]
 
     def save_state(self, refresh_token: str):
         """
