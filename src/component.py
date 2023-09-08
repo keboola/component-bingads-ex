@@ -300,14 +300,15 @@ class BingAdsExtractor(ComponentBase):
         self._init_authorization()
         account_info: dict() = CustomerManagementServiceClient.get_accounts(self)  # type: ignore
         sorted_account_info = sorted(account_info, key=lambda c: int(c["Id"]))
-        return [{"value": str(c["Id"]), "label": str(c["Id"])} for c in sorted_account_info]
+        return [{"value": str(c["Id"]), "label": str(c)} for c in sorted_account_info]
 
     @sync_action('get_customer_id')
     def get_customer_id(self):
         self._init_configuration(from_sync_action=True)
         self._init_authorization()
-        user: dict() = CustomerManagementServiceClient.get_user(self)  # type: ignore
-        return [{"value": "user.CustomerId", "label": f"{user}"}]
+        customers: dict() = CustomerManagementServiceClient.get_customers(self)  # type: ignore
+        sorted_customers = sorted(customers, key=lambda c: int(c["Id"]))
+        return [{"value": c.Id, "label": f"{c.Id} ({c.Name} - {c.Number})"} for c in sorted_customers]
 
     def save_state(self, refresh_token: str):
         """

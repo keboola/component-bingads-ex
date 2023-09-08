@@ -16,7 +16,6 @@ class CustomerManagementServiceClient:
         """
         Get the authenticated user.
         """
-
         customer_service = ServiceClient(
             service="CustomerManagementService",
             version=13,
@@ -25,8 +24,8 @@ class CustomerManagementServiceClient:
         )
         try:
             get_user_response = customer_service.GetUser(UserId=None)
-            # user = get_user_response.User
-            return get_user_response
+            user = get_user_response.User
+            return user
         except WebFault as ex:
             process_webfault_errors(ex)
 
@@ -47,3 +46,22 @@ class CustomerManagementServiceClient:
             return account_info
         except WebFault as ex:
             process_webfault_errors(ex)
+
+    def get_customers(self):
+        """
+        Get customers for the authenticated user.
+        """
+        customer_service = ServiceClient(
+            service="CustomerManagementService",
+            version=13,
+            authorization_data=self.authorization.authorization_data,
+            environment=self.authorization.environment,
+        )
+        get_user_response = customer_service.GetUser(UserId=None)
+        response = []
+        for customer_role in get_user_response.CustomerRoles.CustomerRole:
+            get_customer_response = customer_service.GetCustomer(
+                CustomerId=customer_role.CustomerId)
+            response.append(get_customer_response)
+        return response
+            
