@@ -10,7 +10,7 @@
       "title": "Authorization",
       "description": "Parameters used for authorization",
       "format": "table",
-      "required": [],
+      "required": ["customer_id"],
       "properties": {
         "customer_id": {
           "type": "string",
@@ -22,7 +22,8 @@
           "options": {
             "async": {
               "label": "Re-load available customer Id",
-              "action": "get_customer_id"
+              "action": "get_customers",
+              "autoload":true
             }
           },
           "uniqueItems": true
@@ -35,7 +36,8 @@
           "options": {
             "async": {
               "label": "Re-load available accounts",
-              "action": "get_accounts"
+              "action": "get_accounts",
+              "required": ["customer_id"]
             }
           },
           "uniqueItems": true,

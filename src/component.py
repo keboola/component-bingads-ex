@@ -296,9 +296,14 @@ class BingAdsExtractor(ComponentBase):
 
     @sync_action('get_accounts')
     def get_accounts(self):
+        if not self.configuration.parameters.get(KEY_AUTHORIZATION, {}).get("customer_id"):
+            raise UserException("Required parameter Customer ID is missing!")
         self._init_configuration(from_sync_action=True)
-        self._init_authorization()
-        account_info: dict() = CustomerManagementServiceClient.get_accounts(self)  # type: ignore
+        customer_id = self.configuration.parameters[KEY_AUTHORIZATION][KEY_CUSTOMER_ID]
+        self._init_authorization(customer_id=customer_id)
+        customer_client = CustomerManagementServiceClient(
+            authorization=self.authorization)
+        account_info: dict() = customer_client.get_accounts()  # type: ignore
         sorted_account_info = sorted(account_info, key=lambda c: (
             str(c.AccountLifeCycleStatus), int(c.Id)))
         return [
@@ -307,11 +312,13 @@ class BingAdsExtractor(ComponentBase):
             } for c in sorted_account_info
         ]
 
-    @sync_action('get_customer_id')
-    def get_customer_id(self):
+    @sync_action('get_customers')
+    def get_customers(self):
         self._init_configuration(from_sync_action=True)
         self._init_authorization()
-        customers: dict() = CustomerManagementServiceClient.get_customers(self)  # type: ignore
+        customer_client = CustomerManagementServiceClient(
+            authorization=self.authorization)
+        customers: dict() = customer_client.get_customers()  # type: ignore
         sorted_customers = sorted(customers, key=lambda c: int(c.Id))
         return [
             {
