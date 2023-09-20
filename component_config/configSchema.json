@@ -23,7 +23,7 @@
             "async": {
               "label": "Re-load available customer Id",
               "action": "get_customers",
-              "autoload":true
+              "autoload":[]
             }
           },
           "uniqueItems": true
@@ -37,7 +37,8 @@
             "async": {
               "label": "Re-load available accounts",
               "action": "get_accounts",
-              "required": ["customer_id"]
+              "required": ["customer_id"],
+              "autoload":["parameters.customer_id"]
             }
           },
           "uniqueItems": true,
