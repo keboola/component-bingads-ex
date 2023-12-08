@@ -14,6 +14,9 @@ from .bulk import create_primary_key as create_bulk_primary_key
 from .error_handling import process_webfault_errors
 from .reporting import ReportingDownloadParametersFactory
 
+import backoff
+import urllib.error
+
 REPORT_FILE_FORMAT = "Csv"
 
 
@@ -35,6 +38,7 @@ class DownloadRequest(ABC):
     def __post_init__(self):
         pass  # Initialization of uninitialized/optional fields must be done in derived classes
 
+    @backoff.on_exception(backoff.expo, (ConnectionResetError, urllib.error.URLError), max_tries=5)
     def process(self):
         try:
             self._service_manager.download_file(self._download_parameters)
