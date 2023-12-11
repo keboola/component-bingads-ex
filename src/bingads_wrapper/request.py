@@ -38,7 +38,7 @@ class DownloadRequest(ABC):
     def __post_init__(self):
         pass  # Initialization of uninitialized/optional fields must be done in derived classes
 
-    @backoff.on_exception(backoff.expo, (ConnectionResetError, urllib.error.URLError), max_tries=5)
+    @backoff.on_exception(backoff.expo, (ConnectionError, urllib.error.URLError), max_tries=5)
     def process(self):
         try:
             self._service_manager.download_file(self._download_parameters)
