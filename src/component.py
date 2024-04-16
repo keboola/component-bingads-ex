@@ -173,7 +173,7 @@ class BingAdsExtractor(ComponentBase):
                                                oauth_credentials=self.get_oauth_credentials(),
                                                save_refresh_token_function=self.save_state,
                                                refresh_token_from_state=self.refresh_token_from_state,
-                                               account_id=account_id, customer_id=customer_id)
+                                               account_id=account_id, customer_id=customer_id, tenant_id=self.tenant_id)
         except Exception as ex:
             raise UserException(
                 "Authorization failed, please try to reauthorize the configuration!") from ex
