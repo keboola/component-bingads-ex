@@ -55,6 +55,9 @@ class Authorization:
 
         self.refresh_token = self.refresh_token or self.refresh_token_from_state
 
+        if self.tenant_id:
+            logging.info(f"The component will attempt to use custom tenant_id for authority_url: {self.tenant_id}")
+
         if self.refresh_token:
             authentication = OAuthWithAuthorizationCode(client_id=self.client_id,
                                                         client_secret=self.client_secret,
