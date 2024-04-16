@@ -147,6 +147,8 @@ class BingAdsExtractor(ComponentBase):
         self.new_sync_time_in_utc_str = datetime.now(
             tz=timezone.utc).isoformat(timespec="seconds")
         self.authorization: Authorization
+        self.tenant_id = self.configuration.image_parameters.get("tenantId", "common")
+
         self.refresh_token_from_state: str = self.previous_state.get(
             KEY_REFRESH_TOKEN)
 
