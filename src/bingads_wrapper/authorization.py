@@ -37,6 +37,7 @@ class Authorization:
     refresh_token_from_state: Optional[str]
     account_id: Optional[int]
     customer_id: Optional[int]
+    tenant_id: Optional[str] = field(default="common")
 
     authorization_data: AuthorizationData = field(init=False)
     developer_token: str = field(init=False)
@@ -54,14 +55,19 @@ class Authorization:
 
         self.refresh_token = self.refresh_token or self.refresh_token_from_state
 
+        if self.tenant_id != "common":
+            logging.info(f"The component will attempt to use custom tenant_id for authority_url: {self.tenant_id}")
+
         if self.refresh_token:
             authentication = OAuthWithAuthorizationCode(client_id=self.client_id,
                                                         client_secret=self.client_secret,
                                                         env=self.environment,
                                                         redirection_uri="",
-                                                        token_refreshed_callback=self.save_refresh_token)
+                                                        token_refreshed_callback=self.save_refresh_token,
+                                                        tenant=self.tenant_id)
         else:
-            authentication = OAuthDesktopMobileAuthCodeGrant(client_id=self.client_id, env=self.environment)
+            authentication = OAuthDesktopMobileAuthCodeGrant(client_id=self.client_id, env=self.environment,
+                                                             tenant=self.tenant_id)
             authentication.token_refreshed_callback = self.save_refresh_token
             request_user_consent(authentication)
             logging.info("User consent acquired successfully")
