@@ -4,5 +4,5 @@ keboola.http-client
 mock
 freezegun
 jsonschema==4.17.3
-bingads==13.0.15
+bingads==13.0.25.2
 backoff==2.2.1
