@@ -298,6 +298,8 @@ class BingAdsExtractor(ComponentBase):
 
     @sync_action('get_accounts')
     def get_accounts(self):
+        if not self.get_oauth_credentials():
+            return []
         if not self.configuration.parameters.get(KEY_AUTHORIZATION, {}).get("customer_id"):
             raise UserException("Required parameter Customer ID is missing!")
         self._init_configuration(from_sync_action=True)
@@ -316,6 +318,8 @@ class BingAdsExtractor(ComponentBase):
 
     @sync_action('get_customers')
     def get_customers(self):
+        if not self.get_oauth_credentials():
+            return []
         self._init_configuration(from_sync_action=True)
         self._init_authorization()
         customer_client = CustomerManagementServiceClient(
