@@ -146,3 +146,34 @@
 
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation```
+
+## AssePerformance Report Presets
+### Daily aggregation
+
+#### Columns
+```AccountId, AccountName, AdGroupId, AdGroupName, AssetContent, AssetId, AssetSource, AssetType, CampaignId, CampaignName, Clicks, CompletedVideoViews, Conversions, Ctr, Impressions, Revenue, Spend, TimePeriod, VideoCompletionRate, VideoViews, VideoViewsAt25Percent, VideoViewsAt50Percent, VideoViewsAt75Percent```
+
+#### Primary key
+```AccountId, AccountName, AdGroupId, AdGroupName, AssetContent, AssetId, AssetSource, AssetType, CampaignId, CampaignName, TimePeriod```
+### Hourly aggregation
+
+#### Columns
+```AccountId, AccountName, AdGroupId, AdGroupName, AssetContent, AssetId, AssetSource, AssetType, CampaignId, CampaignName, Clicks, CompletedVideoViews, Conversions, Ctr, Impressions, Revenue, Spend, TimePeriod, VideoCompletionRate, VideoViews, VideoViewsAt25Percent, VideoViewsAt50Percent, VideoViewsAt75Percent```
+
+#### Primary key
+```AccountId, AccountName, AdGroupId, AdGroupName, AssetContent, AssetId, AssetSource, AssetType, CampaignId, CampaignName, TimePeriod```
+## AssetGroupPerformance Report Presets
+### Daily aggregation
+
+#### Columns
+```AccountId, AccountName, AccountStatus, AssetGroupId, AssetGroupName, AssetGroupStatus, AverageCpc, CampaignId, CampaignName, CampaignStatus, CampaignType, Clicks, Conversions, Ctr, Impressions, ReturnOnAdSpend, Revenue, Spend, TimePeriod```
+
+#### Primary key
+```AccountId, AccountName, AccountStatus, AssetGroupId, AssetGroupName, AssetGroupStatus, CampaignId, CampaignName, CampaignStatus, CampaignType, TimePeriod```
+### Hourly aggregation
+
+#### Columns
+```AccountId, AccountName, AccountStatus, AssetGroupId, AssetGroupName, AssetGroupStatus, AverageCpc, CampaignId, CampaignName, CampaignStatus, CampaignType, Clicks, Conversions, Ctr, Impressions, ReturnOnAdSpend, Revenue, Spend, TimePeriod```
+
+#### Primary key
+```AccountId, AccountName, AccountStatus, AssetGroupId, AssetGroupName, AssetGroupStatus, CampaignId, CampaignName, CampaignStatus, CampaignType, TimePeriod```
