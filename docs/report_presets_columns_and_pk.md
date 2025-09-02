@@ -139,6 +139,7 @@
 
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation```
+
 ### Hourly aggregation
 
 #### Columns
@@ -147,7 +148,7 @@
 #### Primary key
 ```TimePeriod, CurrencyCode, AdDistribution, DeviceType, Network, AccountId, DeliveredMatchType, CampaignId, BidMatchType, DeviceOS, Goal, GoalType, TopVsOther, LocationType, Country, State, County, MetroArea, City, Neighborhood, MostSpecificLocation, LocationId, ProximityTargetLocation```
 
-## AssePerformance Report Presets
+## AssetPerformance Report Presets
 ### Daily aggregation
 
 #### Columns
@@ -155,6 +156,7 @@
 
 #### Primary key
 ```AccountId, AccountName, AdGroupId, AdGroupName, AssetContent, AssetId, AssetSource, AssetType, CampaignId, CampaignName, TimePeriod```
+
 ### Hourly aggregation
 
 #### Columns
@@ -162,6 +164,8 @@
 
 #### Primary key
 ```AccountId, AccountName, AdGroupId, AdGroupName, AssetContent, AssetId, AssetSource, AssetType, CampaignId, CampaignName, TimePeriod```
+
+
 ## AssetGroupPerformance Report Presets
 ### Daily aggregation
 
@@ -170,6 +174,7 @@
 
 #### Primary key
 ```AccountId, AccountName, AccountStatus, AssetGroupId, AssetGroupName, AssetGroupStatus, CampaignId, CampaignName, CampaignStatus, CampaignType, TimePeriod```
+
 ### Hourly aggregation
 
 #### Columns

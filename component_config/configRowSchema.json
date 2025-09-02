@@ -224,7 +224,7 @@
             "ProductDimensionPerformance",
             "KeywordPerformance",
             "GeographicPerformance",
-            "AssePerformance",
+            "AssetPerformance",
             "AssetGroupPerformance"
           ],
           "type": "string",
