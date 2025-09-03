@@ -1985,5 +1985,161 @@
                 "CustomerId"
             ]
         }
+    },
+    "AssetPerformance": {
+        "Hourly": {
+            "columns": [
+                "AccountId",
+                "AccountName",
+                "AdGroupId",
+                "AdGroupName",
+                "AssetContent",
+                "AssetId",
+                "AssetSource",
+                "AssetType",
+                "CampaignId",
+                "CampaignName",
+                "Clicks",
+                "CompletedVideoViews",
+                "Conversions",
+                "Ctr",
+                "Impressions",
+                "Revenue",
+                "Spend",
+                "TimePeriod",
+                "VideoCompletionRate",
+                "VideoViews",
+                "VideoViewsAt25Percent",
+                "VideoViewsAt50Percent",
+                "VideoViewsAt75Percent"
+            ],
+            "primary_key": [
+                "AccountId",
+                "AccountName",
+                "AdGroupId",
+                "AdGroupName",
+                "AssetContent",
+                "AssetId",
+                "AssetSource",
+                "AssetType",
+                "CampaignId",
+                "CampaignName",
+                "TimePeriod"
+            ]
+        },
+        "Daily": {
+            "columns": [
+                "AccountId",
+                "AccountName",
+                "AdGroupId",
+                "AdGroupName",
+                "AssetContent",
+                "AssetId",
+                "AssetSource",
+                "AssetType",
+                "CampaignId",
+                "CampaignName",
+                "Clicks",
+                "CompletedVideoViews",
+                "Conversions",
+                "Ctr",
+                "Impressions",
+                "Revenue",
+                "Spend",
+                "TimePeriod",
+                "VideoCompletionRate",
+                "VideoViews",
+                "VideoViewsAt25Percent",
+                "VideoViewsAt50Percent",
+                "VideoViewsAt75Percent"
+            ],
+            "primary_key": [
+                "AccountId",
+                "AccountName",
+                "AdGroupId",
+                "AdGroupName",
+                "AssetContent",
+                "AssetId",
+                "AssetSource",
+                "AssetType",
+                "CampaignId",
+                "CampaignName",
+                "TimePeriod"
+            ]
+        }
+    },
+    "AssetGroupPerformance": {
+        "Hourly": {
+            "columns": [
+                "AccountId",
+                "AccountName",
+                "AccountStatus",
+                "AssetGroupId",
+                "AssetGroupName",
+                "AssetGroupStatus",
+                "AverageCpc",
+                "CampaignId",
+                "CampaignName",
+                "CampaignStatus",
+                "CampaignType",
+                "Clicks",
+                "Conversions",
+                "Ctr",
+                "Impressions",
+                "ReturnOnAdSpend",
+                "Revenue",
+                "Spend",
+                "TimePeriod"
+            ],
+            "primary_key": [
+                "AccountId",
+                "AccountName",
+                "AccountStatus",
+                "AssetGroupId",
+                "AssetGroupName",
+                "AssetGroupStatus",
+                "CampaignId",
+                "CampaignName",
+                "CampaignStatus",
+                "CampaignType",
+                "TimePeriod"
+            ]
+        },
+        "Daily": {
+            "columns": [
+                "AccountId",
+                "AccountName",
+                "AccountStatus",
+                "AssetGroupId",
+                "AssetGroupName",
+                "AssetGroupStatus",
+                "AverageCpc",
+                "CampaignId",
+                "CampaignName",
+                "CampaignStatus",
+                "CampaignType",
+                "Clicks",
+                "Conversions",
+                "Ctr",
+                "Impressions",
+                "ReturnOnAdSpend",
+                "Revenue",
+                "Spend",
+                "TimePeriod"
+            ],
+            "primary_key": [
+                "AccountId",
+                "AccountName",
+                "AccountStatus",
+                "AssetGroupId",
+                "AssetGroupName",
+                "AssetGroupStatus",
+                "CampaignId",
+                "CampaignName",
+                "CampaignStatus",
+                "CampaignType",
+                "TimePeriod"
+            ]
+        }
     }
 }

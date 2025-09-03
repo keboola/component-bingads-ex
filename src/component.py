@@ -226,7 +226,10 @@ class BingAdsExtractor(ComponentBase):
                 last_sync_time_in_utc=self.last_sync_time_in_utc,
             )
 
-            download_request.process()
+            try:
+                download_request.process()
+            except Exception as e:
+                raise UserException(f"Unable to download data: {e}") from e
 
             file = os.path.join(
                 download_request.result_file_directory, download_request.result_file_name)
