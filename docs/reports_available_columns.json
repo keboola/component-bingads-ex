@@ -1931,7 +1931,7 @@
     "MissedImpressionsNoTax",
     "MissedImpressionsOther"
   ],
-  "AssePerformance": [
+  "AssetPerformance": [
     "TimePeriod",
     "AccountId",
     "AccountName",
