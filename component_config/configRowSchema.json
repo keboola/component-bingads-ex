@@ -102,6 +102,8 @@
             "AdGroupPerformance",
             "AdPerformance",
             "AgeGenderAudience",
+            "AssetGroupPerformance",
+            "AssetPerformance",
             "AudiencePerformance",
             "BudgetSummary",
             "CallDetail",
