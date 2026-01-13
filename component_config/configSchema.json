@@ -15,7 +15,10 @@
       ],
       "properties": {
         "customer_id": {
-          "type": "string",
+          "oneOf": [
+            {"type": "string"},
+            {"type": "integer"}
+          ],
           "title": "Customer ID",
           "description": "Customer identifier. See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
           "propertyOrder": 4000,
@@ -31,7 +34,19 @@
           "uniqueItems": true
         },
         "account_id": {
-          "type": "array",
+          "oneOf": [
+            {
+              "type": "array",
+              "items": {
+                "oneOf": [
+                  {"type": "string"},
+                  {"type": "integer"}
+                ]
+              }
+            },
+            {"type": "string"},
+            {"type": "integer"}
+          ],
           "title": "Account ID",
           "description": "Account identifier.See how to obtain it <a href=\"https://learn.microsoft.com/en-us/advertising/guides/get-started?view=bingads-13#get-ids\">here</a>",
           "propertyOrder": 5000,
@@ -48,12 +63,7 @@
             }
           },
           "uniqueItems": true,
-          "format": "select",
-          "items": {
-            "enum": [],
-            "type": "string",
-            "title": "AccountId"
-          }
+          "format": "select"
         }
       }
     }
