@@ -179,7 +179,7 @@ class BingAdsExtractor(ComponentBase):
                                                account_id=account_id, customer_id=customer_id, tenant_id=self.tenant_id)
         except Exception as ex:
             raise UserException(
-                "Authorization failed, please try to reauthorize the configuration!") from ex
+                f"Authorization failed, please try to reauthorize the configuration! Detail: {ex}") from ex
 
     def run(self):
         """

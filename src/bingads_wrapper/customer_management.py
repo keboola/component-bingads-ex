@@ -57,7 +57,10 @@ class CustomerManagementServiceClient:
             authorization_data=self.authorization.authorization_data,
             environment=self.authorization.environment,
         )
-        get_user_response = customer_service.GetUser(UserId=None)
+        try:
+            get_user_response = customer_service.GetUser(UserId=None)
+        except WebFault as ex:
+            process_webfault_errors(ex)
         response = []
         for customer_role in get_user_response.CustomerRoles.CustomerRole:
             try:
