@@ -282,6 +282,15 @@ class BingAdsExtractor(ComponentBase):
                 if not params.get(KEY_REPORT_SETTINGS_CUSTOM, {}).get('aggregation'):
                     errors.append("You must select aggregation type!")
 
+            # Presence-only check, mirroring the config row schema, which requires the key to be
+            # present but explicitly allows an empty value ("Default object name used if left empty").
+            # Without it, a config missing the key reaches destination[KEY_OUTPUT_TABLE_NAME] in
+            # run() and dies with a bare KeyError, i.e. exit code 2 / internal error.
+            if KEY_OUTPUT_TABLE_NAME not in (params.get(KEY_DESTINATION) or {}):
+                errors.append(
+                    "Required parameter Storage Table Name (destination.output_table_name) is missing! "
+                    "Open the configuration and save it once to fill in the Destination section.")
+
         if errors:
             raise UserException("\n".join(errors))
 
