@@ -13,6 +13,7 @@ from .bulk import create_download_parameters as create_bulk_download_parameters
 from .bulk import create_primary_key as create_bulk_primary_key
 from .error_handling import process_webfault_errors
 from .reporting import ReportingDownloadParametersFactory
+from .soap_logging import attach_soap_debug
 
 import backoff
 import urllib.error
@@ -55,6 +56,7 @@ class BulkDownloadRequest(DownloadRequest):
             authorization_data=self.authorization.authorization_data,
             environment=self.authorization.environment,
         )
+        attach_soap_debug(self._service_manager._service_client, self.authorization.authorization_data)
         self._download_parameters = create_bulk_download_parameters(
             config_dict=self.config_dict,
             last_sync_time_in_utc=self.last_sync_time_in_utc,
@@ -75,6 +77,7 @@ class ReportDownloadRequest(DownloadRequest):
             authorization_data=self.authorization.authorization_data,
             environment=self.authorization.environment,
         )
+        attach_soap_debug(self._service_manager._service_client, self.authorization.authorization_data)
         reporting_download_parameters_factory = ReportingDownloadParametersFactory(
             config_dict=self.config_dict,
             result_file_directory=self.result_file_directory,

@@ -161,11 +161,14 @@ class BingAdsExtractor(ComponentBase):
         #     ssl._create_default_https_context = _create_unverified_https_context
 
     def _init_configuration(self, from_sync_action: bool = False):
-        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        # The authorization section does not exist yet right after the OAuth authorization,
+        # sync actions must work with an empty configuration.
+        if not from_sync_action:
+            self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self._validate_configuration(from_sync_action)
 
     def _init_authorization(self, account_id=None, customer_id=None):
-        authorization_dict = self.configuration.parameters[KEY_AUTHORIZATION]
+        authorization_dict = dict(self.configuration.parameters.get(KEY_AUTHORIZATION) or {})
         authorization_dict['#developer_token'] = authorization_dict.get(
             '#developer_token') or self.configuration.image_parameters.get('developer_token')
         try:
@@ -176,7 +179,7 @@ class BingAdsExtractor(ComponentBase):
                                                account_id=account_id, customer_id=customer_id, tenant_id=self.tenant_id)
         except Exception as ex:
             raise UserException(
-                "Authorization failed, please try to reauthorize the configuration!") from ex
+                f"Authorization failed, please try to reauthorize the configuration! Detail: {ex}") from ex
 
     def run(self):
         """

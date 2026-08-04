@@ -6,22 +6,29 @@ from suds import WebFault
 
 from .authorization import Authorization
 from .error_handling import process_webfault_errors
+from .soap_logging import attach_soap_debug
 
 
 @dataclass(slots=True)
 class CustomerManagementServiceClient:
     authorization: Authorization
 
+    def _customer_service(self) -> ServiceClient:
+        authorization_data = self.authorization.authorization_data
+        customer_service = ServiceClient(
+            service="CustomerManagementService",
+            version=13,
+            authorization_data=authorization_data,
+            environment=self.authorization.environment,
+        )
+        attach_soap_debug(customer_service, authorization_data)
+        return customer_service
+
     def get_user(self):
         """
         Get the authenticated user.
         """
-        customer_service = ServiceClient(
-            service="CustomerManagementService",
-            version=13,
-            authorization_data=self.authorization.authorization_data,
-            environment=self.authorization.environment,
-        )
+        customer_service = self._customer_service()
         try:
             get_user_response = customer_service.GetUser(UserId=None)
             user = get_user_response.User
@@ -33,12 +40,7 @@ class CustomerManagementServiceClient:
         """
         Get accounts for the authenticated user.
         """
-        customer_service = ServiceClient(
-            service="CustomerManagementService",
-            version=13,
-            authorization_data=self.authorization.authorization_data,
-            environment=self.authorization.environment,
-        )
+        customer_service = self._customer_service()
         try:
             get_account_response = customer_service.GetAccountsInfo(
                 CustomerId=self.authorization.customer_id)
@@ -51,13 +53,11 @@ class CustomerManagementServiceClient:
         """
         Get customers for the authenticated user.
         """
-        customer_service = ServiceClient(
-            service="CustomerManagementService",
-            version=13,
-            authorization_data=self.authorization.authorization_data,
-            environment=self.authorization.environment,
-        )
-        get_user_response = customer_service.GetUser(UserId=None)
+        customer_service = self._customer_service()
+        try:
+            get_user_response = customer_service.GetUser(UserId=None)
+        except WebFault as ex:
+            process_webfault_errors(ex)
         response = []
         for customer_role in get_user_response.CustomerRoles.CustomerRole:
             try:
