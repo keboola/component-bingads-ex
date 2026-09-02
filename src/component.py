@@ -161,11 +161,19 @@ class BingAdsExtractor(ComponentBase):
         #     ssl._create_default_https_context = _create_unverified_https_context
 
     def _init_configuration(self, from_sync_action: bool = False):
-        self.validate_configuration_parameters(REQUIRED_PARAMETERS)
+        # A configuration that was only just authorized has no `parameters.authorization`
+        # section yet. The Customer ID field autoloads `get_customers` as soon as the form
+        # opens, so this check ran before the section could exist and failed the sync action
+        # with "Missing mandatory config parameters fields: [authorization]".
+        # Sync actions must work on an empty configuration; the run() path is unchanged.
+        if not from_sync_action:
+            self.validate_configuration_parameters(REQUIRED_PARAMETERS)
         self._validate_configuration(from_sync_action)
 
     def _init_authorization(self, account_id=None, customer_id=None):
-        authorization_dict = self.configuration.parameters[KEY_AUTHORIZATION]
+        # Copy, so the developer token is not written back into the live configuration.
+        authorization_dict = dict(
+            self.configuration.parameters.get(KEY_AUTHORIZATION) or {})
         authorization_dict['#developer_token'] = authorization_dict.get(
             '#developer_token') or self.configuration.image_parameters.get('developer_token')
         try:
@@ -176,7 +184,8 @@ class BingAdsExtractor(ComponentBase):
                                                account_id=account_id, customer_id=customer_id, tenant_id=self.tenant_id)
         except Exception as ex:
             raise UserException(
-                "Authorization failed, please try to reauthorize the configuration!") from ex
+                "Authorization failed, please try to reauthorize the configuration! "
+                f"Detail: {ex}") from ex
 
     def run(self):
         """
