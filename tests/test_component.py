@@ -157,14 +157,14 @@ class TestConfigSchema(unittest.TestCase):
         authorization section, so a path of `parameters.customer_id` never matched and the
         Account ID list was never reloaded after a customer was picked.
         """
-        schema_path = os.path.join(os.path.dirname(os.path.dirname(
-            os.path.abspath(__file__))), "component_config", "configSchema.json")
+        schema_path = os.path.join(
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "component_config", "configSchema.json"
+        )
         with open(schema_path) as schema_file:
             schema = json.load(schema_file)
 
         account_id = schema["properties"]["authorization"]["properties"]["account_id"]
-        self.assertEqual(["parameters.authorization.customer_id"],
-                         account_id["options"]["async"]["autoload"])
+        self.assertEqual(["parameters.authorization.customer_id"], account_id["options"]["async"]["autoload"])
 
 
 if __name__ == "__main__":

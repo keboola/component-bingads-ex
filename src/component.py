@@ -172,8 +172,7 @@ class BingAdsExtractor(ComponentBase):
 
     def _init_authorization(self, account_id=None, customer_id=None):
         # Copy, so the developer token is not written back into the live configuration.
-        authorization_dict = dict(
-            self.configuration.parameters.get(KEY_AUTHORIZATION) or {})
+        authorization_dict = dict(self.configuration.parameters.get(KEY_AUTHORIZATION) or {})
         authorization_dict['#developer_token'] = authorization_dict.get(
             '#developer_token') or self.configuration.image_parameters.get('developer_token')
         try:
@@ -184,8 +183,8 @@ class BingAdsExtractor(ComponentBase):
                                                account_id=account_id, customer_id=customer_id, tenant_id=self.tenant_id)
         except Exception as ex:
             raise UserException(
-                "Authorization failed, please try to reauthorize the configuration! "
-                f"Detail: {ex}") from ex
+                f"Authorization failed, please try to reauthorize the configuration! Detail: {ex}"
+            ) from ex
 
     def run(self):
         """
