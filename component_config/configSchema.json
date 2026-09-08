@@ -43,7 +43,7 @@
                 "customer_id"
               ],
               "autoload": [
-                "parameters.customer_id"
+                "parameters.authorization.customer_id"
               ]
             }
           },
