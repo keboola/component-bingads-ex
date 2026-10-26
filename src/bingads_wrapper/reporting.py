@@ -3,13 +3,14 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Optional
 
-from bingads.service_client import ServiceClient, AuthorizationData
+from bingads.authorization import AuthorizationData
 from bingads.v13.reporting import ReportingDownloadParameters
 from dateparser import parse
 from keboola.component.exceptions import UserException
-from suds.sudsobject import Object
+from pydantic import BaseModel
 
 from .prebuilt_configs import get_prebuilt_report_config
+from .rest_compat import build_nested, create_report_request, declares_field, set_field
 from .utils import comma_separated_str_to_list
 
 KEY_PRESET_NAME = "preset_name"
@@ -57,7 +58,7 @@ def get_account_column(report_type: str):
 
 @dataclass(slots=True)
 class ReportingDownloadParametersFactory:
-    reporting_service: ServiceClient
+    authorization_data: AuthorizationData
     config_dict: dict[str, str | list[str]]
     result_file_directory: str
     report_file_format: str
@@ -69,10 +70,10 @@ class ReportingDownloadParametersFactory:
 
     _authorization_data: AuthorizationData = field(init=False)
     _report_type: str = field(init=False)
-    _report_request: Object = field(init=False)
+    _report_request: BaseModel = field(init=False)
 
     def __post_init__(self):
-        self._authorization_data = self.reporting_service.authorization_data
+        self._authorization_data = self.authorization_data
         config_keys = set(self.config_dict.keys())
         missing_config_dict_keys = {
                                        KEY_REPORT_TYPE, KEY_COLUMNS_ARRAY, KEY_PRIMARY_KEY_ARRAY} - config_keys
@@ -105,8 +106,7 @@ class ReportingDownloadParametersFactory:
                 self.result_file_name = f"{self.config_dict[KEY_REPORT_TYPE]}_Report.csv"
 
         self._report_type: str = self.config_dict[KEY_REPORT_TYPE]
-        self._report_request = self.reporting_service.factory.create(
-            self._report_type + "ReportRequest")
+        self._report_request = create_report_request(self._report_type)
         self._create_report_request()
 
     def create(self) -> ReportingDownloadParameters:
@@ -119,36 +119,42 @@ class ReportingDownloadParametersFactory:
         )
 
     def _create_report_request(self):
+        # These guards ask whether the report type supports the element. Under SOAP that
+        # was a hasattr() check on the generated object. Pydantic declares every optional
+        # field on the class, so hasattr() is always true and would change the behaviour.
+        # declares_field() checks the declared fields instead and keeps the original test.
         self._set_report_request_base_parameters()
-        if hasattr(self._report_request, "Time"):
+        if declares_field(self._report_request, "Time"):
             self._set_report_request_time_parameter()
-        if hasattr(self._report_request, "Columns"):
+        if declares_field(self._report_request, "Columns"):
             self._set_report_request_columns_parameter_and_primary_key()
-        if hasattr(self._report_request, "Aggregation"):
+        if declares_field(self._report_request, "Aggregation"):
             self._set_report_request_aggregation_parameter()
-        if hasattr(self._report_request, "Scope"):
+        if declares_field(self._report_request, "Scope"):
             self._set_report_request_scope_parameter()
 
     def _set_report_request_base_parameters(self):
         self._report_request.ExcludeColumnHeaders = EXCLUDE_COLUMNS_HEADERS
         self._report_request.ExcludeReportFooter = EXCLUDE_REPORT_FOOTER
         self._report_request.ExcludeReportHeader = EXCLUDE_REPORT_HEADER
-        self._report_request.Format.set(self.report_file_format)
+        # REST enum fields hold a plain value. The SOAP .set() method does not exist.
+        set_field(self._report_request, "Format", self.report_file_format)
         self._report_request.FormatVersion = self.config_dict.get(
             KEY_FORMAT_VERSION, DEFAULT_FORMAT_VERSION)
         self._report_request.ReturnOnlyCompleteData: bool = self.config_dict[
             KEY_RETURN_ONLY_COMPLETE_DATA]
 
     def _set_report_request_aggregation_parameter(self):
-        self._report_request.Aggregation.set(self.config_dict[KEY_AGGREGATION])
+        set_field(self._report_request, "Aggregation", self.config_dict[KEY_AGGREGATION])
 
     def _set_report_request_time_parameter(self):
-        time = self._report_request.Time
+        # SOAP created Time on first access. Pydantic leaves it as None, so it is built here.
         time_dict: dict = self.config_dict[KEY_TIME_RANGE]
         time_zone = time_dict[KEY_TIME_ZONE]
         period = time_dict[KEY_PERIOD]
 
-        time.ReportTimeZone.set(time_zone)
+        time = build_nested(self._report_request, "Time")
+        set_field(time, "ReportTimeZone", time_zone)
         if period == "CustomTimeRange":
             if time_dict[KEY_DATE_RANGE_START] == "last run":
                 if not self.last_sync_time_in_utc:
@@ -168,21 +174,19 @@ class ReportingDownloadParametersFactory:
             logging.info(f"Custom dates parsed to these absolute values:\n"
                          f" Date From: {start_date.isoformat(timespec='seconds')},"
                          f" Date To: {end_date.isoformat(timespec='seconds')}")
-            time.CustomDateRangeStart.Year = start_date.year
-            time.CustomDateRangeStart.Month = start_date.month
-            time.CustomDateRangeStart.Day = start_date.day
-            time.CustomDateRangeEnd.Year = end_date.year
-            time.CustomDateRangeEnd.Month = end_date.month
-            time.CustomDateRangeEnd.Day = end_date.day
+            build_nested(time, "CustomDateRangeStart",
+                         Year=start_date.year, Month=start_date.month, Day=start_date.day)
+            build_nested(time, "CustomDateRangeEnd",
+                         Year=end_date.year, Month=end_date.month, Day=end_date.day)
         else:
-            time.PredefinedTime = period
+            set_field(time, "PredefinedTime", period)
             time.CustomDateRangeStart = None
             time.CustomDateRangeEnd = None
 
     def _set_report_request_columns_parameter_and_primary_key(self):
-        report_columns = self._report_request.Columns
-        column_array: list[str] = getattr(
-            report_columns, self._report_type + "ReportColumn")
+        # REST types Columns as a plain list of column names. SOAP wrapped it in an
+        # ArrayOf<Type>ReportColumn element, which is why the SOAP build read that member.
+        column_array: list[str] = []
         column_spec = self.config_dict.get(
             KEY_COLUMNS) or self.config_dict.get(KEY_COLUMNS_ARRAY, [])
         column_names: list[str] = []
@@ -198,6 +202,7 @@ class ReportingDownloadParametersFactory:
                 f"Column {account_id_col} not in columns configuration will be added!")
             column_names.append(account_id_col)
         column_array.extend(column_names)
+        set_field(self._report_request, "Columns", column_array)
 
         primary_key_spec = self.config_dict.get(
             KEY_PRIMARY_KEY) or self.config_dict.get(KEY_PRIMARY_KEY_ARRAY, [])
@@ -221,5 +226,7 @@ class ReportingDownloadParametersFactory:
                 f" Primary key columns must be a subset of columns.")
 
     def _set_report_request_scope_parameter(self):
-        self._report_request.Scope.AccountIds = {
-            "long": [self._authorization_data.account_id]}
+        # REST declares AccountIds as a list of strings and validates on assignment, so
+        # the account id is converted. SOAP used a {"long": [...]} array wrapper here.
+        build_nested(self._report_request, "Scope",
+                     AccountIds=[str(self._authorization_data.account_id)])
