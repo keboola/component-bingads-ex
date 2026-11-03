@@ -3,9 +3,10 @@ import logging
 from typing import Callable, Literal, Optional
 import webbrowser
 
-from bingads.authorization import (AuthorizationData, OAuthTokens, OAuthWithAuthorizationCode,
-                                   OAuthDesktopMobileAuthCodeGrant)
-from bingads.exceptions import OAuthTokenRequestException
+# msads raises its own OAuthTokenRequestException from bingads.authorization;
+# the class in bingads.exceptions is a different one and never matches.
+from bingads.authorization import (AuthorizationData, OAuthTokenRequestException, OAuthTokens,
+                                   OAuthWithAuthorizationCode, OAuthDesktopMobileAuthCodeGrant)
 
 from keboola.component.dao import OauthCredentials
 

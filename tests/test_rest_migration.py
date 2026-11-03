@@ -6,6 +6,7 @@ the report and bulk metadata, and turning an API error into a UserException.
 """
 
 import unittest
+import unittest.mock
 import warnings
 
 import openapi_client.models as rest_models
@@ -176,6 +177,37 @@ class TestErrorHandling(unittest.TestCase):
         message = str(caught.exception)
         self.assertIn("503", message)
         self.assertNotEqual(message.strip(), "")
+
+
+class TestRefreshTokenFallback(unittest.TestCase):
+    def test_falls_back_to_the_state_token_when_the_broker_token_is_rejected(self):
+        import bingads.authorization as sdk_authorization
+        from keboola.component.dao import OauthCredentials
+
+        from bingads_wrapper.authorization import Authorization
+
+        def get_access_token(**kwargs):
+            if kwargs["refresh_token"] == "broker-token":
+                raise sdk_authorization.OAuthTokenRequestException("invalid_grant", "token rejected")
+            return sdk_authorization.OAuthTokens("access-token", 3600, "new-refresh-token", {})
+
+        saved_tokens = []
+        with unittest.mock.patch.object(sdk_authorization._UriOAuthService, "get_access_token",
+                                        side_effect=get_access_token) as token_endpoint:
+            authorization = Authorization(
+                config_dict={"#developer_token": "test-token"},
+                oauth_credentials=OauthCredentials(id="", created="", data={"refresh_token": "broker-token"},
+                                                   oauthVersion="", appKey="app-key", appSecret="app-secret"),
+                save_refresh_token_function=saved_tokens.append,
+                refresh_token_from_state="state-token",
+                account_id=ACCOUNT_ID,
+                customer_id=1,
+            )
+
+        sent_tokens = [call.kwargs["refresh_token"] for call in token_endpoint.call_args_list]
+        self.assertEqual(sent_tokens, ["broker-token", "state-token"])
+        self.assertEqual(authorization.refresh_token, "new-refresh-token")
+        self.assertEqual(saved_tokens, ["new-refresh-token"])
 
 
 class TestSyncActionLabels(unittest.TestCase):
