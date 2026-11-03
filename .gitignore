@@ -14,3 +14,5 @@ venv
 
 # kcf-tools
 generated
+# Build artifact from an editable install
+*.egg-info/

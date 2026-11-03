@@ -6,18 +6,22 @@ from typing import Optional
 from bingads.v13.bulk import BulkServiceManager
 from bingads.v13.bulk import DownloadParameters as BulkDownloadParameters
 from bingads.v13.reporting import ReportingServiceManager, ReportingDownloadParameters
-from suds import WebFault
+from openapi_client.exceptions import ApiException
 
 from .authorization import Authorization
 from .bulk import create_download_parameters as create_bulk_download_parameters
 from .bulk import create_primary_key as create_bulk_primary_key
-from .error_handling import process_webfault_errors
+from .error_handling import process_api_errors
 from .reporting import ReportingDownloadParametersFactory
 
 import backoff
 import urllib.error
 
 REPORT_FILE_FORMAT = "Csv"
+
+# BulkServiceManager and ReportingServiceManager take no version argument. Both pin
+# version 13 internally when they build their ServiceClient, and any version keyword
+# reaches that constructor a second time and raises TypeError.
 
 
 @dataclass(slots=True)
@@ -42,8 +46,8 @@ class DownloadRequest(ABC):
     def process(self):
         try:
             self._service_manager.download_file(self._download_parameters)
-        except WebFault as ex:
-            process_webfault_errors(ex)
+        except ApiException as ex:
+            process_api_errors(ex)
 
 
 class BulkDownloadRequest(DownloadRequest):
@@ -80,7 +84,7 @@ class ReportDownloadRequest(DownloadRequest):
             result_file_directory=self.result_file_directory,
             result_file_name=self.result_file_name,
             report_file_format=REPORT_FILE_FORMAT,
-            reporting_service=self._service_manager._service_client,
+            authorization_data=self.authorization.authorization_data,
             last_sync_time_in_utc=self.last_sync_time_in_utc)
         self._download_parameters = reporting_download_parameters_factory.create()
         if not self.table_name:

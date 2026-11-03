@@ -122,6 +122,17 @@ def get_schema():
     return row_schema
 
 
+def _enum_value(value) -> str:
+    """
+    Return the plain API value of a field.
+
+    The REST models return enum members where the SOAP build returned strings.
+    str() on an enum member gives "ClassName.MEMBER", which would change both the
+    label shown in the configuration and the order the list is sorted in.
+    """
+    return str(getattr(value, "value", value))
+
+
 class BingAdsExtractor(ComponentBase):
     """
     Extends base class for general Python components. Initializes the CommonInterface
@@ -329,10 +340,11 @@ class BingAdsExtractor(ComponentBase):
             authorization=self.authorization)
         account_info: dict() = customer_client.get_accounts()  # type: ignore
         sorted_account_info = sorted(account_info, key=lambda c: (
-            str(c.AccountLifeCycleStatus), int(c.Id)))
+            _enum_value(c.AccountLifeCycleStatus), int(c.Id)))
         return [
             {
-                "value": str(c.Id), "label": f"{c.Id} ({c.Name} - {c.Number}) - {c.AccountLifeCycleStatus}"
+                "value": str(c.Id),
+                "label": f"{c.Id} ({c.Name} - {c.Number}) - {_enum_value(c.AccountLifeCycleStatus)}"
             } for c in sorted_account_info
         ]
 
